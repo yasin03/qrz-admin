@@ -17,6 +17,8 @@ export async function POST(request) {
       "[LoginKontrol] '" + username + "', '" + password + "'",
     );
 
+    console.log("auth POST sonuc", sonuc);
+
     const response = NextResponse.json(sonuc ?? { Sonuc: "0" });
 
     if (sonuc?.Sonuc == "1") {

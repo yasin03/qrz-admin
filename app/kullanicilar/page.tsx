@@ -1,11 +1,5 @@
-import { DashboardShell } from "@/components/layout/dashboard-shell";
+import Kullanicilar from "@/components/kullanicilar/Kullanicilar";
 
 export default function KullanicilarPage() {
-  return (
-    <DashboardShell>
-      <div className="h-full" >
-        <h1 className="text-2xl font-bold">Kullanıcılar</h1>
-      </div>
-    </DashboardShell>
-  );
+  return <Kullanicilar />;
 }

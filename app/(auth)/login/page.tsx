@@ -26,6 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@/services/auth";
+import { useAuthStore, User } from "@/stores/auth-store";
 
 const loginSchema = z.object({
   username: z.string(),
@@ -56,6 +57,7 @@ const features = [
 const Page = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const {
     register,
@@ -82,11 +84,8 @@ const Page = () => {
         });
         return;
       }
-
-      const displayName =
-        (data?.user?.name as string) ||
-        (data?.Ad as string) ||
-        (values.username as string);
+      setUser(data as unknown as User);
+      const displayName = data?.Ad || values.username;
 
       toast.success("Giriş başarılı", {
         description: `Hos geldiniz, ${displayName}`,
@@ -138,6 +137,7 @@ const Page = () => {
                   src="/logos/logo-big.png"
                   alt="Logo"
                   fill
+                  sizes="(min-width: 768px) 448px, 100vw"
                   className="object-contain"
                   priority
                 />

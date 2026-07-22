@@ -7,6 +7,7 @@ import { ChevronDown, Menu, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { logout } from "@/services/auth";
+import { useAuthStore } from "@/stores/auth-store";
 
 type HeaderProps = {
   onToggleSidebar: () => void;
@@ -18,6 +19,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
+  const user = useAuthStore((state) => state.user);
+  const clearUser = useAuthStore((state) => state.clearUser);
+
   const handleLogout = async () => {
     if (isLoggingOut) {
       return;
@@ -27,6 +31,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
     try {
       await logout();
     } finally {
+      clearUser();
       setIsLoggingOut(false);
       setIsMenuOpen(false);
       router.push("/login");
@@ -53,9 +58,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           color="secondary"
           appearance="outline"
           size="icon"
-          className="lg:hidden"
           onClick={onToggleSidebar}
-          aria-label="Sidebar ac veya kapat"
+          aria-label="Kenar çubuğunu daralt veya genişlet"
         >
           <Menu className="size-5" />
         </Button>
@@ -80,7 +84,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           aria-haspopup="menu"
         >
           <UserCircle2 className="size-5" />
-          <span className="hidden text-sm sm:inline">Admin User</span>
+          <span className="hidden text-sm sm:inline">
+            {user?.Ad ?? "Kullanıcı"}
+          </span>
           <ChevronDown
             className={cn(
               "size-4 transition-transform duration-200",
@@ -109,6 +115,14 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             type="button"
             className="w-full rounded-md px-3 py-2 text-left text-sm text-card-foreground transition-colors hover:bg-muted"
             role="menuitem"
+            onClick={() => router.push("/kurumsal")}
+          >
+            Kurumsal Ayarlar
+          </button>
+          <button
+            type="button"
+            className="w-full rounded-md px-3 py-2 text-left text-sm text-card-foreground transition-colors hover:bg-muted"
+            role="menuitem"
           >
             Hesap Ayarlari
           </button>
@@ -119,7 +133,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             onClick={handleLogout}
             disabled={isLoggingOut}
           >
-            {isLoggingOut ? "Cikis Yapiliyor..." : "Cikis Yap"}
+            {isLoggingOut ? "Çıkış Yapılıyor..." : "Çıkış Yap"}
           </button>
         </div>
       </div>

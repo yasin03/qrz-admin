@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 type SidebarMenuProps = {
   onNavigate?: () => void;
+  isCollapsed?: boolean;
 };
 
 const menuItems = [
@@ -28,7 +29,7 @@ const menuItems = [
   },
 ];
 
-export function SidebarMenu({ onNavigate }: SidebarMenuProps) {
+export function SidebarMenu({ onNavigate, isCollapsed }: SidebarMenuProps) {
   const pathname = usePathname();
 
   return (
@@ -43,14 +44,15 @@ export function SidebarMenu({ onNavigate }: SidebarMenuProps) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300",
+              "group flex items-center gap-3 h-10 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300",
+              isCollapsed ? "lg:justify-center lg:px-0" : "justify-start",
               isActive
-                ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-primary/80 hover:bg-primary hover:text-primary-foreground",
             )}
           >
             <Icon className="size-4 transition-transform duration-300 group-hover:scale-110" />
-            <span>{item.label}</span>
+            <span className={cn(isCollapsed && "lg:hidden")}>{item.label}</span>
           </Link>
         );
       })}
