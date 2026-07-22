@@ -1,9 +1,10 @@
 "use client";
 import { CustomDataTable } from "../customs/CustomDataTable";
-import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
+import { RowAction, RowActions } from "../customs/RowActions";
+import { UserPlus, FileText, Merge, Pencil, Power, Trash2 } from "lucide-react";
 
 type Employee = {
   id: string;
@@ -81,6 +82,52 @@ const Kullanicilar = () => {
 
   const columns: ColumnDef<Employee>[] = [
     {
+      id: "actions",
+      header: "",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const employee = row.original;
+
+        const actions: RowAction<Employee>[] = [
+          {
+            label: "Düzenle",
+            icon: Pencil,
+            onClick: (r) => console.log("düzenle", r.id),
+          },
+          {
+            label: employee.status === "Aktif" ? "Pasif Yap" : "Aktif Yap",
+            icon: Power,
+            onClick: (r) => console.log("durum değiştir", r.id),
+          },
+          {
+            label: "Rapor Oluştur",
+            icon: FileText,
+            onClick: (r) => console.log("rapor", r.id),
+          },
+          {
+            label: "Kullanıcı Birleştir",
+            icon: Merge,
+            // örnek: bazı satırlarda bu aksiyon anlamsızsa disabled edilebilir
+            disabled: (r) => Boolean(r.locked),
+            onClick: (r) => console.log("birleştir", r.id),
+          },
+          {
+            label: "Sil",
+            icon: Trash2,
+            variant: "danger",
+            separatorBefore: true,
+            onClick: (r) => console.log("sil", r.id),
+          },
+        ];
+
+        return (
+          <div className="flex justify-end">
+            <RowActions row={employee} actions={actions} />
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "name",
       header: "Ad Soyad",
       cell: ({ row }) => (
@@ -135,41 +182,6 @@ const Kullanicilar = () => {
           month: "long",
           year: "numeric",
         }).format(new Date(getValue<string>())),
-    },
-    {
-      id: "actions",
-      header: "",
-      enableSorting: false,
-      cell: ({ row }) => (
-        <div className="flex justify-end gap-1">
-          <Button
-            type="button"
-            color="secondary"
-            appearance="ghost"
-            size="icon-sm"
-            aria-label="Düzenle"
-            onClick={(event) => {
-              event.stopPropagation();
-              console.log("düzenle", row.original.id);
-            }}
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            color="danger"
-            appearance="ghost"
-            size="icon-sm"
-            aria-label="Sil"
-            onClick={(event) => {
-              event.stopPropagation();
-              console.log("sil", row.original.id);
-            }}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
-      ),
     },
   ];
 

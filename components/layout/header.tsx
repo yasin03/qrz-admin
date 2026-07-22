@@ -108,8 +108,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             type="button"
             className="w-full rounded-md px-3 py-2 text-left text-sm text-card-foreground transition-colors hover:bg-muted"
             role="menuitem"
+            onClick={() => router.push("/profile")}
           >
-            Profil
+            Profil Bilgileri
           </button>
           <button
             type="button"
@@ -117,14 +118,14 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             role="menuitem"
             onClick={() => router.push("/kurumsal")}
           >
-            Kurumsal Ayarlar
+            Kurumsal Bilgiler
           </button>
           <button
             type="button"
             className="w-full rounded-md px-3 py-2 text-left text-sm text-card-foreground transition-colors hover:bg-muted"
             role="menuitem"
           >
-            Hesap Ayarlari
+            Kurumsal Ayarlar
           </button>
           <button
             type="button"
