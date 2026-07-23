@@ -2,9 +2,10 @@
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { RowAction, RowActions } from "../customs/RowActions";
 import { UserPlus, FileText, Merge, Pencil, Power, Trash2 } from "lucide-react";
+import KullaniciEkle, { type KullaniciEkleRef } from "./KullaniciEkle";
 
 type Employee = {
   id: string;
@@ -19,6 +20,7 @@ type Employee = {
 
 const Kullanicilar = () => {
   const [selected, setSelected] = useState<Employee[]>([]);
+  const kullaniciEkleRef = useRef<KullaniciEkleRef>(null);
 
   const employees: Employee[] = [
     {
@@ -83,6 +85,7 @@ const Kullanicilar = () => {
   const columns: ColumnDef<Employee>[] = [
     {
       id: "actions",
+      size: 20,
       header: "",
       enableSorting: false,
       cell: ({ row }) => {
@@ -185,6 +188,10 @@ const Kullanicilar = () => {
     },
   ];
 
+  const openDialogMenu = () => {
+    kullaniciEkleRef.current?.open();
+  };
+
   return (
     <div className="h-full">
       <h1 className="text-2xl font-bold">Kullanıcılar</h1>
@@ -202,7 +209,7 @@ const Kullanicilar = () => {
         searchPlaceholder="İsim veya e-posta ara..."
         title="Kullanıcılar"
         actions={
-          <Button type="button" size="sm">
+          <Button type="button" size="sm" onClick={openDialogMenu}>
             <UserPlus className="size-4" />
             Yeni Çalışan
           </Button>
@@ -210,6 +217,8 @@ const Kullanicilar = () => {
         onRowClick={(row) => console.log("satıra tıklandı", row)}
         emptyMessage="Çalışan bulunamadı."
       />
+
+      <KullaniciEkle ref={kullaniciEkleRef} />
     </div>
   );
 };

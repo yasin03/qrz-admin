@@ -179,7 +179,7 @@ export function CustomDataTable<TData>({
       ),
       enableSorting: false,
       enableHiding: false,
-      size: 40,
+      size: 20,
     };
 
     return [selectionColumn, ...columns];
@@ -328,6 +328,15 @@ export function CustomDataTable<TData>({
                               : "none"
                           : undefined
                       }
+                      style={
+                        header.column.columnDef.size !== undefined
+                          ? {
+                              width: header.column.columnDef.size,
+                              minWidth: header.column.columnDef.size,
+                              maxWidth: header.column.columnDef.size,
+                            }
+                          : undefined
+                      }
                       className={cn(
                         "text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
                         cellPadding,
@@ -388,6 +397,15 @@ export function CustomDataTable<TData>({
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
+                      style={
+                        cell.column.columnDef.size !== undefined
+                          ? {
+                              width: cell.column.columnDef.size,
+                              minWidth: cell.column.columnDef.size,
+                              maxWidth: cell.column.columnDef.size,
+                            }
+                          : undefined
+                      }
                       className={cn(
                         "align-middle [&:has([role=checkbox])]:pr-0",
                         cellPadding,
