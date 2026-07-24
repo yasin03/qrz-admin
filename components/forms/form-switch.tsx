@@ -24,7 +24,7 @@ export function FormSwitch<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <Field className="flex items-center justify-between rounded-md border p-3">
+        <Field className="flex justify-between rounded-md border p-3">
           <Label>{label}</Label>
 
           <Switch

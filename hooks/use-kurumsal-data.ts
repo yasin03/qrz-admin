@@ -168,7 +168,6 @@ export function useCreateGrup() {
 
 export function useUpdateGrup() {
   const queryClient = useQueryClient();
-  const idKullanici = useAuthStore((state) => state.user?.IDKullanici);
 
   return useMutation({
     mutationFn: (payload: UpdateGrupRequest) =>

@@ -16,7 +16,12 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import { FormInput, FormSelect, FormSubmitButton } from "@/components/forms";
+import {
+  FormInput,
+  FormSelect,
+  FormSubmitButton,
+  FormSwitch,
+} from "@/components/forms";
 
 import { createGrupSchema, CreateGrupForm } from "@/schemas/grup.schema";
 import { useCreateGrup } from "@/hooks/use-kurumsal-data";
@@ -31,11 +36,12 @@ export default function GrupEkle({ open, onOpenChange }: Props) {
     resolver: zodResolver(createGrupSchema),
 
     defaultValues: {
-      GrupAdi: "",
+      GurupAdi: "",
       YetkiliKisi: "",
       Tel: "",
       IsTel: "",
       Durum: true,
+      SadeceSirketYetkisi: false,
     },
   });
 
@@ -51,7 +57,9 @@ export default function GrupEkle({ open, onOpenChange }: Props) {
     try {
       await mutateAsync({
         ...values,
-        Durum: values.Durum ? 1 : 0, // Convert boolean to number
+        Durum: values.Durum ? 1 : 0,
+        SadeceSirketYetkisi: values.SadeceSirketYetkisi ? 1 : 0,
+        SirketSayisi: 0,
       });
 
       toast.success("Grup başarıyla oluşturuldu.");
@@ -74,7 +82,7 @@ export default function GrupEkle({ open, onOpenChange }: Props) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormInput
             control={form.control}
-            name="GrupAdi"
+            name="GurupAdi"
             label="Grup Adı"
             required
             placeholder="Grup adını giriniz"
@@ -102,15 +110,16 @@ export default function GrupEkle({ open, onOpenChange }: Props) {
             placeholder="0xxx xxx xx xx"
           />
 
-          <FormSelect
+          <FormSwitch
             control={form.control}
             name="Durum"
             label="Durum"
-            valueType="boolean"
-            options={[
-              { label: "Aktif", value: "true" },
-              { label: "Pasif", value: "false" },
-            ]}
+          />
+
+          <FormSwitch
+            control={form.control}
+            name="SadeceSirketYetkisi"
+            label="Sadece şirket yetkisi"
           />
 
           <DialogFooter>

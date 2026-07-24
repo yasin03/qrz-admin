@@ -12,7 +12,7 @@ export interface GrupType {
 }
 
 export interface CreateGrupRequest {
-  GrupAdi: string;
+  GurupAdi: string;
   YetkiliKisi: string;
   Tel: string;
   IsTel?: string;
@@ -24,7 +24,7 @@ export interface CreateGrupRequest {
 export interface UpdateGrupRequest {
   IDGurup: number;
 
-  GrupAdi: string;
+  GurupAdi: string;
   YetkiliKisi: string;
   Tel: string;
   IsTel?: string;
@@ -36,7 +36,6 @@ export interface UpdateGrupRequest {
 export interface DeleteGrupRequest {
   IDGurup: number;
 }
-
 
 export interface GrupKullanici {
   IDKullanici: number;

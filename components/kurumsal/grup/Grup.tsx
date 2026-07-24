@@ -9,26 +9,23 @@ import {
   Power,
   Trash2,
   Loader2,
+  Plus,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  useKurumsalData,
-  useSirketler,
-  useSubeler,
-} from "@/hooks/use-kurumsal-data";
+import { useKurumsalData } from "@/hooks/use-kurumsal-data";
 import GrupEkle from "./GrupEkle";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { RowAction, RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
 import { GrupType } from "@/types/kurumsal/grup";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/format";
 
 export default function Grup() {
   const { gruplar, isLoadingGruplar, createGrup } = useKurumsalData();
   const [openGrup, setOpenGrup] = useState(false);
-  console.log("gruplar", gruplar);
 
   const columns = useMemo<ColumnDef<GrupType>[]>(
     () => [
@@ -90,10 +87,11 @@ export default function Grup() {
         header: "Durum",
         cell: ({ row }) => {
           const status = row.original.Durum;
-          console.log("status", status);
           return (
-            <Badge variant={status ? "success" : "destructive"} className="w-20">
-
+            <Badge
+              variant={status ? "success" : "destructive"}
+              className="w-20"
+            >
               {status ? "Aktif" : "Pasif"}
             </Badge>
           );
@@ -104,16 +102,14 @@ export default function Grup() {
         header: "Oluşturma Tarihi",
         cell: ({ row }) => (
           <span className="font-medium text-foreground">
-            {row.original.CreatedDate}
+            {formatDate(row.original.CreatedDate)}
           </span>
         ),
       },
       {
         accessorKey: "SirketSayisi",
         header: "Şirket Sayısı",
-        cell: ({ row }) => (
-          <Badge >{row.original.SirketSayisi}</Badge>
-        ),
+        cell: ({ row }) => <Badge>{row.original.SirketSayisi}</Badge>,
       },
     ],
     [],
@@ -130,12 +126,12 @@ export default function Grup() {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Kullanıcılar</h1>
+          <h1 className="text-2xl font-bold">Gruplar</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button type="button" size="sm" onClick={() => setOpenGrup(true)}>
-            <UserPlus className="size-4" />
-            Yeni Çalışan
+            <Plus className="size-4" />
+            Yeni Grup Ekle
           </Button>
         </div>
       </div>
