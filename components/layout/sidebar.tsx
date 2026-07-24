@@ -74,7 +74,7 @@ export function Sidebar({
               src={isCollapsed ? "/logos/logo-icon.png" : "/logos/logo-big.png"}
               alt="QRZ"
               fill
-              sizes="100vw"
+              sizes={isCollapsed ? "(min-width: 1024px) 36px, 180px" : "180px"}
               priority
               className="object-contain"
             />

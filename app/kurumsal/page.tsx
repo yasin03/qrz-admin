@@ -1,8 +1,7 @@
-import KurumsalGroup from "@/components/kurumsal/KurumsalGroup";
-import React from "react";
+import Grup from "@/components/kurumsal/grup/Grup";
 
 const Page = () => {
-  return <KurumsalGroup />;
+  return <Grup />;
 };
 
 export default Page;

@@ -111,7 +111,7 @@ export function CustomDataTable<TData>({
   columns,
   getRowId,
 
-  pagination = false,
+  pagination = true,
   paginationPerPage = 10,
   paginationRowsPerPageOptions = [10, 20, 30, 50],
   paginationServer = false,
@@ -198,8 +198,7 @@ export function CustomDataTable<TData>({
     },
 
     onSortingChange: (updater) => {
-      const next =
-        typeof updater === "function" ? updater(sorting) : updater;
+      const next = typeof updater === "function" ? updater(sorting) : updater;
       setSorting(next);
       onSortChange?.(next);
     },
@@ -302,9 +301,9 @@ export function CustomDataTable<TData>({
 
         <table className="w-full caption-bottom text-sm">
           <thead className="border-b border-border bg-muted/50">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+            {table.getHeaderGroups().map((headerGroup,index) => (
+              <tr key={index}>
+                {headerGroup.headers.map((header, idx) => {
                   const canSort = header.column.getCanSort();
                   const sortDirection = header.column.getIsSorted();
                   const SortIcon =
@@ -316,7 +315,7 @@ export function CustomDataTable<TData>({
 
                   return (
                     <th
-                      key={header.id}
+                      key={idx}
                       colSpan={header.colSpan}
                       scope="col"
                       aria-sort={
@@ -396,7 +395,7 @@ export function CustomDataTable<TData>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
-                      key={cell.id}
+                      key={`${row.id}-${cell.column.id}`}
                       style={
                         cell.column.columnDef.size !== undefined
                           ? {

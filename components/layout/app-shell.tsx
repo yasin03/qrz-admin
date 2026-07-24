@@ -12,7 +12,6 @@ type AppShellProps = {
 };
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  console.log("PUBLIC_PATHS", pathname);
   const isPublicPage = PUBLIC_PATHS.some((path) => pathname?.startsWith(path));
 
   if (isPublicPage) {
