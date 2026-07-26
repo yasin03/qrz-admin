@@ -4,8 +4,18 @@ import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState, useRef } from "react";
 import { RowAction, RowActions } from "../customs/RowActions";
-import { UserPlus, FileText, Merge, Pencil, Power, Trash2 } from "lucide-react";
+import {
+  UserPlus,
+  FileText,
+  Merge,
+  Pencil,
+  Power,
+  Trash2,
+  Search,
+  Plus,
+} from "lucide-react";
 import KullaniciEkle, { type KullaniciEkleRef } from "./KullaniciEkle";
+import { Input } from "../ui/input";
 
 type Employee = {
   id: string;
@@ -21,6 +31,7 @@ type Employee = {
 const Kullanicilar = () => {
   const [selected, setSelected] = useState<Employee[]>([]);
   const kullaniciEkleRef = useRef<KullaniciEkleRef>(null);
+  const [searchText, setSearchText] = useState("");
 
   const employees: Employee[] = [
     {
@@ -193,8 +204,29 @@ const Kullanicilar = () => {
   };
 
   return (
-    <div className="h-full">
-      <h1 className="text-2xl font-bold">Kullanıcılar</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Kurumsal Yönetim</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Input
+            startIcon={<Search className="h-4 w-4" />}
+            placeholder="İsim veya e-posta ara..."
+            className="w-48"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={openDialogMenu}
+          >
+            <UserPlus className="size-4" />
+            Yeni Kullanıcı Ekle
+          </Button>
+        </div>
+      </div>
       <CustomDataTable
         data={employees}
         columns={columns}
@@ -205,17 +237,23 @@ const Kullanicilar = () => {
         selectableRowDisabled={(row) => Boolean(row.locked)}
         onSelectedRowsChange={({ selectedRows }) => setSelected(selectedRows)}
         dense
-        searchable
-        searchPlaceholder="İsim veya e-posta ara..."
-        actions={
-          <Button type="button" size="sm" onClick={openDialogMenu}>
-            <UserPlus className="size-4" />
-            Yeni Çalışan
-          </Button>
-        }
         onRowClick={(row) => console.log("satıra tıklandı", row)}
         emptyMessage="Çalışan bulunamadı."
         expandable
+        expandedRowContent={(row) => {
+          const employee = row.original;
+
+          return (
+            <>
+              <div>
+                {employee.name} - {employee.department}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {employee.email}
+              </div>
+            </>
+          );
+        }}
       />
 
       <KullaniciEkle ref={kullaniciEkleRef} />

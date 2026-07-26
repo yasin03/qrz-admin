@@ -89,6 +89,7 @@ export function Sidebar({
           <Button
             type="button"
             color="danger"
+            appearance="outline"
             className={cn(
               "w-full h-10",
               isCollapsed ? "lg:justify-center lg:px-0" : "justify-start",
