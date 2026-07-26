@@ -4,9 +4,12 @@ import { ExecuteQuery } from "@/lib/db";
 import { getCookie } from "cookies-next";
 
 const queryTypes = {
+  GET_GRUPLAR: (params) =>
+    `[KullaniciAlan_SELECT_IDGurup] '${params.IDKullanici}'`,
   ADD_GRUP: (params) =>
     `[Gurup_INSERT] '${params.GurupAdi}', '${params.YetkiliKisi}', '${params.IsTel}', '${params.Tel}', '${params.IDKullanici}', '${params.Durum}'`,
-  UPDATE_GRUP: (params) => `[Gurup_UPDATEByIDGurup] '${params.IDKullanici}'`,
+  UPDATE_GRUP: (params) => `[Gurup_UPDATEByIDGurup] '${params.IDGurup}','${params.GurupAdi}', '${params.YetkiliKisi}', '${params.IsTel}', '${params.Tel}', '${params.IDKullanici}', '${params.Durum}'`,
+  DELETE_GRUP: (params) => `[Gurup_DELETEByIDGurup] '${params.IDGurup}'`,
 };
 
 export async function POST(request) {
@@ -31,6 +34,7 @@ export async function POST(request) {
       IDSirket: grsisudo.IDSirket,
       Yil: grsisudo.Yil,
       IDKullanici: user.IDKullanici,
+      IDGurup: payload.IDGurup,
       GurupAdi: payload.GurupAdi,
       YetkiliKisi: payload.YetkiliKisi,
       IsTel: payload.IsTel,

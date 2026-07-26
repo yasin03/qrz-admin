@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -38,72 +38,63 @@ export type CustomDataTableProps<TData> = {
   data: TData[];
   /** TanStack column defs — the same `columns` you'd pass to any TanStack table. */
   columns: ColumnDef<TData, any>[];
-  /** Stable row id. Recommended whenever `selectableRows` is used. */
+  /** Stable row id. Recommended whenever `selectableRows` or `expandable` is used. */
   getRowId?: (row: TData, index: number) => string;
 
   // ---- pagination ----
-  /** Enable pagination footer + logic. Default: false (renders every row). */
   pagination?: boolean;
   paginationPerPage?: number;
   paginationRowsPerPageOptions?: number[];
-  /** Server-driven pagination: you fetch each page yourself. */
   paginationServer?: boolean;
-  /** Total row count on the server — required when `paginationServer` is true. */
   paginationTotalRows?: number;
   onChangePage?: (pageIndex: number) => void;
   onChangeRowsPerPage?: (pageSize: number) => void;
 
   // ---- selection ----
   selectableRows?: boolean;
-  /** Return true to disable the checkbox for a given row. */
   selectableRowDisabled?: (row: TData) => boolean;
   onSelectedRowsChange?: (state: { selectedRows: TData[] }) => void;
 
+  // ---- expand ----
+  /** Enable the left-side chevron toggle column. Default: false. */
+  expandable?: boolean;
+  /** Content rendered in a full-width row directly under an expanded row. Receives the TanStack Row instance (use `row.original` for the data). */
+  expandedRowContent?: (row: Row<TData>) => React.ReactNode;
+  /** If true, only one row can be expanded at a time (expanding one collapses the rest). */
+  expandableSingle?: boolean;
+  /** Called whenever the expanded row set changes. */
+  onExpandedRowsChange?: (expandedRowIds: string[]) => void;
+
   // ---- search ----
-  /** Show a built-in global search box above the table. Default: false. */
   searchable?: boolean;
   searchPlaceholder?: string;
-  /** Server-driven search: you filter the data yourself and pass the result in via `data`. */
   searchServer?: boolean;
   onSearchChange?: (query: string) => void;
 
   // ---- sorting ----
-  /** Server-driven sorting. */
   sortServer?: boolean;
   onSortChange?: (sorting: SortingState) => void;
 
   // ---- display ----
-  /** Compact row height. Default: false. */
   dense?: boolean;
   striped?: boolean;
   highlightOnHover?: boolean;
-  /** Shows a loading overlay and disables interaction. */
   loading?: boolean;
   emptyMessage?: React.ReactNode;
   onRowClick?: (row: TData) => void;
-  /** Rendered above the table, left side (e.g. a page title). */
   title?: React.ReactNode;
-  /** Rendered above the table, right side, next to search (e.g. an "Add" button). */
   actions?: React.ReactNode;
   className?: string;
 };
 
 /**
- * All-in-one data table: one import, prop-driven. Wraps TanStack Table
- * internally so you don't need to wire up column visibility, row models,
- * or state plumbing yourself — pass `data` + `columns` and toggle the
- * features you need.
- *
- *   <CustomDataTable data={data} columns={columns} />
+ * All-in-one data table: one import, prop-driven.
  *
  *   <CustomDataTable
  *     data={data}
  *     columns={columns}
- *     pagination
- *     selectableRows
- *     onSelectedRowsChange={({ selectedRows }) => setSelected(selectedRows)}
- *     selectableRowDisabled={(row) => row.locked}
- *     dense
+ *     expandable
+ *     expandedRowContent={(row) => <OrderDetails order={row.original} />}
  *   />
  */
 export function CustomDataTable<TData>({
@@ -122,6 +113,11 @@ export function CustomDataTable<TData>({
   selectableRows = false,
   selectableRowDisabled,
   onSelectedRowsChange,
+
+  expandable = false,
+  expandedRowContent,
+  expandableSingle = false,
+  onExpandedRowsChange,
 
   searchable = false,
   searchPlaceholder = "Ara...",
@@ -144,46 +140,109 @@ export function CustomDataTable<TData>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [paginationState, setPaginationState] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: paginationPerPage,
   });
 
-  // Auto-inject the checkbox column when selectableRows is on, so callers
-  // never have to build a selection ColumnDef themselves.
+  const toggleRowExpanded = (rowId: string) => {
+    setExpandedRows((prev) => {
+      const isOpen = Boolean(prev[rowId]);
+      const next = expandableSingle
+        ? isOpen
+          ? {}
+          : { [rowId]: true }
+        : { ...prev, [rowId]: !isOpen };
+
+      onExpandedRowsChange?.(
+        Object.keys(next).filter((id) => next[id]),
+      );
+      return next;
+    });
+  };
+
+  // Auto-inject the expand chevron + checkbox columns. Neither depends on
+  // `expandedRows`/`rowSelection` directly — they read current state via
+  // `table.options.meta` at render time, so toggling doesn't force a full
+  // columns rebuild.
   const resolvedColumns = useMemo<ColumnDef<TData, any>[]>(() => {
-    if (!selectableRows) return columns;
+    let result = columns;
 
-    const selectionColumn: ColumnDef<TData, any> = {
-      id: "__select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(checked) =>
-            table.toggleAllPageRowsSelected(checked === true)
-          }
-          aria-label="Tümünü seç"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          disabled={!row.getCanSelect()}
-          onCheckedChange={(checked) => row.toggleSelected(checked === true)}
-          onClick={(event) => event.stopPropagation()}
-          aria-label="Satırı seç"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-      size: 20,
-    };
+    if (selectableRows) {
+      const selectionColumn: ColumnDef<TData, any> = {
+        id: "__select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(checked) =>
+              table.toggleAllPageRowsSelected(checked === true)
+            }
+            aria-label="Tümünü seç"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect()}
+            onCheckedChange={(checked) => row.toggleSelected(checked === true)}
+            onClick={(event) => event.stopPropagation()}
+            aria-label="Satırı seç"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+        size: 20,
+      };
+      result = [selectionColumn, ...result];
+    }
 
-    return [selectionColumn, ...columns];
-  }, [columns, selectableRows]);
+    if (expandable) {
+      const expandColumn: ColumnDef<TData, any> = {
+        id: "__expand",
+        header: () => null,
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as
+            | {
+                expandedRows?: Record<string, boolean>;
+                toggleRowExpanded?: (id: string) => void;
+              }
+            | undefined;
+          const isExpanded = Boolean(meta?.expandedRows?.[row.id]);
+
+          return (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                meta?.toggleRowExpanded?.(row.id);
+              }}
+              aria-label={isExpanded ? "Satırı daralt" : "Satırı genişlet"}
+              aria-expanded={isExpanded}
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <ChevronRight
+                className={cn(
+                  "size-4 transition-transform duration-150",
+                  isExpanded && "rotate-90",
+                )}
+              />
+            </button>
+          );
+        },
+        enableSorting: false,
+        enableHiding: false,
+        size: 32,
+      };
+      result = [expandColumn, ...result];
+    }
+
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns, selectableRows, expandable]);
 
   const table = useReactTable({
     data,
@@ -195,6 +254,13 @@ export function CustomDataTable<TData>({
       globalFilter,
       rowSelection,
       ...(pagination && { pagination: paginationState }),
+    },
+
+    // Exposed to cell renderers via `table.options.meta` — lets the expand
+    // column read live state without being a dependency of resolvedColumns.
+    meta: {
+      expandedRows,
+      toggleRowExpanded,
     },
 
     onSortingChange: (updater) => {
@@ -301,7 +367,7 @@ export function CustomDataTable<TData>({
 
         <table className="w-full caption-bottom text-sm">
           <thead className="border-b border-border bg-muted/50">
-            {table.getHeaderGroups().map((headerGroup,index) => (
+            {table.getHeaderGroups().map((headerGroup, index) => (
               <tr key={index}>
                 {headerGroup.headers.map((header, idx) => {
                   const canSort = header.column.getCanSort();
@@ -368,56 +434,72 @@ export function CustomDataTable<TData>({
 
           <tbody>
             {rows.length ? (
-              rows.map((row, index) => (
-                <tr
-                  key={row.id}
-                  data-state={row.getIsSelected() ? "selected" : undefined}
-                  onClick={
-                    onRowClick ? () => onRowClick(row.original) : undefined
-                  }
-                  tabIndex={onRowClick ? 0 : undefined}
-                  onKeyDown={
-                    onRowClick
-                      ? (event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            onRowClick(row.original);
-                          }
-                        }
-                      : undefined
-                  }
-                  className={cn(
-                    "border-b border-border transition-colors last:border-0 data-[state=selected]:bg-accent",
-                    striped && index % 2 === 1 && "bg-muted/30",
-                    highlightOnHover && "hover:bg-muted/40",
-                    onRowClick && "cursor-pointer",
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={`${row.id}-${cell.column.id}`}
-                      style={
-                        cell.column.columnDef.size !== undefined
-                          ? {
-                              width: cell.column.columnDef.size,
-                              minWidth: cell.column.columnDef.size,
-                              maxWidth: cell.column.columnDef.size,
+              rows.map((row, index) => {
+                const isExpanded = expandable && Boolean(expandedRows[row.id]);
+
+                return (
+                  <Fragment key={row.id}>
+                    <tr
+                      data-state={row.getIsSelected() ? "selected" : undefined}
+                      onClick={
+                        onRowClick ? () => onRowClick(row.original) : undefined
+                      }
+                      tabIndex={onRowClick ? 0 : undefined}
+                      onKeyDown={
+                        onRowClick
+                          ? (event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                onRowClick(row.original);
+                              }
                             }
                           : undefined
                       }
                       className={cn(
-                        "align-middle [&:has([role=checkbox])]:pr-0",
-                        cellPadding,
+                        "border-b border-border transition-colors last:border-0 data-[state=selected]:bg-accent",
+                        striped && index % 2 === 1 && "bg-muted/30",
+                        highlightOnHover && "hover:bg-muted/40",
+                        onRowClick && "cursor-pointer",
+                        isExpanded && "border-b-0",
                       )}
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={`${row.id}-${cell.column.id}`}
+                          style={
+                            cell.column.columnDef.size !== undefined
+                              ? {
+                                  width: cell.column.columnDef.size,
+                                  minWidth: cell.column.columnDef.size,
+                                  maxWidth: cell.column.columnDef.size,
+                                }
+                              : undefined
+                          }
+                          className={cn(
+                            "align-middle [&:has([role=checkbox])]:pr-0",
+                            cellPadding,
+                          )}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+
+                    {isExpanded && expandedRowContent && (
+                      <tr key={`${row.id}-expanded`} className="border-b border-border last:border-0">
+                        <td colSpan={columnCount} className="bg-muted/20 p-0">
+                          <div className={dense ? "px-3 py-2" : "px-4 py-3"}>
+                            {expandedRowContent(row)}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={columnCount} className="h-32 text-center">

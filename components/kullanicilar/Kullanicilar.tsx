@@ -207,7 +207,6 @@ const Kullanicilar = () => {
         dense
         searchable
         searchPlaceholder="İsim veya e-posta ara..."
-        title="Kullanıcılar"
         actions={
           <Button type="button" size="sm" onClick={openDialogMenu}>
             <UserPlus className="size-4" />
@@ -216,6 +215,7 @@ const Kullanicilar = () => {
         }
         onRowClick={(row) => console.log("satıra tıklandı", row)}
         emptyMessage="Çalışan bulunamadı."
+        expandable
       />
 
       <KullaniciEkle ref={kullaniciEkleRef} />

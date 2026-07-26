@@ -23,50 +23,97 @@ import {
   FormSwitch,
 } from "@/components/forms";
 
-import { createGrupSchema, CreateGrupForm } from "@/schemas/grup.schema";
-import { useCreateGrup } from "@/hooks/use-kurumsal-data";
+import { createGrupSchema, CreateGrupForm } from "@/schemas/kurumsal/grup.schema";
+import { useCreateGrup, useUpdateGrup } from "@/hooks/use-kurumsal-data";
+import { GrupType } from "@/types/kurumsal/grup";
 
 type Props = {
   open: boolean;
   onOpenChange: (value: boolean) => void;
+  /** Verilirse düzenleme modu (o grubun bilgileriyle form doldurulur), verilmezse ekleme modu. */
+  grup?: GrupType | null;
 };
 
-export default function GrupEkle({ open, onOpenChange }: Props) {
+const DEFAULT_VALUES: CreateGrupForm = {
+  GurupAdi: "",
+  YetkiliKisi: "",
+  Tel: "",
+  IsTel: "",
+  Durum: true,
+  SadeceSirketYetkisi: false,
+};
+
+function toBooleanFlag(value: unknown) {
+  return value === true || value === 1 || value === "1";
+}
+
+export default function GrupEkle({ open, onOpenChange, grup }: Props) {
+  const isEditMode = !!grup;
+
   const form = useForm<CreateGrupForm>({
     resolver: zodResolver(createGrupSchema),
-
-    defaultValues: {
-      GurupAdi: "",
-      YetkiliKisi: "",
-      Tel: "",
-      IsTel: "",
-      Durum: true,
-      SadeceSirketYetkisi: false,
-    },
+    defaultValues: DEFAULT_VALUES,
   });
 
-  const { mutateAsync, isPending } = useCreateGrup();
+  const { mutateAsync: createGrup, isPending: isCreating } = useCreateGrup();
+  const { mutateAsync: updateGrup, isPending: isUpdating } = useUpdateGrup();
+  const isPending = isEditMode ? isUpdating : isCreating;
 
+  // Modal açıldığında: düzenleme modundaysa grubun verileriyle, değilse
+  // boş değerlerle doldur. Kapanınca sıfırla.
   useEffect(() => {
     if (!open) {
-      form.reset();
+      form.reset(DEFAULT_VALUES);
+      return;
     }
-  }, [open, form]);
+
+    if (grup) {
+      form.reset({
+        GurupAdi: grup.GurupAdi,
+        YetkiliKisi: grup.YetkiliKisi,
+        Tel: grup.Tel ?? "",
+        IsTel: grup.IsTel ?? "",
+        Durum: toBooleanFlag(grup.Durum),
+        // NOT: UPDATE_GRUP proc'u SadeceSirketYetkisi almıyor, bu yüzden
+        // düzenleme modunda bu alan aşağıda gizleniyor — form değeri
+        // gönderilmeyecek olsa da default'u koruyoruz.
+        SadeceSirketYetkisi: toBooleanFlag(grup.SadeceSirketYetkisi),
+      });
+    } else {
+      form.reset(DEFAULT_VALUES);
+    }
+  }, [open, grup, form]);
 
   const onSubmit = async (values: CreateGrupForm) => {
     try {
-      await mutateAsync({
-        ...values,
-        Durum: values.Durum ? 1 : 0,
-        SadeceSirketYetkisi: values.SadeceSirketYetkisi ? 1 : 0,
-        SirketSayisi: 0,
-      });
-
-      toast.success("Grup başarıyla oluşturuldu.");
+      if (isEditMode && grup) {
+        await updateGrup({
+          IDGurup: grup.IDGurup,
+          GurupAdi: values.GurupAdi,
+          YetkiliKisi: values.YetkiliKisi,
+          Tel: values.Tel,
+          IsTel: values.IsTel,
+          Durum: values.Durum ? 1 : 0,
+          SadeceSirketYetkisi: values.SadeceSirketYetkisi ? 1 : 0,
+          SirketSayisi: grup.SirketSayisi,
+        });
+        toast.success("Grup başarıyla güncellendi.");
+      } else {
+        await createGrup({
+          ...values,
+          Durum: values.Durum ? 1 : 0,
+          SadeceSirketYetkisi: values.SadeceSirketYetkisi ? 1 : 0,
+          SirketSayisi: 0,
+        });
+        toast.success("Grup başarıyla oluşturuldu.");
+      }
 
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error?.message || "Grup oluşturulamadı.");
+      toast.error(
+        error?.message ||
+          (isEditMode ? "Grup güncellenemedi." : "Grup oluşturulamadı."),
+      );
     }
   };
 
@@ -74,8 +121,9 @@ export default function GrupEkle({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Yeni Grup</DialogTitle>
-
+          <DialogTitle>
+            {isEditMode ? "Grubu Düzenle" : "Yeni Grup"}
+          </DialogTitle>
           <DialogDescription>Grup bilgilerini giriniz.</DialogDescription>
         </DialogHeader>
 
@@ -100,27 +148,26 @@ export default function GrupEkle({ open, onOpenChange }: Props) {
             control={form.control}
             name="Tel"
             label="Telefon"
-            placeholder="05xx xxx xx xx"
+            placeholder="5xx xxx xx xx"
           />
 
           <FormInput
             control={form.control}
             name="IsTel"
             label="İş Telefonu"
-            placeholder="0xxx xxx xx xx"
+            placeholder="xxx xxx xx xx"
           />
 
-          <FormSwitch
-            control={form.control}
-            name="Durum"
-            label="Durum"
-          />
+          <FormSwitch control={form.control} name="Durum" label="Durum" />
 
-          <FormSwitch
-            control={form.control}
-            name="SadeceSirketYetkisi"
-            label="Sadece şirket yetkisi"
-          />
+          {/* UPDATE_GRUP proc'u bu alanı desteklemiyor, sadece ekleme modunda göster */}
+          {!isEditMode && (
+            <FormSwitch
+              control={form.control}
+              name="SadeceSirketYetkisi"
+              label="Sadece şirket yetkisi"
+            />
+          )}
 
           <DialogFooter>
             <Button

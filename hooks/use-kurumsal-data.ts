@@ -8,8 +8,8 @@ import {
   UpdateGrupRequest,
 } from "@/types/kurumsal/grup";
 import { ApiListResponse } from "@/types/api";
-import { SirketType } from "@/types/kurumsal/sirket";
-import { SubeType } from "@/types/kurumsal/sube";
+import { CreateSirketRequest, SirketType, UpdateSirketRequest } from "@/types/kurumsal/sirket";
+import { CreateSubeRequest, SubeType, UpdateSubeRequest } from "@/types/kurumsal/sube";
 
 interface UseSirketlerOptions {
   enabled?: boolean;
@@ -18,14 +18,6 @@ interface UseSirketlerOptions {
 interface UseSubelerOptions {
   enabled?: boolean;
 }
-
-// ============================================================================
-// API ÇAĞRISI — tek endpoint, "type" ile hangi stored procedure çalışacağını
-// server tarafında ayırt ediyoruz (projendeki /api/aGm/aRapor mantığının aynısı).
-// Endpoint yolunu ve CRUD type isimlerini kendi backend'ine göre düzenle —
-// GET_* olanlar sende verdiğin SP'lerle eşleşiyor, ADD/UPDATE/DELETE olanlar
-// SP isimlerini vermediğin için TODO placeholder.
-// ============================================================================
 
 async function callKurumsalApi<T>(
   url: string,
@@ -76,7 +68,6 @@ export const kurumsalKeys = {
 
 // ============================================================================
 // SEVİYE 1 — GRUPLAR
-// Sayfa açılır açılmaz çekilir, her zaman enabled.
 // ============================================================================
 
 export function useGruplar() {
@@ -84,70 +75,14 @@ export function useGruplar() {
     queryKey: kurumsalKeys.gruplar(),
 
     queryFn: () =>
-      callKurumsalApi<ApiListResponse<GrupType>>("/api/kurumsal", {
-        type: "GETGRUPLAR",
+      callKurumsalApi<ApiListResponse<GrupType>>("/api/kurumsal/grup", {
+        type: "GET_GRUPLAR",
       }),
 
     select: (data) => normalizeListResponse(data),
   });
 }
 
-// ============================================================================
-// SEVİYE 2 — ŞİRKETLER
-// Sadece bir grup satırı genişletildiğinde (enabled: true) çekilir.
-// Her satır kendi useSirketler(idGurup) çağrısını yapar — normal ve doğru
-// bir React Query kullanımı, "N ayrı hook çağrısı" gibi durmasın diye
-// endişelenme, her satır zaten ayrı bir component instance'ı.
-// ============================================================================
-
-export function useSirketler(idGurup: number, options?: UseSirketlerOptions) {
-  return useQuery({
-    queryKey: kurumsalKeys.sirketler(idGurup),
-
-    queryFn: () =>
-      callKurumsalApi<ApiListResponse<SirketType>>("/api/kurumsal", {
-        type: "GETSIRKETLER",
-        IDGurup: idGurup,
-      }),
-
-    enabled: !!idGurup && (options?.enabled ?? true),
-
-    select: (data) => normalizeListResponse(data),
-  });
-}
-
-// ============================================================================
-// SEVİYE 3 — ŞUBELER
-// Aynı mantık, bir şirket satırı genişletildiğinde çekilir.
-// ============================================================================
-
-export function useSubeler(idSirket: number, options?: UseSubelerOptions) {
-  return useQuery({
-    queryKey: kurumsalKeys.subeler(idSirket),
-
-    queryFn: () =>
-      callKurumsalApi<ApiListResponse<SubeType>>("/api/kurumsal", {
-        type: "GETSUBELER",
-        IDSirket: idSirket,
-      }),
-
-    enabled: !!idSirket && (options?.enabled ?? true),
-
-    select: (data) => normalizeListResponse(data),
-  });
-}
-
-// ============================================================================
-// CRUD MUTASYONLARI
-// Her biri başarı sonrası SADECE ilgili seviyenin cache'ini invalidate eder —
-// bu yüzden bir şirket eklediğinde tüm sayfa değil, sadece o grubun şirket
-// gridi yeniden fetch edilir.
-//
-// TODO: "ADD_GRUP" / "UPDATE_GRUP" vb. type isimlerini kendi backend'indeki
-// gerçek stored procedure isimleriyle eşleştir (bana vermedin, placeholder).
-// ============================================================================
-
-// ---- Grup ----
 
 export function useCreateGrup() {
   const queryClient = useQueryClient();
@@ -170,7 +105,7 @@ export function useUpdateGrup() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: UpdateGrupRequest) =>
+    mutationFn: (payload: CreateGrupRequest) =>
       callKurumsalApi("/api/kurumsal/grup", {
         type: "UPDATE_GRUP",
         ...payload,
@@ -187,10 +122,10 @@ export function useDeleteGrup() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (idGurup: DeleteGrupRequest) =>
+    mutationFn: (payload: DeleteGrupRequest) =>
       callKurumsalApi("/api/kurumsal/grup", {
         type: "DELETE_GRUP",
-        IDGurup: idGurup,
+        IDGurup: payload.IDGurup,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -200,22 +135,37 @@ export function useDeleteGrup() {
   });
 }
 
-// ---- Şirket ----
-/* 
+// ============================================================================
+// SEVİYE 2 — ŞİRKETLER
+// ============================================================================
+
+export function useSirketler(idGurup: number, options?: UseSirketlerOptions) {
+  return useQuery({
+    queryKey: kurumsalKeys.sirketler(idGurup),
+
+    queryFn: () =>
+      callKurumsalApi<ApiListResponse<SirketType>>("/api/kurumsal/sirket", {
+        type: "GET_SIRKETLER",
+        IDGurup: idGurup,
+      }),
+
+    enabled: !!idGurup && (options?.enabled ?? true),
+    select: (data) => normalizeListResponse(data),
+  });
+}
+
 export function useCreateSirket() {
   const queryClient = useQueryClient();
-  const idKullanici = useAuthStore((state) => state.user?.IDKullanici);
 
   return useMutation({
-    mutationFn: (payload) =>
-      callKurumsalApi({
+    mutationFn: (payload: Omit<CreateSirketRequest, "IDSirket" | "IDFirma" | "IDKullanici">) =>
+      callKurumsalApi("/api/kurumsal/sirket", {
         type: "ADD_SIRKET",
-        IDKullanici: idKullanici,
-        ...payload, // { IDGurup, ...diğer alanlar }
+        ...payload,
       }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: kurumsalKeys.sirketler(idKullanici, variables.IDGurup),
+        queryKey: kurumsalKeys.sirketler(variables.IDGurup),
       });
     },
   });
@@ -223,18 +173,18 @@ export function useCreateSirket() {
 
 export function useUpdateSirket() {
   const queryClient = useQueryClient();
-  const idKullanici = useAuthStore((state) => state.user?.IDKullanici);
 
   return useMutation({
-    mutationFn: (payload) =>
-      callKurumsalApi({
+    mutationFn: (
+      payload: Omit<UpdateSirketRequest, "IDFirma" | "IDKullanici">,
+    ) =>
+      callKurumsalApi("/api/kurumsal/sirket", {
         type: "UPDATE_SIRKET",
-        IDKullanici: idKullanici,
-        ...payload, // { IDSirket, IDGurup, ...diğer alanlar }
+        ...payload,
       }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: kurumsalKeys.sirketler(idKullanici, variables.IDGurup),
+        queryKey: kurumsalKeys.sirketler(variables.IDGurup),
       });
     },
   });
@@ -242,39 +192,54 @@ export function useUpdateSirket() {
 
 export function useDeleteSirket() {
   const queryClient = useQueryClient();
-  const idKullanici = useAuthStore((state) => state.user?.IDKullanici);
 
   return useMutation({
-    mutationFn: ({ IDSirket }) =>
-      callKurumsalApi({
+    mutationFn: (payload: { IDSirket: number; IDGurup: number }) =>
+      callKurumsalApi("/api/kurumsal/sirket", {
         type: "DELETE_SIRKET",
-        IDKullanici: idKullanici,
-        IDSirket,
+        IDSirket: payload.IDSirket,
       }),
     onSuccess: (_data, variables) => {
+      // Sadece bu şirketin ait olduğu grubun şirket listesini geçersiz kıl
       queryClient.invalidateQueries({
-        queryKey: kurumsalKeys.sirketler(idKullanici, variables.IDGurup),
+        queryKey: kurumsalKeys.sirketler(variables.IDGurup),
       });
     },
   });
 }
 
-// ---- Şube ----
+// ============================================================================
+// SEVİYE 3 — ŞUBELER
+// ============================================================================
+
+export function useSubeler(idSirket: number, options?: UseSubelerOptions) {
+  return useQuery({
+    queryKey: kurumsalKeys.subeler(idSirket),
+
+    queryFn: () =>
+      callKurumsalApi<ApiListResponse<SubeType>>("/api/kurumsal/sube", {
+        type: "GET_SUBELER",
+        IDSirket: idSirket,
+      }),
+
+    enabled: !!idSirket && (options?.enabled ?? true),
+
+    select: (data) => normalizeListResponse(data),
+  });
+}
 
 export function useCreateSube() {
   const queryClient = useQueryClient();
-  const idKullanici = useAuthStore((state) => state.user?.IDKullanici);
 
   return useMutation({
-    mutationFn: (payload) =>
-      callKurumsalApi({
+    mutationFn: (payload: Omit<CreateSubeRequest, "IDKullanici">) =>
+      callKurumsalApi("/api/kurumsal/sube", {
         type: "ADD_SUBE",
-        IDKullanici: idKullanici,
-        ...payload, // { IDSirket, ...diğer alanlar }
+        ...payload,
       }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: kurumsalKeys.subeler(idKullanici, variables.IDSirket),
+        queryKey: kurumsalKeys.subeler(variables.IDSirket),
       });
     },
   });
@@ -282,18 +247,16 @@ export function useCreateSube() {
 
 export function useUpdateSube() {
   const queryClient = useQueryClient();
-  const idKullanici = useAuthStore((state) => state.user?.IDKullanici);
 
   return useMutation({
-    mutationFn: (payload) =>
-      callKurumsalApi({
+    mutationFn: (payload: Omit<UpdateSubeRequest, "IDKullanici">) =>
+      callKurumsalApi("/api/kurumsal/sube", {
         type: "UPDATE_SUBE",
-        IDKullanici: idKullanici,
-        ...payload, // { IDSube, IDSirket, ...diğer alanlar }
+        ...payload,
       }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: kurumsalKeys.subeler(idKullanici, variables.IDSirket),
+        queryKey: kurumsalKeys.subeler(variables.IDSirket),
       });
     },
   });
@@ -301,29 +264,20 @@ export function useUpdateSube() {
 
 export function useDeleteSube() {
   const queryClient = useQueryClient();
-  const idKullanici = useAuthStore((state) => state.user?.IDKullanici);
 
   return useMutation({
-    mutationFn: ({ IDSube }) =>
-      callKurumsalApi({
+    mutationFn: (payload: { IDSube: number; IDSirket: number }) =>
+      callKurumsalApi("/api/kurumsal/sube", {
         type: "DELETE_SUBE",
-        IDKullanici: idKullanici,
-        IDSube,
+        IDSube: payload.IDSube,
       }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: kurumsalKeys.subeler(idKullanici, variables.IDSirket),
+        queryKey: kurumsalKeys.subeler(variables.IDSirket),
       });
     },
   });
-} */
-
-// ============================================================================
-// BUNDLE HOOK — sayfanın en üstünde tek satırla grup listesi + tüm CRUD
-// mutasyonlarına erişim. Şirket/şube listeleri (lazy oldukları için) ayrı
-// ayrı useSirketler(idGurup) / useSubeler(idSirket) ile, satır bazında
-// kullanılıyor (aşağıdaki örnek component'e bak).
-// ============================================================================
+}
 
 export function useKurumsalData() {
   const gruplarQuery = useGruplar();
@@ -337,13 +291,5 @@ export function useKurumsalData() {
     createGrup: useCreateGrup(),
     updateGrup: useUpdateGrup(),
     deleteGrup: useDeleteGrup(),
-
-    /*     createSirket: useCreateSirket(),
-    updateSirket: useUpdateSirket(),
-    deleteSirket: useDeleteSirket(),
-
-    createSube: useCreateSube(),
-    updateSube: useUpdateSube(),
-    deleteSube: useDeleteSube(), */
   };
 }

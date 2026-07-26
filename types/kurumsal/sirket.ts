@@ -4,6 +4,7 @@ export interface SirketType {
   IDGurup: number;
 
   SirketAdi: string;
+  SirketAdi2: string;
   YetkiliKisi: string;
 
   Adi: string | null;
@@ -52,10 +53,12 @@ export interface SirketType {
   ServisPassword: string | null;
   ServisAktif: number | null;
 
+  CreatedDate: string;
+
   IDKullanici: string;
 }
 
-export interface CreateSirketType {
+export interface CreateSirketRequest {
   IDSirket: number;
   IDFirma: number;
   IDGurup: number;
@@ -112,7 +115,7 @@ export interface CreateSirketType {
   IDKullanici: string;
 }
 
-export interface UpdateSirketType {
+export interface UpdateSirketRequest {
   IDSirket: number;
   IDFirma: number;
   IDGurup: number;
@@ -169,6 +172,6 @@ export interface UpdateSirketType {
   IDKullanici: string;
 }
 
-export interface DeleteSirketType {
+export interface DeleteSirketRequest {
   IDSirket: number;
 }

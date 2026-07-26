@@ -12,6 +12,7 @@ export interface GrupType {
 }
 
 export interface CreateGrupRequest {
+  IDGurup?: number;
   GurupAdi: string;
   YetkiliKisi: string;
   Tel: string;

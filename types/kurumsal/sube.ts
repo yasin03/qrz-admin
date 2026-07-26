@@ -1,111 +1,124 @@
+// /types/kurumsal/sube.ts
+
 export interface SubeType {
+  IDSube: number;
   IDSirket: number;
 
   SubeAdi: string;
-  SubeKodu: string;
+  SubeKodu: string | null;
 
-  YetkiliKisi: string;
-  TcKimlikNo: string;
+  YetkiliKisi: string | null;
+  TcKimlikNo: string | null;
 
-  Tel: string;
-  CepTel: string;
-  Fax: string;
+  Tel: string | null;
+  CepTel: string | null;
+  Fax: string | null;
+  EpostaAdresi: string | null;
+  WebAdresi: string | null;
 
-  EpostaAdresi: string;
-  WebAdresi: string;
+  SirketAdresi: string | null;
+  IlKodu: string | null;
+  IlceKodu: string | null;
 
-  SirketAdresi: string;
+  IsyeriSgkSicilNumarasi: string | null;
+  TicaretSicilNumarasi: string | null;
+  SgkMudurlugu: string | null;
 
-  IlKodu: string;
-  IlceKodu: string;
+  IsyeriAcilisTarihi: string | null;
+  IsyeriKapanisTarihi: string | null;
 
-  IsyeriSgkSicilNumarasi: string;
-  TicaretSicilNumarasi: string;
-  SgkMudurlugu: string;
+  IskurSubesi: string | null;
+  IskurNumarasi: string | null;
+  IskurSifresi: string | null;
 
-  IsyeriAcilisTarihi: string;
-  IsyeriKapanisTarihi: string;
-
-  IskurSubesi: string;
-  IskurNumarasi: string;
-  IskurSifresi: string;
-
-  BesBaslangicTarihi: string;
+  BesBaslangicTarihi: string | null;
   BesKesintiOrani: number | null;
 
-  SifreKullaniciAdi: string;
-  SifreKullaniciKodu: string;
-  SifreSistem: string;
-  SifreIsyeri: string;
+  SifreKullaniciAdi: string | null;
+  SifreKullaniciKodu: string | null;
+  SifreSistem: string | null;
+  SifreIsyeri: string | null;
 
-  IsyeriSgkIsKoluKodu: string;
+  IsyeriSgkIsKoluKodu: string | null;
 
-  VergiDairesi: string;
-  VergiNo: string;
+  VergiDairesi: string | null;
+  VergiNo: string | null;
 
-  IsyeriTehlikeSinifi: string;
-  TehlikeDerecesi: string;
+  IsyeriTehlikeSinifi: string | null;
+  TehlikeDerecesi: string | null;
 
-  NaceKodu: string;
-  NaceKoduAciklama: string;
+  NaceKodu: string | null;
+  NaceKoduAciklama: string | null;
 
-  Durum: 0 | 1;
+  Durum: number;
 
-  KodSektor: string;
-  KodIsKolu: string;
-  KodYSube: string;
-  KodESube: string;
-  KodSiraNo: string;
-  KodIl: string;
-  KodIlce: string;
-  KodKontrolNo: string;
-  KodAraci: string;
+  KodSektor: string | null;
+  KodIsKolu: string | null;
+  KodYSube: string | null;
+  KodESube: string | null;
+  KodSiraNo: string | null;
+  KodIl: string | null;
+  KodIlce: string | null;
+  KodKontrolNo: string | null;
+  KodAraci: string | null;
 
   IskurBaslangicTarihi: string | null;
   IskurBitisTarihi: string | null;
 
-  Statu: string;
-  TesvikVermeDurumu: 0 | 1;
-  StopajDurum: 0 | 1;
+  Statu: string | null;
+  TesvikVermeDurumu: number;
+  StopajDurum: number;
 
-  stIsyeriAdi: string;
-  stAd: string;
-  stSoyad: string;
-  stVergiNo: string;
-  stTcKimlikNo: string;
-  stUcretTipi: string;
+  stIsyeriAdi: string | null;
+  stAd: string | null;
+  stSoyad: string | null;
+  stVergiNo: string | null;
+  stTcKimlikNo: string | null;
+  stUcretTipi: string | null;
   stUcret: number | null;
-  stAdresKodu: string;
+  stAdresKodu: string | null;
 
-  MulkiyetTuru: string;
-  TicaretSicilMudurluk: string;
-  IsyeriFaaliyetKodu: string;
-  AdresKodu: string;
+  MulkiyetTuru: string | null;
+  TicaretSicilMudurluk: string | null;
+  IsyeriFaaliyetKodu: string | null;
+  AdresKodu: string | null;
 
-  Cizelge15: string;
+  Cizelge15: string | null;
 
-  MuhasebeBirimKodu: string;
-  MuhasebeBirimAdi: string;
+  MuhasebeBirimKodu: string | null;
+  MuhasebeBirimAdi: string | null;
+  KurumKodu: string | null;
+  KurumAdi: string | null;
+  SinifKodu: string | null;
 
-  KurumKodu: string;
-  KurumAdi: string;
+  DuzenleyenAdSoyad: string | null;
+  DuzenleyenUnvan: string | null;
+  GerceklestirenAdSoyad: string | null;
+  GerceklestirenUnvan: string | null;
 
-  SinifKodu: string;
+  IsyeriSubeKodu: string | null;
+  IsyeriTuru: string | null;
 
-  DuzenleyenAdSoyad: string;
-  DuzenleyenUnvan: string;
+  BankaKurumKodu: string | null;
+  BankaSubeKodu: string | null;
+  BankaHesapNo: string | null;
+  BankaIbanNo: string | null;
+  IDBanka: string | null;
 
-  GerceklestirenAdSoyad: string;
-  GerceklestirenUnvan: string;
+  CreatedDate: string;
+  IDKullanici: string;
+}
 
-  IsyeriSubeKodu: string;
-  IsyeriTuru: string;
+// Create/Update — IDSube (update'te) ve IDKullanici (session'dan enjekte
+// edilir) dışında SubeType ile birebir aynı alanlar.
+export type CreateSubeRequest = Omit<SubeType, "IDSube" | "CreatedDate" | "IDKullanici"> & {
+  IDKullanici?: string; // route tarafında session'dan doldurulur, client göndermek zorunda değil
+};
 
-  BankaKurumKodu: string;
-  BankaSubeKodu: string;
-  BankaHesapNo: string;
-  BankaIbanNo: string;
-  IDBanka: string;
+export type UpdateSubeRequest = CreateSubeRequest & {
+  IDSube: number;
+};
 
-  IDKullanici: number;
+export interface DeleteSubeRequest {
+  IDSube: number;
 }
