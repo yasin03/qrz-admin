@@ -53,7 +53,9 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-dvh w-72 flex-col overflow-hidden border-r border-sidebar-border bg-neutral-100 px-4 py-5 shadow-2xl transition-[width,transform] duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:shadow-none",
+          // DÜZELTME: bg-neutral-100 -> bg-sidebar/text-sidebar-foreground
+          // (temaya bağlı token'lar, dark modda otomatik değişir)
+          "fixed inset-y-0 left-0 z-40 flex h-dvh w-72 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground px-4 py-5 shadow-2xl transition-[width,transform] duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:shadow-none",
           isOpen ? "translate-x-0" : "-translate-x-full",
           isCollapsed ? "lg:w-16 lg:px-2" : "lg:w-72",
         )}
@@ -88,10 +90,13 @@ export function Sidebar({
         <div className="mb-18 pt-4">
           <Button
             type="button"
-            color="danger"
+            variant="danger"
             appearance="outline"
             className={cn(
-              "w-full h-10",
+              // DÜZELTME: appearance="outline" varsayılan olarak bg-background
+              // getiriyor (sayfanın geneli), sidebar'ın kendi zeminiyle
+              // uyuşmuyordu — bg-sidebar ile override ediyoruz.
+              "w-full h-10 bg-sidebar",
               isCollapsed ? "lg:justify-center lg:px-0" : "justify-start",
             )}
             onClick={handleLogout}

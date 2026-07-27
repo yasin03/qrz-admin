@@ -111,10 +111,10 @@
   --chart-5: oklch(0.855 0.096 213.3);
 
   /* Sidebar: light modda dahi koyu lacivert zemin, dashboard kimliğini güçlendirir */
-  --sidebar: oklch(0.207 0.053 253);
-  --sidebar-foreground: oklch(0.94 0.01 240);
-  --sidebar-primary: oklch(0.734 0.136 222.2);
-  --sidebar-primary-foreground: oklch(0.18 0.03 255);
+  --sidebar: oklch(97.315% 0.00011 271.152);
+  --sidebar-foreground: oklch(15.884% 0.03762 246.546);
+  --sidebar-primary: oklch(0.257 0.074 254.8);
+  --sidebar-primary-foreground: oklch(0.96 0.006 240);
   --sidebar-accent: oklch(0.28 0.045 253);
   --sidebar-accent-foreground: oklch(0.96 0.006 240);
   --sidebar-border: oklch(1 0 0 / 8%);
@@ -158,8 +158,8 @@
   --info: oklch(0.734 0.136 222.2);
   --info-foreground: oklch(0.145 0.02 255);
 
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(0.28 0.03 255);
+  --input: oklch(0.26 0.032 255);
   --ring: oklch(0.734 0.136 222.2);
 
   --chart-1: oklch(0.734 0.136 222.2);
@@ -168,14 +168,14 @@
   --chart-4: oklch(0.5 0.1 250.4);
   --chart-5: oklch(0.4 0.08 255);
 
-  /* Sidebar, karttan bir tık daha koyu tutularak derinlik hissi korunur */
-  --sidebar: oklch(0.13 0.02 255);
+  /* Sidebar artık background'dan belirgin şekilde daha koyu — karışmıyor */
+  --sidebar: oklch(0.19 0.03 255);
   --sidebar-foreground: oklch(0.94 0.01 240);
   --sidebar-primary: oklch(0.734 0.136 222.2);
   --sidebar-primary-foreground: oklch(0.145 0.02 255);
-  --sidebar-accent: oklch(0.22 0.03 255);
+  --sidebar-accent: oklch(0.19 0.03 255);
   --sidebar-accent-foreground: oklch(0.96 0.006 240);
-  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-border: oklch(1 0 0 / 14%);
   --sidebar-ring: oklch(0.734 0.136 222.2);
 }
 

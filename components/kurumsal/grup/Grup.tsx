@@ -24,11 +24,11 @@ import { ColumnDef } from "@tanstack/react-table";
 import { GrupType } from "@/types/kurumsal/grup";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
-import Sirket from "./Sirket";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
-import SirketEkle from "./SirketEkle";
 import { Input } from "@/components/ui/input";
+import SirketEkle from "../sirket/SirketEkle";
+import Sirket from "../sirket/Sirket";
 
 export default function Grup() {
   const { gruplar, isLoadingGruplar, createGrup } = useKurumsalData();

@@ -7,17 +7,16 @@ import { useDeleteSirket, useSirketler } from "@/hooks/use-kurumsal-data";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { RowAction, RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
-
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
 import { SirketType } from "@/types/kurumsal/sirket";
-import Sube from "./Sube";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import SirketEkle from "./SirketEkle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { normalize } from "@/lib/utils";
+import Sube from "../sube/Sube";
 
 type SirketProps = {
   idGurup: number;

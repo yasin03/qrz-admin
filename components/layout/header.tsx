@@ -3,6 +3,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HeaderCompany from "./header-company";
 import ProfileMenu from "./profile-menu";
+import { ThemeToggle } from "./theme-toggle";
 
 type HeaderProps = {
   onToggleSidebar: () => void;
@@ -14,7 +15,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
       <div className="flex items-center gap-3">
         <Button
           type="button"
-          color="secondary"
+          variant="secondary"
           appearance="outline"
           size="icon"
           onClick={onToggleSidebar}
@@ -25,7 +26,10 @@ export function Header({ onToggleSidebar }: HeaderProps) {
         <HeaderCompany />
       </div>
 
-      <ProfileMenu />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <ProfileMenu />
+      </div>
     </header>
   );
 }
