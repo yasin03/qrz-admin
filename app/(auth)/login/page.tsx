@@ -102,8 +102,7 @@ const Page = () => {
 
   return (
     <div className="grid min-h-screen">
-      {/* Sol panel — marka alanı */}
-      <div className="relative hidden overflow-hidden bg-sidebar lg:flex lg:flex-col lg:justify-between">
+      <div className="relative hidden overflow-hidden bg-sidebar-accent lg:flex lg:flex-col lg:justify-between">
         {/* Dekoratif ışık lekeleri */}
         <div
           aria-hidden
@@ -119,7 +118,7 @@ const Page = () => {
           className="pointer-events-none absolute inset-0 opacity-[0.15]"
           style={{
             backgroundImage:
-              "radial-gradient(currentColor 1px, transparent 1px)",
+              "radial-gradient(currentColor 3px, transparent 1px)",
             backgroundSize: "24px 24px",
             color: "var(--sidebar-foreground)",
           }}
@@ -129,7 +128,7 @@ const Page = () => {
           <div className="relative h-10 w-40"></div>
         </div>
         {/* form */}
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center z-3">
           <Card className="w-full max-w-sm p-7 shadow-lg lg:max-w-md lg:p-10">
             <div className="mb-8 flex justify-center">
               <div className="relative h-36 w-full">

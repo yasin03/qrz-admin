@@ -232,7 +232,6 @@ const Kullanicilar = () => {
         columns={columns}
         getRowId={(row) => row.id}
         pagination
-        paginationPerPage={5}
         selectableRows
         selectableRowDisabled={(row) => Boolean(row.locked)}
         onSelectedRowsChange={({ selectedRows }) => setSelected(selectedRows)}
@@ -242,7 +241,6 @@ const Kullanicilar = () => {
         expandable
         expandedRowContent={(row) => {
           const employee = row.original;
-
           return (
             <>
               <div>
