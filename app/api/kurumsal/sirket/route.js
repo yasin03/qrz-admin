@@ -54,7 +54,8 @@ function buildSirketParams(p) {
 const queryTypes = {
   GET_SIRKETLER: (params) =>
     `[KullaniciAlan_SELECT_IDSirket] '${params.IDKullanici}', '${params.IDGurup}'`,
-
+  GET_SIRKET_DETAY: (params) =>
+    `[Sirket_SELECTByIDSirket] '${params.IDSirket}'`,
   ADD_SIRKET: (params) => `[Sirket_Insert] ${buildSirketParams(params)}`,
 
   UPDATE_SIRKET: (params) =>

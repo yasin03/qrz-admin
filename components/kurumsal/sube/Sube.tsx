@@ -16,6 +16,7 @@ import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { normalize } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import SubeEkle from "./SubeEkle";
 
 type SubeProps = {
@@ -30,7 +31,7 @@ export default function Sube({ idSirket }: SubeProps) {
     isLoading: isLoadingSubeler,
     isError: isErrorSubeler,
   } = useSubeler(idSirket);
-
+  const router = useRouter();
   const deleteSube = useDeleteSube();
   const [silinecekSube, setSilinecekSube] = useState<SubeType | null>(null);
   const [openSubeEkle, setOpenSubeEkle] = useState(false);
@@ -84,7 +85,7 @@ export default function Sube({ idSirket }: SubeProps) {
             {
               label: "Düzenle",
               icon: Pencil,
-              onClick: (r) => setDuzenlenecekSube(r),
+              onClick: (r) => router.push(`/kurumsal/subeler/${r.IDSube}`),
             },
             {
               label: sube.Durum === 1 ? "Pasif Yap" : "Aktif Yap",
@@ -197,10 +198,10 @@ export default function Sube({ idSirket }: SubeProps) {
       <CustomDataTable
         data={filteredSubeler}
         columns={columns}
-        onRowClick={(row) => console.log("satıra tıklandı", row)}
+        onRowClick={(row) => router.push(`/kurumsal/subeler/${row.IDSube}`)}
         pagination={false}
       />
-      
+
       <SubeEkle
         open={openSubeEkle}
         onOpenChange={setOpenSubeEkle}

@@ -1,5 +1,5 @@
 "use client";
-import { Menu } from "lucide-react";
+import { Menu, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HeaderCompany from "./header-company";
 import ProfileMenu from "./profile-menu";
@@ -21,7 +21,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           onClick={onToggleSidebar}
           aria-label="Kenar çubuğunu daralt veya genişlet"
         >
-          <Menu className="size-5" />
+          <PanelLeft className="size-5" />
         </Button>
         <HeaderCompany />
       </div>

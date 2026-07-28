@@ -14,7 +14,7 @@ import {
   Search,
   Plus,
 } from "lucide-react";
-import KullaniciEkle, { type KullaniciEkleRef } from "./KullaniciEkle";
+import PersonelEkle, { type KullaniciEkleRef } from "./PersonelEkle";
 import { Input } from "../ui/input";
 
 type Employee = {
@@ -28,7 +28,7 @@ type Employee = {
   locked?: boolean; // örnek: bu kullanıcı seçilemesin diye
 };
 
-const Kullanicilar = () => {
+const Personel = () => {
   const [selected, setSelected] = useState<Employee[]>([]);
   const kullaniciEkleRef = useRef<KullaniciEkleRef>(null);
   const [searchText, setSearchText] = useState("");
@@ -207,7 +207,7 @@ const Kullanicilar = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Kurumsal Yönetim</h1>
+          <h1 className="text-2xl font-bold">Personel Yönetimi</h1>
         </div>
         <div className="flex items-center gap-2">
           <Input
@@ -223,7 +223,7 @@ const Kullanicilar = () => {
             onClick={openDialogMenu}
           >
             <UserPlus className="size-4" />
-            Yeni Kullanıcı Ekle
+            Yeni Personel Ekle
           </Button>
         </div>
       </div>
@@ -254,9 +254,9 @@ const Kullanicilar = () => {
         }}
       />
 
-      <KullaniciEkle ref={kullaniciEkleRef} />
+      <PersonelEkle ref={kullaniciEkleRef} />
     </div>
   );
 };
 
-export default Kullanicilar;
+export default Personel;

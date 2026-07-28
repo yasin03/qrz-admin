@@ -5,6 +5,7 @@ import {
   Building,
   Building2,
   ChevronDown,
+  ContactRound,
   LogOut,
   User,
   UserCircle2,
@@ -63,11 +64,11 @@ const ProfileMenu = () => {
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => router.push("/kurumsal")}>
-          <Building /> Kurumsal Bilgiler
+          <Building /> Kurumsal Yönetim
         </DropdownMenuItem>
 
-        <DropdownMenuItem>
-          <Building2 /> Kurumsal Ayarlar
+        <DropdownMenuItem  onClick={() => router.push("/kurumsal/kullanici-yonetimi")}>
+          <ContactRound /> Kullanıcı Yönetim
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

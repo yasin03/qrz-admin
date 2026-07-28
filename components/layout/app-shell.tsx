@@ -5,18 +5,23 @@ import { usePathname } from "next/navigation";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 
 // Shell göstermek istemediğin (login, şifremi unuttum vb.) sayfaların yollarını buraya ekle
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/auth"];
-
+// app-shell.tsx
 type AppShellProps = {
   children: React.ReactNode;
+  defaultSidebarOpen?: boolean;
 };
-export function AppShell({ children }: AppShellProps) {
+
+const PUBLIC_PATHS = ["/login", "/forgot-password"];
+
+export function AppShell({ children, defaultSidebarOpen }: AppShellProps) {
   const pathname = usePathname();
   const isPublicPage = PUBLIC_PATHS.some((path) => pathname?.startsWith(path));
 
-  if (isPublicPage) {
-    return <>{children}</>;
-  }
+  if (isPublicPage) return <>{children}</>;
 
-  return <DashboardShell>{children}</DashboardShell>;
+  return (
+    <DashboardShell defaultSidebarOpen={defaultSidebarOpen}>
+      {children}
+    </DashboardShell>
+  );
 }

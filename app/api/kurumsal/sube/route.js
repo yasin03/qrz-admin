@@ -99,7 +99,7 @@ function buildSubeParams(p) {
 const queryTypes = {
   GET_SUBELER: (params) =>
     `[KullaniciAlan_SELECT_IDSube] '${params.IDKullanici}', '${params.IDSirket}'`,
-
+  GET_SUBE_DETAY: (params) => `[Sube_SelectByIDSube] '${params.IDSube}'`,
   ADD_SUBE: (params) => `[Sube_Insert] ${buildSubeParams(params)}`,
 
   UPDATE_SUBE: (params) =>

@@ -8,8 +8,16 @@ import {
   UpdateGrupRequest,
 } from "@/types/kurumsal/grup";
 import { ApiListResponse } from "@/types/api";
-import { CreateSirketRequest, SirketType, UpdateSirketRequest } from "@/types/kurumsal/sirket";
-import { CreateSubeRequest, SubeType, UpdateSubeRequest } from "@/types/kurumsal/sube";
+import {
+  CreateSirketRequest,
+  SirketType,
+  UpdateSirketRequest,
+} from "@/types/kurumsal/sirket";
+import {
+  CreateSubeRequest,
+  SubeType,
+  UpdateSubeRequest,
+} from "@/types/kurumsal/sube";
 
 interface UseSirketlerOptions {
   enabled?: boolean;
@@ -62,8 +70,12 @@ export const kurumsalKeys = {
   gruplar: () => [...kurumsalKeys.all, "gruplar"] as const,
   sirketler: (idGurup: number) =>
     [...kurumsalKeys.all, "sirketler", idGurup] as const,
+  sirketDetay: (idSirket: number) =>
+    [...kurumsalKeys.all, "sirketDetay", idSirket] as const,
   subeler: (idSirket: number) =>
     [...kurumsalKeys.all, "subeler", idSirket] as const,
+  subeDetay: (idSube: number) =>
+    [...kurumsalKeys.all, "subeDetay", idSube] as const,
 };
 
 // ============================================================================
@@ -82,7 +94,6 @@ export function useGruplar() {
     select: (data) => normalizeListResponse(data),
   });
 }
-
 
 export function useCreateGrup() {
   const queryClient = useQueryClient();
@@ -154,11 +165,29 @@ export function useSirketler(idGurup: number, options?: UseSirketlerOptions) {
   });
 }
 
+export function useSirketDetay(idSirket: number) {
+  return useQuery({
+    queryKey: kurumsalKeys.sirketDetay(idSirket),
+    queryFn: () =>
+      callKurumsalApi<ApiListResponse<SirketType>>("/api/kurumsal/sirket", {
+        type: "GET_SIRKET_DETAY",
+        IDSirket: idSirket,
+      }),
+    enabled: !!idSirket,
+    select: (data) => normalizeListResponse(data)[0] as SirketType | undefined,
+  });
+}
+
 export function useCreateSirket() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: Omit<CreateSirketRequest, "IDSirket" | "IDFirma" | "IDKullanici">) =>
+    mutationFn: (
+      payload: Omit<
+        CreateSirketRequest,
+        "IDSirket" | "IDFirma" | "IDKullanici"
+      >,
+    ) =>
       callKurumsalApi("/api/kurumsal/sirket", {
         type: "ADD_SIRKET",
         ...payload,
@@ -225,6 +254,19 @@ export function useSubeler(idSirket: number, options?: UseSubelerOptions) {
     enabled: !!idSirket && (options?.enabled ?? true),
 
     select: (data) => normalizeListResponse(data),
+  });
+}
+
+export function useSubeDetay(idSube: number) {
+  return useQuery({
+    queryKey: kurumsalKeys.subeDetay(idSube),
+    queryFn: () =>
+      callKurumsalApi<ApiListResponse<SubeType>>("/api/kurumsal/sube", {
+        type: "GET_SUBE_DETAY",
+        IDSube: idSube,
+      }),
+    enabled: !!idSube,
+    select: (data) => normalizeListResponse(data)[0] as SubeType | undefined,
   });
 }
 

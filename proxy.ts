@@ -17,7 +17,7 @@ function isPublicPath(pathname: string) {
 /**
  * lib/token.ts'teki joseDecrypt'in aynısı — o dosyayı doğrudan import
  * etmiyoruz çünkü içindeki "jsonwebtoken" paketi Node crypto'ya
- * bağımlı ve Edge runtime'da (middleware'in çalıştığı yer) patlar.
+ * bağımlı ve Edge runtime'da (proxy'nin çalıştığı yer) patlar.
  * Sadece jose kullanan bu kısmı burada tekrarlıyoruz.
  */
 async function verifySession(token: string) {
@@ -32,7 +32,9 @@ async function verifySession(token: string) {
   }
 }
 
-export async function middleware(request: NextRequest) {
+// DÜZELTME: "middleware" -> "proxy" (Next.js 16.1'de dosya adı ve export
+// adı bu şekilde değişti, mantığın kendisi birebir aynı kaldı).
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const session = token ? await verifySession(token) : null;

@@ -16,8 +16,8 @@ import SirketEkle from "./SirketEkle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { normalize } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import Sube from "../sube/Sube";
-
 type SirketProps = {
   idGurup: number;
 };
@@ -28,7 +28,7 @@ export default function Sirket({ idGurup }: SirketProps) {
     isLoading: isLoadingSirketler,
     isError: isErrorSirketler,
   } = useSirketler(idGurup);
-
+  const router = useRouter();
   const deleteSirket = useDeleteSirket();
   const [silinecekSirket, setSilinecekSirket] = useState<SirketType | null>(
     null,
@@ -83,7 +83,7 @@ export default function Sirket({ idGurup }: SirketProps) {
             {
               label: "Düzenle",
               icon: Pencil,
-              onClick: (r) => setDuzenlenecekSirket(r), // eskiden: console.log(...)
+              onClick: (r) => router.push(`/kurumsal/sirketler/${r.IDSirket}`),
             },
             {
               label: sirket.Durum === 1 ? "Pasif Yap" : "Aktif Yap",
@@ -197,7 +197,7 @@ export default function Sirket({ idGurup }: SirketProps) {
       <CustomDataTable
         data={filteredSirketler}
         columns={columns}
-        onRowClick={(row) => console.log("satıra tıklandı", row)}
+        onRowClick={(row) => router.push(`/kurumsal/sirketler/${row.IDSirket}`)}
         pagination={false}
         expandable
         expandedRowContent={(row) => <Sube idSirket={row.original.IDSirket} />}
