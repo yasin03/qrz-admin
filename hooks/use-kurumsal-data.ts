@@ -1,11 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useAuthStore } from "@/stores/auth-store";
 import {
   CreateGrupRequest,
   DeleteGrupRequest,
   GrupType,
-  UpdateGrupRequest,
 } from "@/types/kurumsal/grup";
 import { ApiListResponse } from "@/types/api";
 import {
@@ -18,12 +16,22 @@ import {
   SubeType,
   UpdateSubeRequest,
 } from "@/types/kurumsal/sube";
+import {
+  BolumType,
+  CreateBolumRequest,
+  DeleteBolumRequest,
+  UpdateBolumRequest,
+} from "@/types/kurumsal/bolum";
 
 interface UseSirketlerOptions {
   enabled?: boolean;
 }
 
 interface UseSubelerOptions {
+  enabled?: boolean;
+}
+
+interface UseBolumlerOptions {
   enabled?: boolean;
 }
 
@@ -76,6 +84,10 @@ export const kurumsalKeys = {
     [...kurumsalKeys.all, "subeler", idSirket] as const,
   subeDetay: (idSube: number) =>
     [...kurumsalKeys.all, "subeDetay", idSube] as const,
+  bolumler: (idSube: number) =>
+    [...kurumsalKeys.all, "bolumler", idSube] as const,
+  bolumDetay: (idBolum: number) =>
+    [...kurumsalKeys.all, "bolumDetay", idBolum] as const,
 };
 
 // ============================================================================
@@ -316,6 +328,77 @@ export function useDeleteSube() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: kurumsalKeys.subeler(variables.IDSirket),
+      });
+    },
+  });
+}
+
+// ============================================================================
+// SEVİYE 3 — BÖLÜMLER
+// ============================================================================
+
+export function useBolumler(idSube: number, options?: UseBolumlerOptions) {
+  return useQuery({
+    queryKey: kurumsalKeys.bolumler(idSube),
+
+    queryFn: () =>
+      callKurumsalApi<ApiListResponse<BolumType>>("/api/kurumsal/bolum", {
+        type: "GET_BOLUMLER",
+        IDSube: idSube,
+      }),
+
+    enabled: !!idSube && (options?.enabled ?? true),
+
+    select: (data) => normalizeListResponse(data),
+  });
+}
+
+export function useCreateBolum() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateBolumRequest) =>
+      callKurumsalApi("/api/kurumsal/bolum", {
+        type: "ADD_BOLUM",
+        ...payload,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.bolumler(variables.IDSube),
+      });
+    },
+  });
+}
+
+export function useUpdateBolum() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateBolumRequest) =>
+      callKurumsalApi("/api/kurumsal/bolum", {
+        type: "UPDATE_BOLUM",
+        ...payload,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.bolumler(variables.IDSube),
+      });
+    },
+  });
+}
+
+export function useDeleteBolum() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeleteBolumRequest) =>
+      callKurumsalApi("/api/kurumsal/bolum", {
+        type: "DELETE_BOLUM",
+        IDBolum: payload.IDBolum,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.bolumler(variables.IDSube),
       });
     },
   });

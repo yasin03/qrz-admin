@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { normalize } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import SubeEkle from "./SubeEkle";
+import Bolum from "../bolum/Bolum";
 
 type SubeProps = {
   idSirket: number;
@@ -200,6 +201,8 @@ export default function Sube({ idSirket }: SubeProps) {
         columns={columns}
         onRowClick={(row) => router.push(`/kurumsal/subeler/${row.IDSube}`)}
         pagination={false}
+        expandable
+        expandedRowContent={(row) => <Bolum idSube={row.original.IDSube} />}
       />
 
       <SubeEkle
