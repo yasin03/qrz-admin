@@ -21,6 +21,7 @@ import { useCreateSirket, useUpdateSirket } from "@/hooks/use-kurumsal-data";
 import { sirketSchema, SirketForm } from "@/schemas/kurumsal/sirket.schema";
 import { SirketType } from "@/types/kurumsal/sirket";
 import { SirketFormFields } from "./SirketFormFields";
+import { format } from "date-fns";
 
 const DEFAULT_VALUES: SirketForm = {
   SirketAdi: "",
@@ -134,7 +135,10 @@ export default function SirketEkle({
         ServisAktif: sirket.ServisAktif === 1,
       });
     } else {
-      form.reset(DEFAULT_VALUES);
+      form.reset({
+        ...DEFAULT_VALUES,
+        IsyeriAcilisTarihi: format(new Date(), "yyyy-MM-dd"),
+      });
     }
   }, [open, sirket, form]);
 

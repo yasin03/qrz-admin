@@ -81,6 +81,7 @@ const DEFAULT_VALUES: SubeForm = {
   EpostaAdresi: "",
   WebAdresi: "",
   SirketAdresi: "",
+  Ulke: "Türkiye",
   IlKodu: "",
   IlceKodu: "",
   VergiDairesi: "",
@@ -126,6 +127,7 @@ export default function SubeDetayPage() {
       EpostaAdresi: sube.EpostaAdresi ?? "",
       WebAdresi: sube.WebAdresi ?? "",
       SirketAdresi: sube.SirketAdresi ?? "",
+      Ulke : sube.Ulke ?? "Türkiye",
       IlKodu: sube.IlKodu ?? "",
       IlceKodu: sube.IlceKodu ?? "",
       VergiDairesi: sube.VergiDairesi ?? "",
@@ -215,7 +217,7 @@ export default function SubeDetayPage() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6 rounded-xl border border-border bg-card p-5"
       >
-        <SubeFormFields control={form.control} />
+        <SubeFormFields control={form.control} setValue={form.setValue}/>
 
         <div className="flex justify-end border-t border-border pt-4">
           <FormSubmitButton loading={isPending}>

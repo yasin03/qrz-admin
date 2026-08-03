@@ -47,7 +47,7 @@ export function FormSelect<T extends FieldValues>({
   valueType = "string",
   valueKey = "value",
   labelKey = "label",
-  vertical = false,
+  vertical = true,
   className,
 }: FormSelectProps<T>) {
   return (

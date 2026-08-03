@@ -27,7 +27,7 @@ import {
 
 // ---- Format tipleri ve dönüştürücüleri -----------------------------------
 
-export type InputFormat = "tcno" | "vergino" | "ceptel" | "number" | "text";
+export type InputFormat = "tcno" | "vergino" | "tel" | "number" | "text";
 
 /** Her format için native input'a verilecek en uygun tip/inputMode/maxLength. */
 const FORMAT_META: Record<
@@ -36,13 +36,13 @@ const FORMAT_META: Record<
 > = {
   tcno: { htmlType: "text", inputMode: "numeric", maxLength: 11 },
   vergino: { htmlType: "text", inputMode: "numeric", maxLength: 10 },
-  ceptel: { htmlType: "tel", inputMode: "numeric", maxLength: 13 }, // "555 444 22 33" -> 13 karakter
+  tel: { htmlType: "tel", inputMode: "numeric", maxLength: 13 }, // "555 444 22 33" -> 13 karakter
   number: { htmlType: "text", inputMode: "numeric" },
   text: { htmlType: "text" },
 };
 
 /** Cep telefonunu "555 444 22 33" şeklinde grupluyor, başındaki 0'ı atıyor. */
-function formatCepTel(raw: string): string {
+function formatTel(raw: string): string {
   let digits = raw.replace(/\D/g, "");
   if (digits.startsWith("0")) digits = digits.slice(1);
   digits = digits.slice(0, 10);
@@ -68,8 +68,8 @@ function applyFormat(raw: string, format?: InputFormat): string {
       return raw.replace(/\D/g, "");
     case "text":
       return raw.replace(/[0-9]/g, "");
-    case "ceptel":
-      return formatCepTel(raw);
+    case "tel":
+      return formatTel(raw);
     default:
       return raw;
   }
@@ -92,7 +92,7 @@ type FormInputProps<T extends FieldValues> = {
    * Girdiyi otomatik filtreleyip biçimlendirir. Verilmezse normal input.
    * - "tcno": sadece rakam, 11 karakter
    * - "vergino": sadece rakam, 10 karakter
-   * - "ceptel": sadece rakam, 10 haneli, "555 444 22 33" formatında, başında 0 olmaz
+   * - "tel": sadece rakam, 10 haneli, "555 444 22 33" formatında, başında 0 olmaz
    * - "number": sadece rakam
    * - "text": sadece harf/metin, rakam girilemez
    */
@@ -142,7 +142,7 @@ export function FormInput<T extends FieldValues>({
   maxLength,
   startIcon,
   endIcon,
-  vertical = false,
+  vertical = true,
 }: FormInputProps<T>) {
   const formatMeta = format ? FORMAT_META[format] : undefined;
 

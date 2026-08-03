@@ -28,7 +28,7 @@ export function FormSwitch<T extends FieldValues>({
   name,
   label,
   disabled,
-  vertical = false,
+  vertical = true,
   className,
 }: FormSwitchProps<T>) {
   return (

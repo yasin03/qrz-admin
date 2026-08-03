@@ -23,7 +23,10 @@ import {
   FormSwitch,
 } from "@/components/forms";
 
-import { createGrupSchema, CreateGrupForm } from "@/schemas/kurumsal/grup.schema";
+import {
+  createGrupSchema,
+  CreateGrupForm,
+} from "@/schemas/kurumsal/grup.schema";
 import { useCreateGrup, useUpdateGrup } from "@/hooks/use-kurumsal-data";
 import { GrupType } from "@/types/kurumsal/grup";
 
@@ -149,6 +152,7 @@ export default function GrupEkle({ open, onOpenChange, grup }: Props) {
             name="Tel"
             label="Telefon"
             placeholder="5xx xxx xx xx"
+            format="tel"
           />
 
           <FormInput
@@ -156,6 +160,7 @@ export default function GrupEkle({ open, onOpenChange, grup }: Props) {
             name="IsTel"
             label="İş Telefonu"
             placeholder="xxx xxx xx xx"
+            format="tel"
           />
 
           <FormSwitch control={form.control} name="Durum" label="Durum" />

@@ -21,6 +21,7 @@ import { useCreateSube, useUpdateSube } from "@/hooks/use-kurumsal-data";
 import { subeSchema, SubeForm } from "@/schemas/kurumsal/sube.schema";
 import { SubeType } from "@/types/kurumsal/sube";
 import { SubeFormFields } from "./SubeFormFields";
+import { format } from "date-fns";
 
 // Sube_Insert/Sube_UPDATEByIDSube proc imzasındaki ama formda GÖSTERİLMEYEN
 // alanlar — bkz. SubeFormFields yorumları. Birini forma taşımak istersen
@@ -90,6 +91,7 @@ const DEFAULT_VALUES: SubeForm = {
   EpostaAdresi: "",
   WebAdresi: "",
   SirketAdresi: "",
+  Ulke: "Türkiye",
   IlKodu: "",
   IlceKodu: "",
   VergiDairesi: "",
@@ -115,7 +117,12 @@ type Props = {
   sube?: SubeType | null;
 };
 
-export default function SubeEkle({ open, onOpenChange, idSirket, sube }: Props) {
+export default function SubeEkle({
+  open,
+  onOpenChange,
+  idSirket,
+  sube,
+}: Props) {
   const isEditMode = !!sube;
 
   const form = useForm<SubeForm>({
@@ -145,6 +152,7 @@ export default function SubeEkle({ open, onOpenChange, idSirket, sube }: Props) 
         EpostaAdresi: sube.EpostaAdresi ?? "",
         WebAdresi: sube.WebAdresi ?? "",
         SirketAdresi: sube.SirketAdresi ?? "",
+        Ulke: sube.Ulke ?? "Türkiye",
         IlKodu: sube.IlKodu ?? "",
         IlceKodu: sube.IlceKodu ?? "",
         VergiDairesi: sube.VergiDairesi ?? "",
@@ -163,7 +171,10 @@ export default function SubeEkle({ open, onOpenChange, idSirket, sube }: Props) 
         AdresKodu: sube.AdresKodu ?? "",
       });
     } else {
-      form.reset(DEFAULT_VALUES);
+      form.reset({
+        ...DEFAULT_VALUES,
+        IsyeriAcilisTarihi: format(new Date(), "yyyy-MM-dd"),
+      });
     }
   }, [open, sube, form]);
 
@@ -203,12 +214,14 @@ export default function SubeEkle({ open, onOpenChange, idSirket, sube }: Props) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Şubeyi Düzenle" : "Yeni Şube"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Şubeyi Düzenle" : "Yeni Şube"}
+          </DialogTitle>
           <DialogDescription>Şube bilgilerini giriniz.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <SubeFormFields control={form.control} />
+          <SubeFormFields control={form.control} setValue={form.setValue}/>
 
           <DialogFooter>
             <Button

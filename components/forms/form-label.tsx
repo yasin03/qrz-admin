@@ -42,7 +42,7 @@ export function FormLabel({
   required,
   description,
   className,
-  vertical = false,
+  vertical = true,
   children,
 }: FormLabelProps) {
   const labelNode = (

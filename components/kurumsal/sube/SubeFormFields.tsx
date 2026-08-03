@@ -1,6 +1,11 @@
 "use client";
 
-import { Control, useFormState } from "react-hook-form";
+import {
+  Control,
+  UseFormSetValue,
+  useFormState,
+  useWatch,
+} from "react-hook-form";
 
 import { FormInput, FormSelect, FormSwitch } from "@/components/forms";
 import { SubeForm } from "@/schemas/kurumsal/sube.schema";
@@ -11,6 +16,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  useIlceler,
+  useIller,
+  useVergiDaireleri,
+} from "@/hooks/use-genel-data";
+import { useEffect, useRef } from "react";
 
 const IL_OPTIONS = [
   { label: "Ankara", value: "006" },
@@ -37,8 +48,18 @@ const SECTION_FIELDS = {
     "VergiNo",
     "Durum",
   ],
-  iletisim: ["Tel", "CepTel", "Fax", "EpostaAdresi", "WebAdresi"],
-  adres: ["SirketAdresi", "IlKodu", "IlceKodu", "AdresKodu"],
+
+  adres: [
+    "SirketAdresi",
+    "IlKodu",
+    "IlceKodu",
+    "AdresKodu",
+    "Tel",
+    "CepTel",
+    "Fax",
+    "EpostaAdresi",
+    "WebAdresi",
+  ],
   resmi: [
     "IsyeriSgkSicilNumarasi",
     "IsyeriSgkIsKoluKodu",
@@ -47,12 +68,14 @@ const SECTION_FIELDS = {
     "IsyeriFaaliyetKodu",
     "IskurSubesi",
     "IskurNumarasi",
+    "IsyeriAcilisTarihi",
+    "IsyeriKapanisTarihi",
   ],
-  tarihler: ["IsyeriAcilisTarihi", "IsyeriKapanisTarihi"],
 } as const satisfies Record<string, (keyof SubeForm)[]>;
 
 type Props = {
   control: Control<SubeForm>;
+  setValue: UseFormSetValue<SubeForm>;
 };
 
 /**
@@ -60,12 +83,30 @@ type Props = {
  * (ekleme modalı) hem de /kurumsal/subeler/[idSube] (detay/düzenleme
  * sayfası) bunu kullanır.
  */
-export function SubeFormFields({ control }: Props) {
+export function SubeFormFields({ control, setValue }: Props) {
   const { errors } = useFormState({ control });
+
+  const selectedIlKodu = useWatch({ control, name: "IlKodu" });
 
   const hasError = (section: keyof typeof SECTION_FIELDS) =>
     SECTION_FIELDS[section].some((field) => Boolean(errors[field]));
 
+  const { data: iller = [], isLoading: illerLoading } = useIller();
+  const { data: ilceler = [], isLoading: ilcelerLoading } =
+    useIlceler(selectedIlKodu);
+  const { data: vergiDaireleri = [], isLoading: vergiDaireleriLoading } =
+    useVergiDaireleri(selectedIlKodu);
+
+  // İl değişince, önceki ile ait seçili ilçe geçersiz kalabileceği için
+  // temizliyoruz. İlk render'da (henüz hiç il seçilmemişken) tetiklenmesin
+  // diye ref ile "gerçekten değişti mi" kontrolü yapıyoruz.
+  const previousIlKodu = useRef(selectedIlKodu);
+  useEffect(() => {
+    if (previousIlKodu.current !== selectedIlKodu) {
+      setValue("IlceKodu", "", { shouldValidate: false });
+    }
+    previousIlKodu.current = selectedIlKodu;
+  }, [selectedIlKodu, setValue]);
   return (
     <Accordion type="multiple" defaultValue={["temel"]} className="w-full">
       {/* Temel Bilgiler */}
@@ -73,56 +114,82 @@ export function SubeFormFields({ control }: Props) {
         <AccordionTrigger>
           <SectionTitle title="Temel Bilgiler" hasError={hasError("temel")} />
         </AccordionTrigger>
-        <AccordionContent>
-          <div className="grid gap-4 pt-1 sm:grid-cols-2">
-            <FormInput
-              control={control}
-              name="SubeAdi"
-              label="Şube Adı"
-              required
-              placeholder="Şube adını giriniz"
-            />
-            <FormInput control={control} name="SubeKodu" label="Şube Kodu" />
-            <FormInput
-              control={control}
-              name="YetkiliKisi"
-              label="Yetkili Kişi"
-            />
-            <FormSelect
-              control={control}
-              name="MulkiyetTuru"
-              label="Mülkiyet Türü"
-              options={MULKIYET_OPTIONS}
-            />
-            <FormInput
-              control={control}
-              name="VergiDairesi"
-              label="Vergi Dairesi"
-            />
-            <FormInput control={control} name="VergiNo" label="Vergi No" />
-            <FormSwitch control={control} name="Durum" label="Durum" />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-
-      {/* İletişim */}
-      <AccordionItem value="iletisim">
-        <AccordionTrigger>
-          <SectionTitle title="İletişim" hasError={hasError("iletisim")} />
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="grid gap-4 pt-1 sm:grid-cols-2">
-            <FormInput control={control} name="Tel" label="Telefon" />
-            <FormInput control={control} name="CepTel" label="Cep Telefonu" />
-            <FormInput control={control} name="Fax" label="Faks" />
-            <FormInput
-              control={control}
-              name="EpostaAdresi"
-              label="E-posta"
-              placeholder="ornek@sirket.com"
-            />
-            <FormInput control={control} name="WebAdresi" label="Web Adresi" />
-          </div>
+        <AccordionContent className="flex flex-col gap-2 py-2">
+          <FormInput
+            control={control}
+            name="SubeAdi"
+            label="Şube Adı"
+            required
+            placeholder="Şube adını giriniz"
+          />
+          <FormInput control={control} name="SubeKodu" label="Şube Kodu" />
+          <FormInput
+            control={control}
+            name="YetkiliKisi"
+            label="Yetkili Kişi"
+          />
+          <FormSelect
+            control={control}
+            name="MulkiyetTuru"
+            label="Mülkiyet Türü"
+            options={MULKIYET_OPTIONS}
+          />
+          <FormInput
+            control={control}
+            name="Ulke"
+            label="Ülke"
+            required
+            readOnly
+          />
+          <FormSelect
+            control={control}
+            name="IlKodu"
+            label="İl"
+            disabled={illerLoading}
+            placeholder={illerLoading ? "Yükleniyor..." : "İl seçin"}
+            options={iller}
+            valueKey="IlKodu"
+            labelKey="IlAdi"
+          />
+          <FormSelect
+            control={control}
+            name="IlceKodu"
+            label="İlçe"
+            disabled={!selectedIlKodu || ilcelerLoading}
+            placeholder={
+              !selectedIlKodu
+                ? "Önce il seçin"
+                : ilcelerLoading
+                  ? "Yükleniyor..."
+                  : "İlçe seçin"
+            }
+            options={ilceler}
+            valueKey="IlceKodu"
+            labelKey="IlceAdi"
+          />
+          <FormSelect
+            control={control}
+            name="VergiDairesi"
+            label="Vergi Dairesi"
+            placeholder={
+              vergiDaireleriLoading
+                ? "Yükleniyor..."
+                : selectedIlKodu
+                  ? "Vergi dairesi seçin"
+                  : "Önce il seçin (veya tüm daireler listelenir)"
+            }
+            disabled={vergiDaireleriLoading}
+            options={vergiDaireleri}
+            valueKey="IDVergiDairesi"
+            labelKey="DaireAdi"
+          />
+          <FormInput
+            control={control}
+            name="VergiNo"
+            label="Vergi No"
+            format="vergino"
+          />
+          <FormSwitch control={control} name="Durum" label="Durum" />
         </AccordionContent>
       </AccordionItem>
 
@@ -131,29 +198,42 @@ export function SubeFormFields({ control }: Props) {
         <AccordionTrigger>
           <SectionTitle title="Adres" hasError={hasError("adres")} />
         </AccordionTrigger>
-        <AccordionContent>
-          <div className="grid gap-4 pt-1 sm:grid-cols-2">
-            <FormInput
-              control={control}
-              name="SirketAdresi"
-              label="Adres"
-              required
-              className="sm:col-span-2"
-            />
-            <FormSelect
-              control={control}
-              name="IlKodu"
-              label="İl"
-              options={IL_OPTIONS}
-            />
-            <FormSelect
-              control={control}
-              name="IlceKodu"
-              label="İlçe"
-              options={ILCE_OPTIONS}
-            />
-            <FormInput control={control} name="AdresKodu" label="Adres Kodu" />
-          </div>
+        <AccordionContent className="flex flex-col gap-2 py-2">
+          <FormInput
+            control={control}
+            name="SirketAdresi"
+            label="Adres"
+            required
+            className="sm:col-span-2"
+          />
+          <FormInput
+            control={control}
+            name="Tel"
+            label="Telefon"
+            placeholder="2xx xxx xx xx"
+            format="tel"
+          />
+          <FormInput
+            control={control}
+            name="CepTel"
+            label="Cep Telefonu"
+            placeholder="5xx xxx xx xx"
+            format="tel"
+          />
+          <FormInput control={control} name="Fax" label="Faks" />
+          <FormInput
+            control={control}
+            name="EpostaAdresi"
+            label="E-posta"
+            placeholder="ornek@sirket.com"
+          />
+          <FormInput control={control} name="WebAdresi" label="Web Adresi" />
+          <FormInput
+            control={control}
+            name="AdresKodu"
+            label="Adres Kodu"
+            format="number"
+          />
         </AccordionContent>
       </AccordionItem>
 
@@ -166,68 +246,56 @@ export function SubeFormFields({ control }: Props) {
             hasError={hasError("resmi")}
           />
         </AccordionTrigger>
-        <AccordionContent>
-          <div className="grid gap-4 pt-1 sm:grid-cols-2">
-            <FormInput
-              control={control}
-              name="IsyeriSgkSicilNumarasi"
-              label="İşyeri SGK Sicil No"
-            />
-            <FormInput
-              control={control}
-              name="IsyeriSgkIsKoluKodu"
-              label="İşyeri SGK İş Kolu Kodu"
-            />
-            <FormInput
-              control={control}
-              name="TicaretSicilNumarasi"
-              label="Ticaret Sicil No"
-            />
-            <FormInput
-              control={control}
-              name="TicaretSicilMudurluk"
-              label="Ticaret Sicil Müdürlüğü"
-            />
-            <FormInput
-              control={control}
-              name="IsyeriFaaliyetKodu"
-              label="İşyeri Faaliyet Kodu"
-            />
-            <FormInput
-              control={control}
-              name="IskurSubesi"
-              label="İşkur Şubesi"
-            />
-            <FormInput
-              control={control}
-              name="IskurNumarasi"
-              label="İşkur Numarası"
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-
-      {/* Tarihler */}
-      <AccordionItem value="tarihler">
-        <AccordionTrigger>
-          <SectionTitle title="Tarihler" hasError={hasError("tarihler")} />
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="grid gap-4 pt-1 sm:grid-cols-2">
-            <FormInput
-              control={control}
-              name="IsyeriAcilisTarihi"
-              label="İşyeri Açılış Tarihi"
-              type="date"
-              required
-            />
-            <FormInput
-              control={control}
-              name="IsyeriKapanisTarihi"
-              label="İşyeri Kapanış Tarihi"
-              type="date"
-            />
-          </div>
+        <AccordionContent className="flex flex-col gap-2 py-2">
+          <FormInput
+            control={control}
+            name="IsyeriSgkSicilNumarasi"
+            label="İşyeri SGK Sicil No"
+            vertical
+          />
+          <FormInput
+            control={control}
+            name="IsyeriSgkIsKoluKodu"
+            label="İşyeri SGK İş Kolu Kodu"
+          />
+          <FormInput
+            control={control}
+            name="TicaretSicilNumarasi"
+            label="Ticaret Sicil No"
+          />
+          <FormInput
+            control={control}
+            name="TicaretSicilMudurluk"
+            label="Ticaret Sicil Müdürlüğü"
+          />
+          <FormInput
+            control={control}
+            name="IsyeriFaaliyetKodu"
+            label="İşyeri Faaliyet Kodu"
+          />
+          <FormInput
+            control={control}
+            name="IskurSubesi"
+            label="İşkur Şubesi"
+          />
+          <FormInput
+            control={control}
+            name="IskurNumarasi"
+            label="İşkur Numarası"
+          />
+          <FormInput
+            control={control}
+            name="IsyeriAcilisTarihi"
+            label="İşyeri Açılış Tarihi"
+            type="date"
+            required
+          />
+          <FormInput
+            control={control}
+            name="IsyeriKapanisTarihi"
+            label="İşyeri Kapanış Tarihi"
+            type="date"
+          />
         </AccordionContent>
       </AccordionItem>
     </Accordion>

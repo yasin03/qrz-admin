@@ -24,14 +24,6 @@ import {
 import { useEffect, useRef } from "react";
 import { FormLabel } from "@/components/forms/form-label";
 
-const IL_OPTIONS = [
-  { label: "Ankara", value: "006" },
-  { label: "İstanbul", value: "034" },
-];
-const ILCE_OPTIONS = [
-  { label: "Keçiören", value: "79" },
-  { label: "Çankaya", value: "06" },
-];
 const SIRKET_TIP_OPTIONS = [
   { label: "Şahıs", value: "ŞAHIS" },
   { label: "Şirket", value: "ŞİRKET" },
@@ -131,7 +123,6 @@ export function SirketFormFields({ control, setValue }: Props) {
             name="SirketTip"
             label="Şirket Tipi"
             options={SIRKET_TIP_OPTIONS}
-            vertical
           />
           <FormInput
             control={control}
@@ -139,28 +130,24 @@ export function SirketFormFields({ control, setValue }: Props) {
             label="Şirket Adı"
             required
             placeholder="Şirket adını giriniz"
-            vertical
           />
           <FormInput
             control={control}
             name="YetkiliKisi"
             label="Yetkili Kişi"
             placeholder="Yetkili kişi"
-            vertical
           />
           <FormSelect
             control={control}
             name="MulkiyetTuru"
             label="Mülkiyet Türü"
             options={MULKIYET_OPTIONS}
-            vertical
           />
           <FormInput
             control={control}
             name="Ulke"
             label="Ülke"
             required
-            vertical
             readOnly
           />
           <FormSelect
@@ -172,7 +159,6 @@ export function SirketFormFields({ control, setValue }: Props) {
             options={iller}
             valueKey="IlKodu"
             labelKey="IlAdi"
-            vertical
           />
           <FormSelect
             control={control}
@@ -189,7 +175,6 @@ export function SirketFormFields({ control, setValue }: Props) {
             options={ilceler}
             valueKey="IlceKodu"
             labelKey="IlceAdi"
-            vertical
           />
           <FormSelect
             control={control}
@@ -206,7 +191,6 @@ export function SirketFormFields({ control, setValue }: Props) {
             options={vergiDaireleri}
             valueKey="IDVergiDairesi"
             labelKey="DaireAdi"
-            vertical
           />
           <FormInput
             control={control}
@@ -215,23 +199,20 @@ export function SirketFormFields({ control, setValue }: Props) {
             required
             placeholder="Vergi no"
             format="vergino"
-            vertical
           />
 
-          <FormLabel label="Ad Soyad" vertical>
+          <FormLabel label="Ad Soyad">
             <FormInput
               control={control}
               name="Adi"
               placeholder="Adı"
               label=""
-              vertical
             />
             <FormInput
               control={control}
               name="Soyadi"
               placeholder="Soyadı"
               label=""
-              vertical
             />
           </FormLabel>
           <FormInput
@@ -239,9 +220,8 @@ export function SirketFormFields({ control, setValue }: Props) {
             name="TcKimlikNo"
             label="TC Kimlik No"
             format="tcno"
-            vertical
           />
-          <FormSwitch control={control} name="Durum" label="Durum" vertical />
+          <FormSwitch control={control} name="Durum" label="Durum" />
         </AccordionContent>
       </AccordionItem>
 
@@ -256,52 +236,41 @@ export function SirketFormFields({ control, setValue }: Props) {
             name="Tel"
             label="Telefon"
             placeholder="2xx xxx xx xx"
-            format="ceptel"
-            vertical
+            format="tel"
           />
           <FormInput
             control={control}
             name="CepTel"
             label="Cep Telefonu"
             placeholder="5xx xxx xx xx"
-            format="ceptel"
-            vertical
+            format="tel"
           />
-          <FormInput control={control} name="Fax" label="Faks" vertical />
+          <FormInput control={control} name="Fax" label="Faks" />
           <FormInput
             control={control}
             name="EpostaAdresi"
             label="E-posta"
             placeholder="ornek@sirket.com"
-            vertical
           />
-          <FormInput
-            control={control}
-            name="WebAdresi"
-            label="Web Adresi"
-            vertical
-          />
+          <FormInput control={control} name="WebAdresi" label="Web Adresi" />
           <FormInput
             control={control}
             name="SirketAdresi"
             label="Şirket Adresi"
             required
             className="sm:col-span-2"
-            vertical
           />
           <FormInput
             control={control}
             name="PostaKodu"
             label="Posta Kodu"
             format="number"
-            vertical
           />
           <FormInput
             control={control}
             name="AdresKodu"
             label="Adres Kodu"
             format="number"
-            vertical
           />
         </AccordionContent>
       </AccordionItem>
@@ -320,49 +289,41 @@ export function SirketFormFields({ control, setValue }: Props) {
             control={control}
             name="IsyeriSgkSicilNumarasi"
             label="İşyeri SGK Sicil No"
-            vertical
           />
           <FormInput
             control={control}
             name="IsyeriSgkIsKoluKodu"
             label="İşyeri SGK İş Kolu Kodu"
-            vertical
           />
           <FormInput
             control={control}
             name="TicaretSicilNumarasi"
             label="Ticaret Sicil No"
-            vertical
           />
           <FormInput
             control={control}
             name="MersisNumarasi"
             label="Mersis No"
-            vertical
           />
           <FormInput
             control={control}
             name="TicaretSicilMudurluk"
             label="Ticaret Sicil Müdürlüğü"
-            vertical
           />
           <FormInput
             control={control}
             name="IsyeriFaaliyetKodu"
             label="İşyeri Faaliyet Kodu"
-            vertical
           />
           <FormInput
             control={control}
             name="IskurSubesi"
             label="İşkur Şubesi"
-            vertical
           />
           <FormInput
             control={control}
             name="IskurNumarasi"
             label="İşkur Numarası"
-            vertical
           />
           <FormInput
             control={control}
@@ -370,14 +331,12 @@ export function SirketFormFields({ control, setValue }: Props) {
             label="İşyeri Açılış Tarihi"
             type="date"
             required
-            vertical
           />
           <FormInput
             control={control}
             name="IsyeriKapanisTarihi"
             label="İşyeri Kapanış Tarihi"
             type="date"
-            vertical
           />
         </AccordionContent>
       </AccordionItem>
@@ -397,13 +356,11 @@ export function SirketFormFields({ control, setValue }: Props) {
             name="ServisPassword"
             label="Servis Şifresi"
             type="password"
-            vertical
           />
           <FormSwitch
             control={control}
             name="ServisAktif"
             label="Servis Aktif"
-            vertical
           />
         </AccordionContent>
       </AccordionItem>

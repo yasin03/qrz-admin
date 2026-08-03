@@ -17,6 +17,7 @@ export interface SubeType {
   WebAdresi: string | null;
 
   SirketAdresi: string | null;
+  Ulke : string | null;
   IlKodu: string | null;
   IlceKodu: string | null;
 

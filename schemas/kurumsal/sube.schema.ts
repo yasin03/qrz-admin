@@ -25,6 +25,7 @@ export const subeSchema = z.object({
   WebAdresi: z.string(),
 
   SirketAdresi: z.string().min(1, "Adres zorunludur."),
+  Ulke: z.string().min(1, "Ülke zorunludur."),
   IlKodu: z.string().min(1, "İl seçiniz."),
   IlceKodu: z.string().min(1, "İlçe seçiniz."),
 
