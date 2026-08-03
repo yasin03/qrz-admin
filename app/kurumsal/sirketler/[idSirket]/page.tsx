@@ -179,7 +179,7 @@ export default function SirketDetayPage() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6 rounded-xl border border-border bg-card p-5"
       >
-        <SirketFormFields control={form.control} />
+        <SirketFormFields control={form.control} setValue={form.setValue} />
 
         <div className="flex justify-end border-t border-border pt-4">
           <FormSubmitButton loading={isPending}>

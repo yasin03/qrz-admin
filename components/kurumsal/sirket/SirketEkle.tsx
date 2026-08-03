@@ -122,8 +122,8 @@ export default function SirketEkle({
         MersisNumarasi: sirket.MersisNumarasi ?? "",
         IskurSubesi: sirket.IskurSubesi ?? "",
         IskurNumarasi: sirket.IskurNumarasi ?? "",
-        IsyeriAcilisTarihi: sirket.IsyeriAcilisTarihi?.slice(0, 10) ?? "",
-        IsyeriKapanisTarihi: sirket.IsyeriKapanisTarihi?.slice(0, 10) ?? "",
+        IsyeriAcilisTarihi: sirket.IsyeriAcilisTarihi ?? new Date(),
+        IsyeriKapanisTarihi: sirket.IsyeriKapanisTarihi ?? "",
         Durum: sirket.Durum === 1,
         MulkiyetTuru: sirket.MulkiyetTuru ?? "",
         TicaretSicilMudurluk: sirket.TicaretSicilMudurluk ?? "",
@@ -181,7 +181,7 @@ export default function SirketEkle({
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <SirketFormFields control={form.control} />
+          <SirketFormFields control={form.control} setValue={form.setValue} />
 
           <DialogFooter>
             <Button

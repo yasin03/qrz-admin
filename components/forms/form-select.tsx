@@ -17,7 +17,9 @@ import {
 type FormSelectProps<T extends FieldValues> = {
   control: Control<T>;
   name: FieldPath<T>;
-  label: string;
+  /** Boş bırakılırsa (veya hiç verilmezse) hiç label alanı render edilmez — vertical fark etmeksizin tam genişlik. */
+  label?: string;
+  required?: boolean;
   placeholder?: string;
   options: any[];
   disabled?: boolean;
@@ -31,12 +33,14 @@ type FormSelectProps<T extends FieldValues> = {
    * select ~%75). Varsayılan false: label üstte, select altta.
    */
   vertical?: boolean;
+  className?: string;
 };
 
 export function FormSelect<T extends FieldValues>({
   control,
   name,
   label,
+  required,
   placeholder,
   options,
   disabled,
@@ -44,16 +48,18 @@ export function FormSelect<T extends FieldValues>({
   valueKey = "value",
   labelKey = "label",
   vertical = false,
+  className,
 }: FormSelectProps<T>) {
-
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => {
+        const hasLabel = Boolean(label);
+
         const selectValue =
           field.value === undefined || field.value === null
-            ? undefined
+            ? ""
             : String(field.value);
 
         const handleValueChange = (value: string) => {
@@ -96,18 +102,36 @@ export function FormSelect<T extends FieldValues>({
           <p
             className={cn(
               "text-sm text-destructive",
-              vertical && "ml-[calc(25%+0.75rem)]",
+              hasLabel && vertical && "ml-[calc(25%+0.75rem)]",
             )}
           >
             {fieldState.error.message}
           </p>
         );
 
+        // Label verilmediyse (FormLabel/FormGroup içinde tek başlık altında
+        // birden fazla select kullanılıyorsa) hiç label alanı ayırma.
+        if (!hasLabel) {
+          return (
+            <Field className={className}>
+              {select}
+              {errorMessage}
+            </Field>
+          );
+        }
+
+        const labelNode = (
+          <Label className={cn(vertical && "w-1/4 shrink-0")}>
+            {label}
+            {required && <span className="ml-1 text-destructive">*</span>}
+          </Label>
+        );
+
         if (vertical) {
           return (
-            <Field>
+            <Field className={className}>
               <div className="flex items-center gap-3">
-                <Label className="w-1/4 shrink-0">{label}</Label>
+                {labelNode}
                 <div className="flex-1">{select}</div>
               </div>
               {errorMessage}
@@ -116,8 +140,8 @@ export function FormSelect<T extends FieldValues>({
         }
 
         return (
-          <Field>
-            <Label>{label}</Label>
+          <Field className={className}>
+            {labelNode}
             {select}
             {errorMessage}
           </Field>

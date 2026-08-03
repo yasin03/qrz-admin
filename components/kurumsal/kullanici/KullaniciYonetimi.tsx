@@ -18,7 +18,7 @@ const KullaniciYonetimi = () => {
           <div className="flex items-center gap-2">
             <Input
               startIcon={<Search className="h-4 w-4" />}
-              placeholder="Grup Ara..."
+              placeholder="Kullanıcı Ara..."
               className="w-48"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
