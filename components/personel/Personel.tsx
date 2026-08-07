@@ -16,188 +16,256 @@ import {
 } from "lucide-react";
 import PersonelEkle, { type KullaniciEkleRef } from "./PersonelEkle";
 import { Input } from "../ui/input";
+import {
+  usePersonelDetay,
+  usePersonelListesi,
+  type PersonelFilters,
+} from "@/hooks/use-personel";
+import PersonelFiltre from "./PersonelFiltre";
+import { Badge } from "../ui/badge";
+import { useCurrentContext } from "@/hooks/use-context";
+import { useEffect } from "react";
 
-type Employee = {
-  id: string;
-  name: string;
-  email: string;
-  department: "Satış" | "Muhasebe" | "IT" | "İnsan Kaynakları";
-  status: "Aktif" | "Pasif";
-  salary: number;
-  startDate: string; // ISO
-  locked?: boolean; // örnek: bu kullanıcı seçilemesin diye
+type Personel = {
+  SicilNo: string;
+  TcKimlikNo: string;
+  BolumAdi: string;
+  AdSoyad: string;
+  AdSoyad2: string;
+  Ucret: number;
+  OdemeSekli: string;
+  UcretTipi: string;
+  SendikaDurumu: boolean;
+  DayanismaDurumu: boolean;
+  Cinsiyet: string;
+  DogumTarihi: string;
+  IseSonGirisTarihi2: string;
+  CikisTarihi2: string;
+  IseSonGirisTarihi: string;
+  CikisTarihi: string;
+  PersonelKanunNo: string;
+  PersonelSgkBelgeTuru: string;
+  PersonelMeslekKodu: string;
+  MedeniDurum: string;
+  IstihdamDurumu: string;
+  IDSubePersonel: string;
+  IDSube: string;
+  IDBolum: string;
+  SgkDurumu: string;
+  CalismaDurumu: string;
+  AgiAlmazDurumu: boolean;
+  OzurlulukDerecesi: number;
+  Durum: boolean;
+  Durum2: string;
+  SgkGirisDurum: string | null;
+  SgkCikisDurum: string | null;
 };
 
 const Personel = () => {
-  const [selected, setSelected] = useState<Employee[]>([]);
+  const [selected, setSelected] = useState<Personel[]>([]);
+  const [filters, setFilters] = useState<PersonelFilters | null>(null);
   const kullaniciEkleRef = useRef<KullaniciEkleRef>(null);
   const [searchText, setSearchText] = useState("");
+  const { data: context } = useCurrentContext();
 
-  const employees: Employee[] = [
-    {
-      id: "1",
-      name: "Ayşe Yılmaz",
-      email: "ayse.yilmaz@sirket.com",
-      department: "IT",
-      status: "Aktif",
-      salary: 42000,
-      startDate: "2022-03-14",
-    },
-    {
-      id: "2",
-      name: "Mehmet Kaya",
-      email: "mehmet.kaya@sirket.com",
-      department: "Satış",
-      status: "Aktif",
-      salary: 31000,
-      startDate: "2021-07-01",
-    },
-    {
-      id: "3",
-      name: "Zeynep Demir",
-      email: "zeynep.demir@sirket.com",
-      department: "Muhasebe",
-      status: "Pasif",
-      salary: 28500,
-      startDate: "2020-11-23",
-      locked: true, // seçilemesin diye örnek
-    },
-    {
-      id: "4",
-      name: "Emre Şahin",
-      email: "emre.sahin@sirket.com",
-      department: "İnsan Kaynakları",
-      status: "Aktif",
-      salary: 35000,
-      startDate: "2023-01-09",
-    },
-    {
-      id: "5",
-      name: "Elif Arslan",
-      email: "elif.arslan@sirket.com",
-      department: "IT",
-      status: "Aktif",
-      salary: 47500,
-      startDate: "2019-05-30",
-    },
-    {
-      id: "6",
-      name: "Can Öztürk",
-      email: "can.ozturk@sirket.com",
-      department: "Satış",
-      status: "Pasif",
-      salary: 29800,
-      startDate: "2022-09-12",
-    },
-  ];
+  useEffect(() => {
+    if (filters || !context?.IDSube) return;
+
+    setFilters({
+      IDSube: context.IDSube,
+      IDBolum: "",
+      Durum: "",
+      DurumTarihi: "",
+    });
+  }, [context, filters]);
+
+  const { data: personelListesi = [], isLoading: isLoadingPersonel } =
+    usePersonelListesi(filters);
+
+  const { data: personelDetay = [], isLoading: isLoadingPersonelDetay } =
+    usePersonelDetay("0");
 
   // ---- 3. Kolon tanımları ----------------------------------------------
-
-  const columns: ColumnDef<Employee>[] = [
+  const columns: ColumnDef<Personel>[] = [
     {
       id: "actions",
-      size: 20,
+      size: 50,
       header: "",
       enableSorting: false,
       cell: ({ row }) => {
-        const employee = row.original;
+        const personel = row.original;
 
-        const actions: RowAction<Employee>[] = [
+        const actions: RowAction<Personel>[] = [
           {
             label: "Düzenle",
             icon: Pencil,
-            onClick: (r) => console.log("düzenle", r.id),
+            onClick: (r) => console.log("düzenle", r.SicilNo),
           },
           {
-            label: employee.status === "Aktif" ? "Pasif Yap" : "Aktif Yap",
+            label: personel.Durum ? "Pasif Yap" : "Aktif Yap",
             icon: Power,
-            onClick: (r) => console.log("durum değiştir", r.id),
+            onClick: (r) => console.log("durum değiştir", r.SicilNo),
           },
           {
             label: "Rapor Oluştur",
             icon: FileText,
-            onClick: (r) => console.log("rapor", r.id),
+            onClick: (r) => console.log("rapor", r.SicilNo),
           },
           {
-            label: "Kullanıcı Birleştir",
+            label: "Personel Birleştir",
             icon: Merge,
-            // örnek: bazı satırlarda bu aksiyon anlamsızsa disabled edilebilir
-            disabled: (r) => Boolean(r.locked),
-            onClick: (r) => console.log("birleştir", r.id),
+            onClick: (r) => console.log("birleştir", r.SicilNo),
           },
           {
             label: "Sil",
             icon: Trash2,
             variant: "danger",
             separatorBefore: true,
-            onClick: (r) => console.log("sil", r.id),
+            onClick: (r) => console.log("sil", r.SicilNo),
           },
         ];
 
         return (
           <div className="flex justify-end">
-            <RowActions row={employee} actions={actions} />
+            <RowActions row={personel} actions={actions} />
           </div>
         );
       },
     },
+
     {
-      accessorKey: "name",
+      accessorKey: "AdSoyad",
       header: "Ad Soyad",
       cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="font-medium text-foreground">
-            {row.original.name}
+            {row.original.AdSoyad}
           </span>
           <span className="text-xs text-muted-foreground">
-            {row.original.email}
+            {row.original.SicilNo}
           </span>
         </div>
       ),
     },
+
     {
-      accessorKey: "department",
-      header: "Departman",
-    },
-    {
-      accessorKey: "status",
-      header: "Durum",
-      cell: ({ getValue }) => {
-        const status = getValue<Employee["status"]>();
+      accessorKey: "CalismaDurumu",
+      header: "Çalışma Durumu",
+      cell: ({ row }) => {
+        const durum = row.original.CalismaDurumu;
+
         return (
-          <span
-            className={
-              status === "Aktif"
-                ? "inline-flex items-center rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success"
-                : "inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
-            }
-          >
-            {status}
-          </span>
+          <Badge variant={durum === "ÇALISIYOR" ? "success" : "gray"}>
+            {durum}
+          </Badge>
         );
       },
     },
+
     {
-      accessorKey: "salary",
-      header: "Maaş",
-      cell: ({ getValue }) =>
+      accessorKey: "Ucret",
+      header: "Ücret",
+
+      cell: ({ row }) =>
         new Intl.NumberFormat("tr-TR", {
           style: "currency",
           currency: "TRY",
-          maximumFractionDigits: 0,
-        }).format(getValue<number>()),
+          maximumFractionDigits: 2,
+        }).format(row.original.Ucret),
     },
+
     {
-      accessorKey: "startDate",
-      header: "İşe Başlama",
-      cell: ({ getValue }) =>
-        new Intl.DateTimeFormat("tr-TR", {
+      accessorKey: "OdemeSekli",
+      header: "Ödeme Şekli",
+      cell: ({ row }) => <span>{row.original.OdemeSekli}</span>,
+    },
+
+    {
+      accessorKey: "UcretTipi",
+      header: "Ücret Tipi",
+      cell: ({ row }) => (
+        <Badge variant="secondary">{row.original.UcretTipi}</Badge>
+      ),
+    },
+
+    {
+      accessorKey: "IseSonGirisTarihi",
+      header: "İşe Giriş Tarihi",
+      cell: ({ row }) => {
+        const value = row.original.IseSonGirisTarihi;
+
+        if (!value) return "-";
+
+        return new Intl.DateTimeFormat("tr-TR", {
           day: "2-digit",
-          month: "long",
+          month: "2-digit",
           year: "numeric",
-        }).format(new Date(getValue<string>())),
+        }).format(new Date(value));
+      },
+    },
+
+    {
+      accessorKey: "Cinsiyet",
+      header: "Cinsiyet",
+      cell: ({ row }) => {
+        const cinsiyet = row.original.Cinsiyet;
+
+        return (
+          <Badge variant={cinsiyet === "ERKEK" ? "blue" : "pink"}>
+            {cinsiyet}
+          </Badge>
+        );
+      },
     },
   ];
+
+  const expandedRowContent = (row: Personel) => {
+    const personel = row;
+
+    return (
+      <div className="grid grid-cols-2 gap-x-8 gap-y-3 p-4 md:grid-cols-4">
+        <div>
+          <p className="text-xs text-muted-foreground">TC Kimlik No</p>
+          <p className="font-medium">{personel.TcKimlikNo}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">Cinsiyet</p>
+          <p className="font-medium">{personel.Cinsiyet}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">Medeni Durum</p>
+          <p className="font-medium">{personel.MedeniDurum}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">SGK Durumu</p>
+          <p className="font-medium">{personel.SgkDurumu}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">Meslek Kodu</p>
+          <p className="font-medium">{personel.PersonelMeslekKodu}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">İstihdam Durumu</p>
+          <p className="font-medium">{personel.IstihdamDurumu}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">Doğum Tarihi</p>
+          <p className="font-medium">{personel.DogumTarihi}</p>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground">Çıkış Tarihi</p>
+          <p className="font-medium">{personel.CikisTarihi2 || "-"}</p>
+        </div>
+      </div>
+    );
+  };
 
   const openDialogMenu = () => {
     kullaniciEkleRef.current?.open();
@@ -217,40 +285,25 @@ const Personel = () => {
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
-          <Button
-            type="button"
-            size="sm"
-            onClick={openDialogMenu}
-          >
+          <PersonelFiltre onApply={setFilters} />
+          <Button type="button" size="sm" onClick={openDialogMenu}>
             <UserPlus className="size-4" />
             Yeni Personel Ekle
           </Button>
         </div>
       </div>
       <CustomDataTable
-        data={employees}
+        data={personelListesi}
         columns={columns}
+        loading={isLoadingPersonel}
         getRowId={(row) => row.id}
         pagination
-        selectableRows
-        selectableRowDisabled={(row) => Boolean(row.locked)}
-        onSelectedRowsChange={({ selectedRows }) => setSelected(selectedRows)}
-        dense
         onRowClick={(row) => console.log("satıra tıklandı", row)}
-        emptyMessage="Çalışan bulunamadı."
+        emptyMessage="Personel bulunamadı."
         expandable
         expandedRowContent={(row) => {
-          const employee = row.original;
-          return (
-            <>
-              <div>
-                {employee.name} - {employee.department}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {employee.email}
-              </div>
-            </>
-          );
+          const personel = row.original;
+          return expandedRowContent(personel);
         }}
       />
 

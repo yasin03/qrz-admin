@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { joseDecrypt } from "@/lib/token";
 import { ExecuteQuery } from "@/lib/db";
-import { getCookie } from "cookies-next";
 
 const queryTypes = {
   GET_PERSONEL: (params) =>
     `[SubePersonel_SELECTByTarih] '${params.IDSube}','${params.IDBolum}','${params.DurumTarihi}','${params.Durum}'`,
+  GET_PERSONEL_DETAY: (params) =>
+    `[SubePersonel_SELECTByIDSubePersonel] '${params.IDSubePersonel}'`,
 };
 
 export async function POST(request) {
@@ -14,10 +15,10 @@ export async function POST(request) {
     const { type } = payload;
 
     const sid = request.cookies.get("sid")?.value;
-    const grsisudo = request.cookies.get("grsisudo")?.value;
+    const grsisudoToken = request.cookies.get("grsisudo")?.value;
 
-    const user = await joseDecrypt(sid);
-    const gruSisudo = await joseDecrypt(grsisudo);
+    const user = sid ? await joseDecrypt(sid) : null;
+    const grsisudo = grsisudoToken ? await joseDecrypt(grsisudoToken) : null;
 
     if (!user) {
       return NextResponse.json(
@@ -26,14 +27,28 @@ export async function POST(request) {
       );
     }
 
+    // DÜZELTME: grsisudo yoksa (kullanıcı hiç şirket/şube seçmemişse)
+    // grsisudo.IDSirket satırı öncesi çökerdi — artık net bir hata dönüyor.
+    if (!grsisudo) {
+      return NextResponse.json(
+        { message: "Lütfen önce üstten şirket/şube seçimi yapın." },
+        { status: 400 },
+      );
+    }
+
     const queryParams = {
       IDSirket: grsisudo.IDSirket,
       Yil: grsisudo.Yil,
       IDKullanici: user.IDKullanici,
+      // DÜZELTME: IDSube artık filtreden gelen değeri kullanıyor (kullanıcı
+      // farklı bir şubeyi görüntülemek isteyebilir), context'teki değil.
+      // Filtre panelinde varsayılan olarak context'teki şube seçili geliyor
+      // zaten (PersonelFiltre.tsx buna göre kuruldu).
+      IDSubePersonel: payload.IDSubePersonel,
       IDSube: payload.IDSube,
-      IDBolum: payload.IDBolum,
+      IDBolum: payload.IDBolum ?? "",
       DurumTarihi: payload.DurumTarihi,
-      Durum: payload.Durum,
+      Durum: payload.Durum ?? "",
     };
 
     const queryFunction = queryTypes[type];
@@ -46,6 +61,7 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
+    console.log("Executing query=========================:", query); // Log the query for debugging
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);
