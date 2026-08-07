@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import HeaderCompany from "./header-company";
 import ProfileMenu from "./profile-menu";
 import { ThemeToggle } from "./theme-toggle";
+import { useState } from "react";
 
 type HeaderProps = {
   onToggleSidebar: () => void;
 };
 
 export function Header({ onToggleSidebar }: HeaderProps) {
+  const [openHeaderCompany, setOpenHeaderCompany] = useState(false);
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/70 bg-background/90 px-4 backdrop-blur lg:px-6">
       <div className="flex items-center gap-3">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -10,14 +10,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "../ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Label } from "../ui/label";
 import { months } from "@/utils/data";
 import { Building2Icon } from "lucide-react";
 import {
@@ -25,73 +17,149 @@ import {
   useSirketler,
   useSubeler,
 } from "@/hooks/use-kurumsal-data";
-import { FormSelect } from "../forms";
+import { useCurrentContext, useSaveContext } from "@/hooks/use-context";
+import { FormLabel, FormSelect } from "../forms";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+
+type HeaderCompanyFormValues = {
+  IDGurup?: number | string;
+  IDSirket?: number | string;
+  IDSube?: number | string;
+  Yil: string;
+  Ay: string;
+};
+
+type ContextResponse = {
+  context: {
+    IDGurup?: number | string | null;
+    IDSirket?: number | string | null;
+    IDSube?: number | string | null;
+    Yil?: number | string | null;
+    Ay?: number | string | null;
+  } | null;
+};
 
 const HeaderCompany = () => {
   const currentDate = new Date();
+  const currentYear = String(currentDate.getFullYear());
+  const currentMonth = String(currentDate.getMonth() + 1).padStart(2, "0");
+
+  const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [preferredContext, setPreferredContext] =
+    useState<ContextResponse["context"]>(null);
 
   const years = useMemo(() => {
-    return Array.from({ length: 11 }, (_, i) =>
-      (currentDate.getFullYear() - i).toString(),
-    );
-  }, [currentDate]);
-
-  const form = useForm<any>({
+    return Array.from({ length: 11 }, (_, i) => {
+      const yearValue = String(Number(currentYear) - i);
+      return { value: yearValue, label: yearValue };
+    });
+  }, [currentYear]);
+  const form = useForm<HeaderCompanyFormValues>({
     defaultValues: {
-      IDGurup: "",
-      IDSirket: "",
-      IDSube: "",
+      IDGurup: undefined,
+      IDSirket: undefined,
+      IDSube: undefined,
+      Yil: currentYear,
+      Ay: currentMonth,
     },
   });
-  const selectedGrup = form.watch("IDGurup");
-  const selectedSirket = form.watch("IDSirket");
-  const selectedSube = form.watch("IDSube");
+  const selectedGrup = Number(form.watch("IDGurup") ?? 0);
+  const selectedSirket = Number(form.watch("IDSirket") ?? 0);
+  const selectedSube = Number(form.watch("IDSube") ?? 0);
+  const selectedYear = form.watch("Yil") || currentYear;
+  const selectedMonth = form.watch("Ay") || currentMonth;
 
-  const { gruplar, isLoadingGruplar, createGrup } = useKurumsalData();
-  const {
-    data: sirketler = [],
-    isLoading: isLoadingSirketler,
-    isError: isErrorSirketler,
-  } = useSirketler(selectedGrup ?? 0);
-  const {
-    data: subeler = [],
-    isLoading: isLoadingSubeler,
-    isError: isErrorSubeler,
-  } = useSubeler(selectedSirket ?? 0);
+  const { gruplar } = useKurumsalData();
+  const { data: sirketler = [] } = useSirketler(selectedGrup ?? 0);
+  const { data: subeler = [] } = useSubeler(selectedSirket ?? 0);
 
-  const [year, setYear] = useState(currentDate.getFullYear().toString());
-  const [month, setMonth] = useState(
-    String(currentDate.getMonth() + 1).padStart(2, "0"),
-  );
+  const { data: savedContext, isLoading: isLoadingContext } =
+    useCurrentContext();
+  const saveContext = useSaveContext();
+  const hasHydratedFromContext = useRef(false);
+
+  useEffect(() => {
+    if (isLoadingContext || hasHydratedFromContext.current) return;
+    hasHydratedFromContext.current = true;
+
+    if (savedContext) {
+      form.setValue("IDGurup", savedContext.IDGurup ?? undefined);
+      form.setValue("IDSirket", savedContext.IDSirket ?? undefined);
+      form.setValue("IDSube", savedContext.IDSube ?? undefined);
+      if (savedContext.Yil) form.setValue("Yil", String(savedContext.Yil));
+      if (savedContext.Ay) {
+        form.setValue("Ay", String(savedContext.Ay).padStart(2, "0"));
+      }
+    }
+  }, [isLoadingContext, savedContext, form]);
 
   useEffect(() => {
     if (!gruplar.length) return;
 
-    if (!form.getValues("IDGurup")) {
-      form.setValue("IDGurup", gruplar[0].IDGurup);
+    const currentGrupValue = Number(form.getValues("IDGurup") ?? 0);
+    if (
+      currentGrupValue &&
+      gruplar.some((x) => x.IDGurup === currentGrupValue)
+    ) {
+      return;
     }
-  }, [gruplar, form]);
+
+    const preferredGrup = preferredContext?.IDGurup
+      ? Number(preferredContext.IDGurup)
+      : null;
+    const nextGrup =
+      preferredGrup && gruplar.some((x) => x.IDGurup === preferredGrup)
+        ? preferredGrup
+        : gruplar[0].IDGurup;
+
+    form.setValue("IDGurup", nextGrup);
+  }, [gruplar, form, preferredContext]);
+
   useEffect(() => {
     if (!sirketler.length) return;
 
-    form.setValue("IDSirket", sirketler[0].IDSirket);
-  }, [sirketler, form]);
+    const currentSirketValue = Number(form.getValues("IDSirket") ?? 0);
+    if (
+      currentSirketValue &&
+      sirketler.some((x) => x.IDSirket === currentSirketValue)
+    ) {
+      return;
+    }
+
+    const preferredSirket = preferredContext?.IDSirket
+      ? Number(preferredContext.IDSirket)
+      : null;
+    const nextSirket =
+      preferredSirket && sirketler.some((x) => x.IDSirket === preferredSirket)
+        ? preferredSirket
+        : sirketler[0].IDSirket;
+
+    form.setValue("IDSirket", nextSirket);
+  }, [sirketler, form, preferredContext]);
+
   useEffect(() => {
     if (!subeler.length) return;
 
-    form.setValue("IDSube", subeler[0].IDSube);
-  }, [subeler, form]);
+    const currentSubeValue = Number(form.getValues("IDSube") ?? 0);
+    if (
+      currentSubeValue &&
+      subeler.some((x) => x.IDSube === currentSubeValue)
+    ) {
+      return;
+    }
 
-  useEffect(() => {
-    form.setValue("IDSirket", undefined);
-    form.setValue("IDSube", undefined);
-  }, [selectedGrup]);
+    const preferredSube = preferredContext?.IDSube
+      ? Number(preferredContext.IDSube)
+      : null;
+    const nextSube =
+      preferredSube && subeler.some((x) => x.IDSube === preferredSube)
+        ? preferredSube
+        : subeler[0].IDSube;
 
-  useEffect(() => {
-    form.setValue("IDSube", undefined);
-  }, [selectedSirket]);
+    form.setValue("IDSube", nextSube);
+  }, [subeler, form, preferredContext]);
 
   const currentGrup = useMemo(
     () => gruplar.find((x) => x.IDGurup === selectedGrup),
@@ -111,14 +179,43 @@ const HeaderCompany = () => {
   const title = useMemo(() => {
     return `${currentGrup?.GurupAdi ?? ""} / ${
       currentSirket?.SirketAdi ?? ""
-    } / ${currentSube?.SubeAdi ?? ""} / ${year}/${month}`;
-  }, [currentGrup, currentSirket, currentSube, year, month]);
-  const onSubmit = (data: any) => {
-    console.log("Form submitted:", data);
+    } / ${currentSube?.SubeAdi ?? ""} / ${selectedYear}/${selectedMonth}`;
+  }, [currentGrup, currentSirket, currentSube, selectedYear, selectedMonth]);
+
+  const onSubmit = async (data: HeaderCompanyFormValues) => {
+    if (!data.IDSirket) {
+      toast.error("Lütfen bir şirket seçin.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      await saveContext.mutateAsync({
+        IDGurup: data.IDGurup || null,
+        IDSirket: data.IDSirket,
+        IDSube: data.IDSube || null,
+        Yil: data.Yil,
+        Ay: data.Ay,
+      });
+
+      toast.success("Çalışma bölümü güncellendi.");
+      setOpen(false);
+
+      // Tüm uygulama artık yeni context'e göre çalışmalı; API route'ları
+      // grsisudo cookie'sini server-side okuyor, en garantili yol tam
+      // sayfa yenilemesi — hem server hem client tarafındaki her cache
+      // (React Query dahil) baştan, doğru context'le kurulur.
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error?.message || "Kaydedilemedi.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           color="secondary"
@@ -131,7 +228,7 @@ const HeaderCompany = () => {
             {currentGrup?.GurupAdi ?? ""}
           </span>
           <span className="text-xs text-muted-foreground">
-            {year}/{month}
+            {selectedYear}/{selectedMonth}
           </span>
         </Button>
       </DialogTrigger>
@@ -170,39 +267,31 @@ const HeaderCompany = () => {
               vertical
             />
 
-            <div className="flex items-center gap-4">
-              <Label className="w-24 shrink-0">Dönem</Label>
-              <Select value={year} onValueChange={setYear}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={month} onValueChange={setMonth}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FormLabel label="Dönem Yıl/Ay">
+              <FormSelect
+                control={form.control}
+                name="Yil"
+                options={years}
+                valueKey="value"
+                labelKey="label"
+                vertical
+              />
+              <FormSelect
+                control={form.control}
+                name="Ay"
+                options={months}
+                valueKey="value"
+                labelKey="label"
+                vertical
+              />
+            </FormLabel>
           </div>
         </form>
 
         <DialogFooter>
-          <Button>Kaydet</Button>
+          <Button onClick={form.handleSubmit(onSubmit)} disabled={isSaving}>
+            {isSaving ? "Kaydediliyor..." : "Kaydet"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
