@@ -68,8 +68,6 @@ export function usePersonelListesi(filters: PersonelFilters | null) {
 }
 
 // ---- Personel Detay ----------------------------------------------------
-// id verilmediyse (modal kapalıyken) hiç sorgu atmıyor. Tek kayıt bekleniyor
-// -> normalizeListResponse'un ilk elemanını döndürüyoruz (obje, dizi değil).
 
 export function usePersonelDetay(id: string | number | undefined) {
   return useQuery({
@@ -94,6 +92,43 @@ export function useDeletePersonel() {
         IDSubePersonel: payload.IDSubePersonel,
       }),
     onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: personelKeys.detay(variables.IDSubePersonel),
+      });
+    },
+  });
+}
+
+// ---- Ekleme / Güncelleme ------------------------------------------------
+
+export function useCreatePersonel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: Record<string, unknown>) =>
+      callPersonelApi({
+        type: "INSERT_PERSONEL",
+        ...payload,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: personelKeys.all });
+    },
+  });
+}
+
+export function useUpdatePersonel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      payload: Record<string, unknown> & { IDSubePersonel: string | number },
+    ) =>
+      callPersonelApi({
+        type: "UPDATE_PERSONEL",
+        ...payload,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: personelKeys.all });
       queryClient.invalidateQueries({
         queryKey: personelKeys.detay(variables.IDSubePersonel),
       });
