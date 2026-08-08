@@ -20,7 +20,7 @@ import {
   useIlceler,
   useIller,
   useVergiDaireleri,
-} from "@/hooks/use-genel-data";
+} from "@/hooks/use-il-ilce-vergi-data";
 import { useEffect, useRef } from "react";
 import { FormLabel } from "@/components/forms/form-label";
 

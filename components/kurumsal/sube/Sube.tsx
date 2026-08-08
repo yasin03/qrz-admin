@@ -137,7 +137,7 @@ export default function Sube({ idSirket }: SubeProps) {
           const status = row.original.Durum;
           return (
             <Badge
-              variant={status ? "success" : "destructive"}
+              variant={status ? "success" : "secondary"}
               className="w-20"
             >
               {status ? "Aktif" : "Pasif"}

@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { DeletePersonelRequest } from "@/types/personel";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ---- API çağrısı --------------------------------------------------------
 
@@ -41,7 +42,8 @@ export const personelKeys = {
   all: ["personel"] as const,
   list: (filters: PersonelFilters | null) =>
     [...personelKeys.all, "list", filters] as const,
-  detay: (id: string) => [...personelKeys.all, "detay", id] as const,
+  detay: (id: string | number | undefined) =>
+    [...personelKeys.all, "detay", id ?? ""] as const,
 };
 
 // ---- Personel Listesi ----------------------------------------------------
@@ -65,7 +67,11 @@ export function usePersonelListesi(filters: PersonelFilters | null) {
   });
 }
 
-export function usePersonelDetay(id: string) {
+// ---- Personel Detay ----------------------------------------------------
+// id verilmediyse (modal kapalıyken) hiç sorgu atmıyor. Tek kayıt bekleniyor
+// -> normalizeListResponse'un ilk elemanını döndürüyoruz (obje, dizi değil).
+
+export function usePersonelDetay(id: string | number | undefined) {
   return useQuery({
     queryKey: personelKeys.detay(id),
     queryFn: () =>
@@ -73,6 +79,24 @@ export function usePersonelDetay(id: string) {
         type: "GET_PERSONEL_DETAY",
         IDSubePersonel: id,
       }),
-    select: (data) => normalizeListResponse<any>(data),
+    enabled: Boolean(id),
+    select: (data) => normalizeListResponse<any>(data)[0],
+  });
+}
+
+export function useDeletePersonel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeletePersonelRequest) =>
+      callPersonelApi({
+        type: "DELETE_PERSONEL",
+        IDSubePersonel: payload.IDSubePersonel,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: personelKeys.detay(variables.IDSubePersonel),
+      });
+    },
   });
 }

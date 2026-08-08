@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { joseDecrypt } from "@/lib/token";
-import { ExecuteQuery } from "@/lib/db";
+import { ExecuteQuery, ExecuteQueryDataset } from "@/lib/db";
 import { getCookie } from "cookies-next";
 
 const queryTypes = {
@@ -8,6 +8,7 @@ const queryTypes = {
   GET_ILCELER: (params) => `[Ilce_SELECTByIlKodu] '${params.IlKodu}',''`,
   GET_VERGIDAIRELERI: (params) =>
     `[VergiDairesi_SELECTByIlKodu] '${params.IlKodu}',''`,
+  GET_SABIT_TANIMLAR: (params) => `[SabitTanimMadde_SELECTAll]`,
 };
 
 export async function POST(request) {
@@ -46,7 +47,12 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
-    const result = await ExecuteQuery(query);
+    let result;
+    if (type == "GET_SABIT_TANIMLAR") {
+      result = await ExecuteQueryDataset(query);
+    } else {
+      result = await ExecuteQuery(query);
+    }
 
     return NextResponse.json(result);
   } catch (err) {

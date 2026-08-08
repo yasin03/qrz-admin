@@ -131,10 +131,7 @@ export default function Sirket({ idGurup }: SirketProps) {
         cell: ({ row }) => {
           const status = row.original.Durum;
           return (
-            <Badge
-              variant={status ? "success" : "destructive"}
-              className="w-20"
-            >
+            <Badge variant={status ? "success" : "secondary"} className="w-20">
               {status ? "Aktif" : "Pasif"}
             </Badge>
           );

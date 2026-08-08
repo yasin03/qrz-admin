@@ -60,9 +60,7 @@ const queryTypes = {
 
   UPDATE_SIRKET: (params) =>
     `[Sirket_UpdateByIDSirket] @IDSirket=${sqlNum(params.IDSirket)},${buildSirketParams(params)}`,
-
-  // DÜZELTME: eskiden yanlışlıkla params.IDGurup kullanılıyordu, silinmesi
-  // gereken IDSirket olmalı.
+  
   DELETE_SIRKET: (params) => `[Sirket_DELETEByIDSirket] '${params.IDSirket}'`,
 };
 

@@ -12,12 +12,11 @@ import {
   Power,
   Trash2,
   Search,
-  Plus,
 } from "lucide-react";
-import PersonelEkle, { type KullaniciEkleRef } from "./PersonelEkle";
+import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
 import {
-  usePersonelDetay,
+  useDeletePersonel,
   usePersonelListesi,
   type PersonelFilters,
 } from "@/hooks/use-personel";
@@ -25,6 +24,8 @@ import PersonelFiltre from "./PersonelFiltre";
 import { Badge } from "../ui/badge";
 import { useCurrentContext } from "@/hooks/use-context";
 import { useEffect } from "react";
+import { toast } from "sonner";
+import { ConfirmDialog } from "../customs/ConfirmDialog";
 
 type Personel = {
   SicilNo: string;
@@ -62,11 +63,15 @@ type Personel = {
 };
 
 const Personel = () => {
-  const [selected, setSelected] = useState<Personel[]>([]);
   const [filters, setFilters] = useState<PersonelFilters | null>(null);
-  const kullaniciEkleRef = useRef<KullaniciEkleRef>(null);
   const [searchText, setSearchText] = useState("");
   const { data: context } = useCurrentContext();
+  const deletePersonel = useDeletePersonel();
+  const [openPersonelEkle, setOpenPersonelEkle] = useState(false);
+  const [duzenlenecekId, setDuzenlenecekId] = useState<string | number | null>(
+    null,
+  );
+  const [silinecekId, setSilinecekId] = useState<string | null>(null);
 
   useEffect(() => {
     if (filters || !context?.IDSube) return;
@@ -79,11 +84,31 @@ const Personel = () => {
     });
   }, [context, filters]);
 
-  const { data: personelListesi = [], isLoading: isLoadingPersonel } =
-    usePersonelListesi(filters);
+  const {
+    data: personelListesi = [],
+    isLoading: isLoadingPersonel,
+    refetch: refetchPersonelListesi,
+  } = usePersonelListesi(filters);
 
-  const { data: personelDetay = [], isLoading: isLoadingPersonelDetay } =
-    usePersonelDetay("0");
+  const handleDeleteConfirm = () => {
+    if (!silinecekId) return;
+
+    deletePersonel.mutate(
+      { IDSubePersonel: silinecekId },
+      {
+        onSuccess: () => {
+          toast.success("Personel silindi");
+          refetchPersonelListesi();
+          setSilinecekId(null);
+        },
+        onError: () => {
+          toast.error("Personel silinemedi", {
+            description: "Lütfen daha sonra tekrar deneyiniz.",
+          });
+        },
+      },
+    );
+  };
 
   // ---- 3. Kolon tanımları ----------------------------------------------
   const columns: ColumnDef<Personel>[] = [
@@ -99,7 +124,7 @@ const Personel = () => {
           {
             label: "Düzenle",
             icon: Pencil,
-            onClick: (r) => console.log("düzenle", r.SicilNo),
+            onClick: (r) => setDuzenlenecekId(r.IDSubePersonel),
           },
           {
             label: personel.Durum ? "Pasif Yap" : "Aktif Yap",
@@ -121,7 +146,7 @@ const Personel = () => {
             icon: Trash2,
             variant: "danger",
             separatorBefore: true,
-            onClick: (r) => console.log("sil", r.SicilNo),
+            onClick: (r) => setSilinecekId(r.IDSubePersonel),
           },
         ];
 
@@ -267,10 +292,6 @@ const Personel = () => {
     );
   };
 
-  const openDialogMenu = () => {
-    kullaniciEkleRef.current?.open();
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -286,7 +307,11 @@ const Personel = () => {
             onChange={(e) => setSearchText(e.target.value)}
           />
           <PersonelFiltre onApply={setFilters} />
-          <Button type="button" size="sm" onClick={openDialogMenu}>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setOpenPersonelEkle(true)}
+          >
             <UserPlus className="size-4" />
             Yeni Personel Ekle
           </Button>
@@ -307,7 +332,27 @@ const Personel = () => {
         }}
       />
 
-      <PersonelEkle ref={kullaniciEkleRef} />
+      <PersonelEkle
+        open={openPersonelEkle || duzenlenecekId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setOpenPersonelEkle(false);
+            setDuzenlenecekId(null);
+          }
+        }}
+        id={duzenlenecekId}
+      />
+
+      <ConfirmDialog
+        open={!!silinecekId}
+        onOpenChange={(open) => !open && setSilinecekId(null)}
+        title="Şubeyi sil"
+        description={`Bu personel kalıcı olarak silinecek. Bu işlem geri alınamaz. Onaylıyor musunuz?`}
+        variant="danger"
+        confirmLabel="Sil"
+        isLoading={deletePersonel.isPending}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };
