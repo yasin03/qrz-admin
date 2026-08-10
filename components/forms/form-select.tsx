@@ -89,7 +89,7 @@ export function FormSelect<T extends FieldValues>({
                 const itemValue = String(item[valueKey]);
                 const itemLabel = item[labelKey];
                 return (
-                  <SelectItem key={itemValue} value={itemValue}>
+                  <SelectItem key={itemValue} value={itemValue} className="h-8">
                     {itemLabel}
                   </SelectItem>
                 );

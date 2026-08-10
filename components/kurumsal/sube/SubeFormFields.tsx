@@ -108,7 +108,7 @@ export function SubeFormFields({ control, setValue }: Props) {
     previousIlKodu.current = selectedIlKodu;
   }, [selectedIlKodu, setValue]);
   return (
-    <Accordion type="multiple" defaultValue={["temel"]} className="w-full">
+    <Accordion type="single" defaultValue={"temel"} className="w-full">
       {/* Temel Bilgiler */}
       <AccordionItem value="temel">
         <AccordionTrigger>

@@ -4,6 +4,7 @@ export type WorkingContext = {
   IDGurup?: string | number | null;
   IDSirket: string | number;
   IDSube?: string | number | null;
+  IDBolum?: string | number | null;
   Yil: string;
   Ay?: string | null;
 };

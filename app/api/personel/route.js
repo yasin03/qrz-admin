@@ -7,7 +7,7 @@ function sqlStr(value) {
 }
 
 function sqlNum(value) {
-  return `'${Number(value ?? 0)}'`;
+  return `${Number(value ?? 0)}`;
 }
 
 function buildPersonelParams(p) {
@@ -27,21 +27,21 @@ function buildPersonelParams(p) {
     sqlStr(p.KanGurubu),
     sqlStr(p.IseIlkGirisTarihi),
     sqlStr(p.IseSonGirisTarihi),
-    sqlStr(p.SgkDurumu),
-    sqlStr(p.IstihdamDurumu),
+    sqlNum(p.SgkDurumu),
+    sqlNum(p.IstihdamDurumu),
     sqlStr(p.PersonelMeslekKodu),
     sqlStr(p.PersonelSgkBelgeTuru),
     sqlStr(p.PersonelKanunNo),
-    sqlStr(p.PersonelGorevKodu),
-    sqlStr(p.CalismaDurumu),
-    sqlStr(p.Ucret),
-    sqlStr(p.MaasParaBirimi),
-    sqlStr(p.OdemeSekli),
-    sqlStr(p.UcretTipi),
-    sqlStr(p.OgrenimDurumu),
+    sqlNum(p.PersonelGorevKodu),
+    sqlNum(p.CalismaDurumu),
+    sqlNum(p.Ucret),
+    sqlNum(p.MaasParaBirimi),
+    sqlNum(p.OdemeSekli),
+    sqlNum(p.UcretTipi),
+    sqlNum(p.OgrenimDurumu),
     sqlStr(p.MezuniyetYili),
     sqlStr(p.MezuniyetBolumu),
-    sqlStr(p.IDBanka),
+    sqlNum(p.IDBanka),
     sqlStr(p.BankaSubeKodu),
     sqlStr(p.BankaHesapNo),
     sqlStr(p.BankaIbanNo),
@@ -53,51 +53,51 @@ function buildPersonelParams(p) {
     sqlStr(p.EskiHukumluDurumu),
     sqlStr(p.OzurluDurumu),
     sqlStr(p.AzCalismaDurumu),
-    sqlStr(p.AgiOrani),
-    sqlStr(p.BesOrani),
-    sqlStr(p.DevredenSgkMatrahi),
-    sqlStr(p.KumulatifSgkMatrahi),
+    sqlNum(p.AgiOrani),
+    sqlNum(p.BesOrani),
+    sqlNum(p.DevredenSgkMatrahi),
+    sqlNum(p.KumulatifSgkMatrahi),
     sqlStr(p.AuKumulatifVergiMatrahi),
     sqlStr(p.Telefon),
     sqlStr(p.Adres),
     sqlStr(p.Aciklama),
     sqlStr(p.CalismaAlani),
     sqlStr(p.Koordinatorluk),
-    sqlStr(p.OzurlulukDerecesi),
+    sqlNum(p.OzurlulukDerecesi),
     sqlStr(p.SendikaDurumu),
     sqlStr(p.GorevAdi),
     sqlStr(p.UnvanAdi),
     sqlStr(p.OzelKod),
     sqlStr(p.OzelKod2),
     sqlStr(p.AzCalismaDurumuGun),
-    sqlStr(p.AzCalismaDurumuGunSayisi),
-    sqlStr(p.IDPersonelIstisnaDurum),
+    sqlNum(p.AzCalismaDurumuGunSayisi),
+    sqlNum(p.IDPersonelIstisnaDurum),
     sqlStr(p.IstisnaDurumBilgi),
     sqlStr(p.IstisnaDurumTarih),
     sqlStr(p.PersonelSigortaKolu),
     sqlStr(p.IskurKayit),
     sqlStr(p.IskurKayitNo),
-    sqlStr(p.Boy),
-    sqlStr(p.Kilo),
-    sqlStr(p.Yas),
+    sqlNum(p.Boy),
+    sqlNum(p.Kilo),
+    sqlNum(p.Yas),
     sqlStr(p.KimlikKartiDuzenlemeTarihi),
     sqlStr(p.KimlikKartiBitisTarihi),
     sqlStr(p.KimlikKartiSeriNo),
-    sqlStr(p.GunlukUcret),
-    sqlStr(p.SaatlikUcret),
-    sqlStr(p.SozlesmeUcret),
-    sqlStr(p.SozlesmeOdemeSekli),
-    sqlStr(p.SozlesmeUcret2),
-    sqlStr(p.SozlesmeOdemeSekli2),
-    sqlStr(p.Ucret2),
-    sqlStr(p.GunlukUcret2),
-    sqlStr(p.SaatlikUcret2),
+    sqlNum(p.GunlukUcret),
+    sqlNum(p.SaatlikUcret),
+    sqlNum(p.SozlesmeUcret),
+    sqlNum(p.SozlesmeOdemeSekli),
+    sqlNum(p.SozlesmeUcret2),
+    sqlNum(p.SozlesmeOdemeSekli2),
+    sqlNum(p.Ucret2),
+    sqlNum(p.GunlukUcret2),
+    sqlNum(p.SaatlikUcret2),
     sqlStr(p.HastalikRiskPrimDurumu),
-    sqlStr(p.TesvikOrani),
+    sqlNum(p.TesvikOrani),
     sqlStr(p.VergidenMuaf),
     sqlStr(p.MaliMesuliyet),
     sqlStr(p.BordroIstisnaUygulama),
-    sqlStr(p.NetUcret),
+    sqlNum(p.NetUcret),
     sqlStr(p.YardimHaric),
     sqlStr(p.AgiHaric),
     sqlStr(p.IlKodu),
@@ -106,7 +106,7 @@ function buildPersonelParams(p) {
     sqlStr(p.AsgeriUcretli),
     sqlStr(p.UcretOtomatikIsle),
     sqlStr(p.UcretOdemeGun),
-    sqlStr(p.GecmistenKalanIzinGun),
+    sqlNum(p.GecmistenKalanIzinGun),
   ].join(",");
 }
 
@@ -152,15 +152,12 @@ export async function POST(request) {
       IDSirket: grsisudo.IDSirket,
       Yil: grsisudo.Yil,
       IDKullanici: user.IDKullanici,
-      // DÜZELTME: IDSube artık filtreden gelen değeri kullanıyor (kullanıcı
-      // farklı bir şubeyi görüntülemek isteyebilir), context'teki değil.
-      // Filtre panelinde varsayılan olarak context'teki şube seçili geliyor
-      // zaten (PersonelFiltre.tsx buna göre kuruldu).
       IDSubePersonel: payload.IDSubePersonel,
       IDSube: payload.IDSube,
       IDBolum: payload.IDBolum ?? "",
       DurumTarihi: payload.DurumTarihi,
       Durum: payload.Durum ?? "",
+      ...payload,
     };
 
     const queryFunction = queryTypes[type];
@@ -173,6 +170,7 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
+    console.log("Executing query====================:", query);
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

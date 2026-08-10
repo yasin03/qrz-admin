@@ -101,7 +101,7 @@ export type PersonelForm = {
   UnvanAdi: string;
   OzelKod: string;
   OzelKod2: string;
-
+  VardiyaliCalismaDurumu: boolean;
   // Adres Bilgileri
   Adres: string;
   Telefon: string;
@@ -124,7 +124,7 @@ export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
   MedeniDurum: "",
   Uyruk: "",
   KanGurubu: "",
-  OgrenimDurumu: "",
+  OgrenimDurumu: "51",
   MezuniyetYili: "",
   MezuniyetBolumu: "",
   Boy: "",
@@ -206,6 +206,7 @@ export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
   UnvanAdi: "",
   OzelKod: "",
   OzelKod2: "",
+  VardiyaliCalismaDurumu: false,
 
   Adres: "",
   Telefon: "",
@@ -319,7 +320,8 @@ export function mapPersonelToForm(personel: any): PersonelForm {
     OzurluDurumu: Boolean(personel.OzurluDurumu),
     AzCalismaDurumu: Boolean(personel.AzCalismaDurumu),
     AzCalismaDurumuGun: Boolean(personel.AzCalismaDurumuGun),
-
+    VardiyaliCalismaDurumu: Boolean(personel.VardiyaliCalismaDurumu),
+    
     Adres: str(personel.Adres),
     IlKodu: str(personel.IlKodu),
     IlceKodu: str(personel.IlceKodu),

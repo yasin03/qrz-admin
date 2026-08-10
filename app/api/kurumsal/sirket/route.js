@@ -87,8 +87,6 @@ export async function POST(request) {
       );
     }
 
-    // Session'dan gelenler (client'ın göndermesine güvenmiyoruz):
-    // IDFirma ve IDKullanici her zaman cookie'deki oturumdan alınır.
     const queryParams = {
       ...payload,
       IDFirma: user.IDFirma,
@@ -96,7 +94,6 @@ export async function POST(request) {
     };
 
     const query = queryFunction(queryParams);
-    console.log("Executing query:", query);
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import {
   Controller,
   Control,
@@ -27,18 +27,29 @@ import {
 
 // ---- Format tipleri ve dönüştürücüleri -----------------------------------
 
-export type InputFormat = "tcno" | "vergino" | "tel" | "number" | "text";
+export type InputFormat =
+  | "tcno"
+  | "vergino"
+  | "tel"
+  | "number"
+  | "text"
+  | "money";
 
 /** Her format için native input'a verilecek en uygun tip/inputMode/maxLength. */
 const FORMAT_META: Record<
   InputFormat,
-  { htmlType: string; inputMode?: "numeric" | "text"; maxLength?: number }
+  {
+    htmlType: string;
+    inputMode?: "numeric" | "text" | "decimal";
+    maxLength?: number;
+  }
 > = {
   tcno: { htmlType: "text", inputMode: "numeric", maxLength: 11 },
   vergino: { htmlType: "text", inputMode: "numeric", maxLength: 10 },
   tel: { htmlType: "tel", inputMode: "numeric", maxLength: 13 }, // "555 444 22 33" -> 13 karakter
   number: { htmlType: "text", inputMode: "numeric" },
   text: { htmlType: "text" },
+  money: { htmlType: "text", inputMode: "decimal" },
 };
 
 /** Cep telefonunu "555 444 22 33" şeklinde grupluyor, başındaki 0'ı atıyor. */
@@ -75,6 +86,62 @@ function applyFormat(raw: string, format?: InputFormat): string {
   }
 }
 
+// ---- "money" format yardımcıları ------------------------------------------
+// Form değeri (field.value / API'ye giden) HER ZAMAN düz ondalık string:
+// "255", "3500", "4345.88" gibi (nokta ondalık ayracı, binlik ayracı yok).
+// Gösterilen (ekrandaki) değer ise Türkçe formatlı: "255,00", "3.500,00",
+// "4.345,88", "1.250.000,54" — ikisi farklı olduğu için ayrı bir alt
+// component (MoneyField) bu ikisi arasındaki dönüşümü yönetiyor.
+
+/** API formatındaki bir değeri (örn. "4345.88") ekran formatına çevirir. */
+function formatMoneyDisplay(
+  apiValue: string | number | undefined | null,
+): string {
+  if (apiValue === "" || apiValue === null || apiValue === undefined) return "";
+  const [wholeRaw, decRaw = ""] = String(apiValue).split(".");
+  const whole = wholeRaw.replace(/\D/g, "") || "0";
+  const decimals = decRaw.replace(/\D/g, "").padEnd(2, "0").slice(0, 2);
+  const groupedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${groupedWhole},${decimals}`;
+}
+
+/**
+ * Kullanıcının o an yazdığı ham metni işler. Ondalığı YAZARKEN zorla
+ * 2 haneye tamamlamıyoruz (yoksa "88" yazmaya çalışırken her tuşta
+ * "80"a zıplardı) — o tamamlama sadece onBlur'da yapılıyor.
+ */
+function applyMoneyFormat(raw: string): { display: string; api: string } {
+  let cleaned = raw.replace(/[^\d,]/g, "");
+  if (!cleaned) return { display: "", api: "" };
+
+  // Sadece ilk virgül geçerli, geri kalanları at.
+  const firstComma = cleaned.indexOf(",");
+  if (firstComma !== -1) {
+    cleaned =
+      cleaned.slice(0, firstComma + 1) +
+      cleaned.slice(firstComma + 1).replace(/,/g, "");
+  }
+
+  const hasComma = cleaned.includes(",");
+  let [wholePart, decPart = ""] = cleaned.split(",");
+  wholePart = wholePart.replace(/^0+(?=\d)/, "");
+  decPart = decPart.slice(0, 2);
+
+  const groupedWhole = (wholePart || "0").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  const display = hasComma ? `${groupedWhole},${decPart}` : groupedWhole;
+  const api = hasComma ? `${wholePart || "0"}.${decPart}` : wholePart || "";
+
+  return { display, api };
+}
+
+/** onBlur'da ondalığı tam 2 haneye tamamlar: "4345.8" -> "4345.80". */
+function padMoneyApiValue(api: string): string {
+  if (!api) return "";
+  const [whole, dec = ""] = api.split(".");
+  return `${whole || "0"}.${dec.padEnd(2, "0").slice(0, 2)}`;
+}
+
 // ---- FormInput ------------------------------------------------------------
 
 type FormInputProps<T extends FieldValues> = {
@@ -95,6 +162,7 @@ type FormInputProps<T extends FieldValues> = {
    * - "tel": sadece rakam, 10 haneli, "555 444 22 33" formatında, başında 0 olmaz
    * - "number": sadece rakam
    * - "text": sadece harf/metin, rakam girilemez
+   * - "money": Türkçe para gösterimi ("1.250.000,54"), form değeri düz
    */
   format?: InputFormat;
 
@@ -169,6 +237,19 @@ export function FormInput<T extends FieldValues>({
               disabled={disabled}
               className={inputClassName}
             />
+          ) : format === "money" ? (
+            <MoneyField
+              id={name}
+              field={field}
+              placeholder={placeholder}
+              disabled={disabled}
+              readOnly={readOnly}
+              className={cn(
+                startIcon && "pl-10",
+                endIcon && "pr-10",
+                inputClassName,
+              )}
+            />
           ) : (
             <div className="relative">
               {startIcon && (
@@ -212,9 +293,7 @@ export function FormInput<T extends FieldValues>({
           );
 
         const errorNode = fieldState.error && (
-          <p className="text-sm text-destructive">
-            {fieldState.error.message}
-          </p>
+          <p className="text-sm text-destructive">{fieldState.error.message}</p>
         );
 
         // Label verilmediyse (FormLabel/FormGroup içinde tek başlık altında
@@ -223,9 +302,7 @@ export function FormInput<T extends FieldValues>({
           return (
             <Field className={className}>
               {description && (
-                <p className="text-xs text-muted-foreground">
-                  {description}
-                </p>
+                <p className="text-xs text-muted-foreground">{description}</p>
               )}
               {inputNode}
               {errorNode}
@@ -335,5 +412,69 @@ function DateField({
         />
       </PopoverContent>
     </Popover>
+  );
+}
+
+// ---- format="money" için para giriş alanı --------------------------------
+// field.value her zaman API formatında ("4345.88") tutuluyor. Ekrandaki
+// metin ise ayrı bir local state'te — çünkü yazarken canlı Türkçe formata
+// çeviriyoruz (binlik nokta, ondalık virgül) ama ondalığı 2 haneye
+// TAMAMLAMA işini sadece blur'da yapıyoruz (yoksa yazarken zıplardı).
+
+type MoneyFieldProps = {
+  id: string;
+  field: ControllerRenderProps<any, any>;
+  placeholder?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  className?: string;
+};
+
+function MoneyField({
+  id,
+  field,
+  placeholder,
+  disabled,
+  readOnly,
+  className,
+}: MoneyFieldProps) {
+  const [text, setText] = useState(() => formatMoneyDisplay(field.value));
+  // field.value'nun EN SON kendi onChange'imizle mi değiştiğini, yoksa
+  // dışarıdan mı (form.reset gibi) değiştiğini ayırt etmek için.
+  const lastEmitted = useRef(field.value);
+
+  useEffect(() => {
+    if (field.value !== lastEmitted.current) {
+      setText(formatMoneyDisplay(field.value));
+      lastEmitted.current = field.value;
+    }
+  }, [field.value]);
+
+  return (
+    <Input
+      id={id}
+      name={field.name}
+      ref={field.ref}
+      value={text}
+      onChange={(event) => {
+        const { display, api } = applyMoneyFormat(event.target.value);
+        setText(display);
+        lastEmitted.current = api;
+        field.onChange(api);
+      }}
+      onBlur={() => {
+        const padded = padMoneyApiValue(lastEmitted.current ?? "");
+        lastEmitted.current = padded;
+        field.onChange(padded);
+        setText(formatMoneyDisplay(padded));
+        field.onBlur();
+      }}
+      type="text"
+      inputMode="decimal"
+      placeholder={placeholder ?? "0,00"}
+      disabled={disabled}
+      readOnly={readOnly}
+      className={className}
+    />
   );
 }
