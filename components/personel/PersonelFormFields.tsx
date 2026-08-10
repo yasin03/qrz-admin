@@ -18,10 +18,8 @@ import {
 import {
   useIlceler,
   useIller,
-  useVergiDaireleri,
 } from "@/hooks/use-il-ilce-vergi-data";
 import { useEffect, useMemo, useRef } from "react";
-import { FormLabel } from "@/components/forms/form-label";
 import { PersonelForm } from "./PersonelFormType";
 import { useSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 

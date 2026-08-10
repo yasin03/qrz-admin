@@ -36,6 +36,20 @@ export type PersonelFilters = {
   Durum: DurumFiltre;
 };
 
+export type PersonelSgkIslemType =
+  | "SGK_GIRIS"
+  | "MANUEL_GIRIS"
+  | "SGK_CIKIS"
+  | "MANUEL_CIKIS";
+
+export type PersonelSgkIslemPayload = {
+  type: PersonelSgkIslemType;
+  IDSubePersonel: string;
+  GirisTarihi?: string;
+  CikisTarihi?: string;
+  PersonelAyrilisKodu?: string;
+};
+
 // ---- Query key factory ----------------------------------------------
 
 export const personelKeys = {
@@ -132,6 +146,30 @@ export function useUpdatePersonel() {
       queryClient.invalidateQueries({
         queryKey: personelKeys.detay(variables.IDSubePersonel),
       });
+    },
+  });
+}
+
+export function usePersonelSgkIslem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: PersonelSgkIslemPayload) => {
+      const response = await fetch("/api/personel/sgk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.message || "SGK işlemi başarısız oldu.");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: personelKeys.all });
     },
   });
 }

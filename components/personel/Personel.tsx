@@ -2,7 +2,7 @@
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { RowAction, RowActions } from "../customs/RowActions";
 import {
   UserPlus,
@@ -17,7 +17,9 @@ import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
 import {
   useDeletePersonel,
+  usePersonelSgkIslem,
   usePersonelListesi,
+  type PersonelSgkIslemPayload,
   type PersonelFilters,
 } from "@/hooks/use-personel";
 import PersonelFiltre from "./PersonelFiltre";
@@ -26,6 +28,7 @@ import { useCurrentContext } from "@/hooks/use-context";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "../customs/ConfirmDialog";
+import PersonelSgkDialog from "./PersonelSgkDialog";
 
 type Personel = {
   SicilNo: string;
@@ -62,16 +65,23 @@ type Personel = {
   SgkCikisDurum: string | null;
 };
 
+type SgkDialogState = {
+  personel: Personel;
+  isActive: boolean;
+};
+
 const Personel = () => {
   const [filters, setFilters] = useState<PersonelFilters | null>(null);
   const [searchText, setSearchText] = useState("");
   const { data: context } = useCurrentContext();
   const deletePersonel = useDeletePersonel();
+  const sgkIslem = usePersonelSgkIslem();
   const [openPersonelEkle, setOpenPersonelEkle] = useState(false);
   const [duzenlenecekId, setDuzenlenecekId] = useState<string | number | null>(
     null,
   );
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
+  const [sgkDialog, setSgkDialog] = useState<SgkDialogState | null>(null);
 
   useEffect(() => {
     if (filters || !context?.IDSube) return;
@@ -110,6 +120,36 @@ const Personel = () => {
     );
   };
 
+  const handleSgkAction = (personel: Personel, isActive: boolean) => {
+    setSgkDialog({ personel, isActive });
+  };
+
+  const handleSgkSubmit = async (payload: PersonelSgkIslemPayload) => {
+    await sgkIslem.mutateAsync(payload, {
+      onSuccess: () => {
+        const isCikis =
+          payload.type === "SGK_CIKIS" || payload.type === "MANUEL_CIKIS";
+        const isManuel =
+          payload.type === "MANUEL_GIRIS" || payload.type === "MANUEL_CIKIS";
+
+        toast.success(
+          isCikis
+            ? isManuel
+              ? "Manuel çıkış işlemi tamamlandı"
+              : "SGK çıkış işlemi tamamlandı"
+            : isManuel
+              ? "Manuel giriş işlemi tamamlandı"
+              : "SGK giriş işlemi tamamlandı",
+        );
+        setSgkDialog(null);
+        refetchPersonelListesi();
+      },
+      onError: (error) => {
+        toast.error(error?.message || "SGK işlemi başarısız oldu.");
+      },
+    });
+  };
+
   // ---- 3. Kolon tanımları ----------------------------------------------
   const columns: ColumnDef<Personel>[] = [
     {
@@ -127,9 +167,9 @@ const Personel = () => {
             onClick: (r) => setDuzenlenecekId(r.IDSubePersonel),
           },
           {
-            label: personel.Durum ? "Pasif Yap" : "Aktif Yap",
+            label: personel.Durum ? "SGK İşten Çıkış Yap" : "SGK İşe Giriş Yap",
             icon: Power,
-            onClick: (r) => console.log("durum değiştir", r.SicilNo),
+            onClick: (r) => handleSgkAction(r, r.Durum),
           },
           {
             label: "Rapor Oluştur",
@@ -341,6 +381,15 @@ const Personel = () => {
           }
         }}
         id={duzenlenecekId}
+      />
+
+      <PersonelSgkDialog
+        open={Boolean(sgkDialog)}
+        onOpenChange={(open) => !open && setSgkDialog(null)}
+        personel={sgkDialog?.personel ?? null}
+        isActive={Boolean(sgkDialog?.isActive)}
+        isSubmitting={sgkIslem.isPending}
+        onSubmit={handleSgkSubmit}
       />
 
       <ConfirmDialog

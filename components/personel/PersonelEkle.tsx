@@ -14,20 +14,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { FormInput, FormSelect, FormSwitch } from "@/components/forms";
-import {
   useCreatePersonel,
   usePersonelDetay,
   useUpdatePersonel,
 } from "@/hooks/use-personel";
-import { useIlceler, useIller } from "@/hooks/use-il-ilce-vergi-data";
 import { PERSONEL_DEFAULT_VALUES, PersonelForm } from "./PersonelFormType";
-import { useSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 import { toast } from "sonner";
 import { useCurrentContext } from "@/hooks/use-context";
 import { PersonelFormFields } from "./PersonelFormFields";

@@ -102,6 +102,7 @@ export interface PersonelType {
   UcretOtomatikIsle: boolean;
   UcretOdemeGun: number | null;
   GecmistenKalanIzinGun: number | null;
+  VardiyaliCalismaDurumu: boolean;
 }
 
 // Liste proc'unun (SubePersonel_SELECTByTarih) döndürdüğü, tabloda

@@ -1,8 +1,4 @@
-// Tüm alanlar form içinde string/boolean olarak tutuluyor (FormInput/
-// FormSelect'in beklediği gibi) — sayısal alanlar bile string ("3577.5")
-// çünkü native <input type="number"> zaten string value ile çalışıyor,
-// react-hook-form Controller'ın controlled/uncontrolled geçişini
-// engellemek için hiçbiri undefined bırakılmıyor.
+import { PersonelType } from "@/types/personel";
 
 export type PersonelForm = {
   // Personel Bilgileri
@@ -218,7 +214,7 @@ export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
 };
 
 /** API'den gelen ham personel objesini forma yazılabilir hâle çevirir. */
-export function mapPersonelToForm(personel: any): PersonelForm {
+export function mapPersonelToForm(personel: PersonelType): PersonelForm {
   const dateOnly = (value: unknown) =>
     typeof value === "string" && value ? value.slice(0, 10) : "";
 
@@ -321,7 +317,7 @@ export function mapPersonelToForm(personel: any): PersonelForm {
     AzCalismaDurumu: Boolean(personel.AzCalismaDurumu),
     AzCalismaDurumuGun: Boolean(personel.AzCalismaDurumuGun),
     VardiyaliCalismaDurumu: Boolean(personel.VardiyaliCalismaDurumu),
-    
+
     Adres: str(personel.Adres),
     IlKodu: str(personel.IlKodu),
     IlceKodu: str(personel.IlceKodu),
