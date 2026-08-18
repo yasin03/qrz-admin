@@ -34,6 +34,10 @@ export type PersonelFilters = {
   IDBolum: string | number | "";
   DurumTarihi: string; // "yyyy-MM-dd"
   Durum: DurumFiltre;
+  UcretTipi?: "" | "BRÜT" | "NET";
+  Cinsiyet?: "" | "KADIN" | "ERKEK";
+  MedeniDurum?: "" | "BEKAR" | "EVLİ";
+  CalismaDurumu?: "" | "ÇALISIYOR" | "ÇALIŞMIYOR";
 };
 
 export type PersonelSgkIslemType =

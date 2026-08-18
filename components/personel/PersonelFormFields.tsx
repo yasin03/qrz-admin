@@ -7,7 +7,12 @@ import {
   useWatch,
 } from "react-hook-form";
 
-import { FormInput, FormSelect, FormSwitch } from "@/components/forms";
+import {
+  FormInput,
+  FormLabel,
+  FormSelect,
+  FormSwitch,
+} from "@/components/forms";
 import { cn } from "@/lib/utils";
 import {
   Accordion,
@@ -15,10 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  useIlceler,
-  useIller,
-} from "@/hooks/use-il-ilce-vergi-data";
+import { useIlceler, useIller } from "@/hooks/use-il-ilce-vergi-data";
 import { useEffect, useMemo, useRef } from "react";
 import { PersonelForm } from "./PersonelFormType";
 import { useSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
@@ -194,6 +196,8 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     medeniDurumlar,
     kanGruplari,
     uyruklar,
+    ozurlulukDurumlari,
+    kanBagiDurumlari,
   } = useSabitTanimlar();
 
   const personelAyrilisKoduOptions = useMemo(
@@ -430,7 +434,7 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               control={control}
               name="OzurlulukDerecesi"
               label="Özürlülük Derecesi"
-              options={maasParaBirimleri}
+              options={ozurlulukDurumlari}
             />
             <FormSelect
               control={control}
@@ -438,24 +442,11 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               label="* Maaş Para Birimi"
               options={maasParaBirimleri}
             />
-            <FormInput
-              control={control}
-              name="Ucret"
-              label="* Ücret"
-              format="money"
-            />
-            <FormInput
-              control={control}
-              name="GunlukUcret"
-              label="* Günlük Ücret"
-              format="money"
-            />
-            <FormInput
-              control={control}
-              name="SaatlikUcret"
-              label="* Saatlik Ücret"
-              format="money"
-            />
+            <FormLabel label="* Ücret (Aylık/Günlük/Saatlik)">
+              <FormInput control={control} name="Ucret" format="money" />
+              <FormInput control={control} name="GunlukUcret" format="money" />
+              <FormInput control={control} name="SaatlikUcret" format="money" />
+            </FormLabel>
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -469,23 +460,23 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
         </AccordionTrigger>
         <AccordionContent className="p-4">
           <div className="pt-1 space-y-2">
-            <FormSelect
-              control={control}
-              name="IlKodu"
-              label="İl"
-              options={iller}
-              valueKey="IlKodu"
-              labelKey="IlAdi"
-            />
-            <FormSelect
-              control={control}
-              name="IlceKodu"
-              label="İlçe"
-              options={ilceler}
-              valueKey="IlceKodu"
-              labelKey="IlceAdi"
-              disabled={!selectedIlKodu}
-            />
+            <FormLabel label="İl / İlçe">
+              <FormSelect
+                control={control}
+                name="IlKodu"
+                options={iller}
+                valueKey="IlKodu"
+                labelKey="IlAdi"
+              />
+              <FormSelect
+                control={control}
+                name="IlceKodu"
+                options={ilceler}
+                valueKey="IlceKodu"
+                labelKey="IlceAdi"
+                disabled={!selectedIlKodu}
+              />
+            </FormLabel>
             <FormInput control={control} name="Adres" label="Adres" />
             <FormInput
               control={control}

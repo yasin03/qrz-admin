@@ -18,11 +18,39 @@ const DURUM_OPTIONS = [
   { label: "Yeni Eklenenler", value: "YENİ" },
 ];
 
+const UCRET_TIPI_OPTIONS = [
+  { label: "Tümü", value: "TÜMÜ" },
+  { label: "BRÜT", value: "BRÜT" },
+  { label: "NET", value: "NET" },
+];
+
+const CINSIYET_OPTIONS = [
+  { label: "Tümü", value: "TÜMÜ" },
+  { label: "KADIN", value: "KADIN" },
+  { label: "ERKEK", value: "ERKEK" },
+];
+
+const MEDENI_DURUM_OPTIONS = [
+  { label: "Tümü", value: "TÜMÜ" },
+  { label: "BEKAR", value: "BEKAR" },
+  { label: "EVLİ", value: "EVLİ" },
+];
+
+const CALISMA_DURUMU_OPTIONS = [
+  { label: "Tümü", value: "TÜMÜ" },
+  { label: "ÇALISIYOR", value: "ÇALISIYOR" },
+  { label: "ÇALIŞMIYOR", value: "ÇALIŞMIYOR" },
+];
+
 type FormValues = {
   IDSube: string | number;
   IDBolum: string | number;
   Durum: string;
   DurumTarihi: string;
+  UcretTipi: "" | "BRÜT" | "NET";
+  Cinsiyet: "" | "KADIN" | "ERKEK";
+  MedeniDurum: "" | "BEKAR" | "EVLİ";
+  CalismaDurumu: "" | "ÇALISIYOR" | "ÇALIŞMIYOR";
 };
 
 type Props = {
@@ -40,6 +68,10 @@ export default function PersonelFiltre({ onApply }: Props) {
       IDBolum: "",
       Durum: "TÜMÜ",
       DurumTarihi: format(new Date(), "yyyy-MM-dd"),
+      UcretTipi: "",
+      Cinsiyet: "",
+      MedeniDurum: "",
+      CalismaDurumu: "",
     },
   });
 
@@ -62,16 +94,16 @@ export default function PersonelFiltre({ onApply }: Props) {
 
   const handleApply = (values: FormValues) => {
     const tumu = values.Durum === "TÜMÜ";
-    console.log("FORM VALUES:", values);
     const filters = {
       IDSube: values.IDSube,
       IDBolum: values.IDBolum,
       Durum: tumu ? "" : (values.Durum as PersonelFilters["Durum"]),
       DurumTarihi: tumu ? "" : values.DurumTarihi,
+      UcretTipi: values.UcretTipi,
+      Cinsiyet: values.Cinsiyet,
+      MedeniDurum: values.MedeniDurum,
+      CalismaDurumu: values.CalismaDurumu,
     };
-
-    console.log("GÖNDERİLEN FİLTRE:", filters);
-
     onApply(filters);
   };
 
@@ -81,6 +113,10 @@ export default function PersonelFiltre({ onApply }: Props) {
       IDBolum: "",
       Durum: "TÜMÜ",
       DurumTarihi: format(new Date(), "yyyy-MM-dd"),
+      UcretTipi: "",
+      Cinsiyet: "",
+      MedeniDurum: "",
+      CalismaDurumu: "",
     });
   };
 
@@ -128,6 +164,30 @@ export default function PersonelFiltre({ onApply }: Props) {
             name="DurumTarihi"
             label="Durum Tarihi"
             type="date"
+          />
+          <FormSelect
+            control={form.control}
+            name="UcretTipi"
+            label="Ücret Tipi"
+            options={UCRET_TIPI_OPTIONS}
+          />
+          <FormSelect
+            control={form.control}
+            name="Cinsiyet"
+            label="Cinsiyet"
+            options={CINSIYET_OPTIONS}
+          />
+          <FormSelect
+            control={form.control}
+            name="MedeniDurum"
+            label="Medeni Durum"
+            options={MEDENI_DURUM_OPTIONS}
+          />
+          <FormSelect
+            control={form.control}
+            name="CalismaDurumu"
+            label="Çalışma Durumu"
+            options={CALISMA_DURUMU_OPTIONS}
           />
         </div>
 

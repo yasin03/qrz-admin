@@ -79,5 +79,7 @@ export function useSabitTanimlar() {
     medeniDurumlar: toOptions(data[8]),
     kanGruplari: toOptions(data[9]),
     uyruklar: toOptions(data[10]),
+    ozurlulukDurumlari: toOptions(data[11]),
+    kanBagiDurumlari: toOptions(data[12]),
   };
 }

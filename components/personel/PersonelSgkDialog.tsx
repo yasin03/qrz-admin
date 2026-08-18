@@ -157,12 +157,14 @@ export default function PersonelSgkDialog({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormInput
-            control={form.control}
-            name="GirisTarihi"
-            label="Giriş Tarihi"
-            type="date"
-          />
+          {!isActive && (
+            <FormInput
+              control={form.control}
+              name="GirisTarihi"
+              label="Giriş Tarihi"
+              type="date"
+            />
+          )}
 
           {isActive && (
             <>
@@ -185,16 +187,6 @@ export default function PersonelSgkDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            color="secondary"
-            appearance="outline"
-            disabled={isSubmitting}
-            onClick={() => onOpenChange(false)}
-          >
-            İptal
-          </Button>
-
           {isActive ? (
             <>
               <Button
@@ -232,6 +224,15 @@ export default function PersonelSgkDialog({
               </Button>
             </>
           )}
+          <Button
+            type="button"
+            color="secondary"
+            appearance="outline"
+            disabled={isSubmitting}
+            onClick={() => onOpenChange(false)}
+          >
+            İptal
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

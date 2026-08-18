@@ -2,17 +2,9 @@
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { RowAction, RowActions } from "../customs/RowActions";
-import {
-  UserPlus,
-  FileText,
-  Merge,
-  Pencil,
-  Power,
-  Trash2,
-  Search,
-} from "lucide-react";
+import { UserPlus, Pencil, Trash2, Search, Hospital } from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
 import {
@@ -100,6 +92,57 @@ const Personel = () => {
     refetch: refetchPersonelListesi,
   } = usePersonelListesi(filters);
 
+  const filteredPersonelListesi = useMemo(() => {
+    const query = searchText.trim().toLocaleLowerCase("tr-TR");
+    const selectedUcretTipi = filters?.UcretTipi || "";
+    const selectedCinsiyet = filters?.Cinsiyet || "";
+    const selectedMedeniDurum = filters?.MedeniDurum || "";
+    const selectedCalismaDurumu = filters?.CalismaDurumu || "";
+
+    const hasTextFilter = Boolean(query);
+    const hasSelectFilter = Boolean(
+      selectedUcretTipi ||
+      selectedCinsiyet ||
+      selectedMedeniDurum ||
+      selectedCalismaDurumu,
+    );
+
+    if (!hasTextFilter && !hasSelectFilter) {
+      return personelListesi;
+    }
+
+    return personelListesi.filter((personel: Personel) => {
+      const sicilNo = String(personel.SicilNo ?? "").toLocaleLowerCase("tr-TR");
+      const tcKimlikNo = String(personel.TcKimlikNo ?? "").toLocaleLowerCase(
+        "tr-TR",
+      );
+      const adSoyad = String(personel.AdSoyad ?? "").toLocaleLowerCase("tr-TR");
+
+      const textMatch =
+        sicilNo.includes(query) ||
+        tcKimlikNo.includes(query) ||
+        adSoyad.includes(query);
+
+      const ucretTipiMatch =
+        !selectedUcretTipi || personel.UcretTipi === selectedUcretTipi;
+      const cinsiyetMatch =
+        !selectedCinsiyet || personel.Cinsiyet === selectedCinsiyet;
+      const medeniDurumMatch =
+        !selectedMedeniDurum || personel.MedeniDurum === selectedMedeniDurum;
+      const calismaDurumuMatch =
+        !selectedCalismaDurumu ||
+        personel.CalismaDurumu === selectedCalismaDurumu;
+
+      return (
+        (!hasTextFilter || textMatch) &&
+        ucretTipiMatch &&
+        cinsiyetMatch &&
+        medeniDurumMatch &&
+        calismaDurumuMatch
+      );
+    });
+  }, [personelListesi, searchText, filters]);
+
   const handleDeleteConfirm = () => {
     if (!silinecekId) return;
 
@@ -109,6 +152,7 @@ const Personel = () => {
         onSuccess: () => {
           toast.success("Personel silindi");
           refetchPersonelListesi();
+          setSearchText("");
           setSilinecekId(null);
         },
         onError: () => {
@@ -168,18 +212,8 @@ const Personel = () => {
           },
           {
             label: personel.Durum ? "SGK İşten Çıkış Yap" : "SGK İşe Giriş Yap",
-            icon: Power,
+            icon: Hospital,
             onClick: (r) => handleSgkAction(r, r.Durum),
-          },
-          {
-            label: "Rapor Oluştur",
-            icon: FileText,
-            onClick: (r) => console.log("rapor", r.SicilNo),
-          },
-          {
-            label: "Personel Birleştir",
-            icon: Merge,
-            onClick: (r) => console.log("birleştir", r.SicilNo),
           },
           {
             label: "Sil",
@@ -296,7 +330,9 @@ const Personel = () => {
 
         <div>
           <p className="text-xs text-muted-foreground">Cinsiyet</p>
-          <p className="font-medium">{personel.Cinsiyet}</p>
+          <Badge variant={personel.Cinsiyet === "ERKEK" ? "blue" : "pink"}>
+            {personel.Cinsiyet}
+          </Badge>
         </div>
 
         <div>
@@ -341,7 +377,7 @@ const Personel = () => {
         <div className="flex items-center gap-2">
           <Input
             startIcon={<Search className="h-4 w-4" />}
-            placeholder="İsim veya e-posta ara..."
+            placeholder="Sicil No, TC Kimlik No veya Ad Soyad ara..."
             className="w-48"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -358,7 +394,7 @@ const Personel = () => {
         </div>
       </div>
       <CustomDataTable
-        data={personelListesi}
+        data={filteredPersonelListesi}
         columns={columns}
         loading={isLoadingPersonel}
         getRowId={(row) => row.id}
