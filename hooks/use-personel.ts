@@ -54,6 +54,13 @@ export type PersonelSgkIslemPayload = {
   PersonelAyrilisKodu?: string;
 };
 
+export type PersonelSettingsPayload = {
+  IDSubePersonel: string;
+  Telefon: string;
+  Sifre: string;
+  KullaniciAktif: boolean;
+};
+
 // ---- Query key factory ----------------------------------------------
 
 export const personelKeys = {
@@ -143,6 +150,29 @@ export function useUpdatePersonel() {
     ) =>
       callPersonelApi({
         type: "UPDATE_PERSONEL",
+        ...payload,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: personelKeys.all });
+      queryClient.invalidateQueries({
+        queryKey: personelKeys.detay(variables.IDSubePersonel),
+      });
+    },
+  });
+}
+
+export type PersonelSettingsResult = {
+  test: number;
+  sonuc: string;
+};
+
+export function useUpdatePersonelSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: PersonelSettingsPayload) =>
+      callPersonelApi<PersonelSettingsResult[]>({
+        type: "UPDATE_PERSONEL_SETTINGS",
         ...payload,
       }),
     onSuccess: (_data, variables) => {

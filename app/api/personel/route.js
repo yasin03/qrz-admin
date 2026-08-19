@@ -121,6 +121,8 @@ const queryTypes = {
     `[SubePersonel_INSERT] ${buildPersonelParams(params)}`,
   UPDATE_PERSONEL: (params) =>
     `[SubePersonel_UPDATEByIDSubePersonel] ${sqlNum(params.IDSubePersonel)}, ${buildPersonelParams(params)}`,
+  UPDATE_PERSONEL_SETTINGS: (params) =>
+    `[SubePersonel_UpdateSifre] ${sqlNum(params.IDSubePersonel)}, '${params.Telefon}', '${params.Sifre}', '${params.KullaniciAktif}'`,
 };
 
 export async function POST(request) {

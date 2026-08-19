@@ -53,8 +53,7 @@ export default function PersonelEkle({
     defaultValues: PERSONEL_DEFAULT_VALUES,
     resolver: zodResolver(personelSchema),
   });
-  console.log("PersonelEkle form defaultValues:", form.getValues()); // Debugging log
-  // Veri gelince (ya da modal kapanınca) formu doldur/sıfırla.
+
   useEffect(() => {
     if (!open) {
       form.reset(PERSONEL_DEFAULT_VALUES);
@@ -283,7 +282,7 @@ export default function PersonelEkle({
 
         const apiResult = getApiResult(result);
         const testValue = Number(apiResult.test);
-        if (testValue === 0) {
+        if (testValue == 0) {
           toast.error(apiResult.sonuc || "Personel güncellenemedi.");
           return;
         }
@@ -297,9 +296,8 @@ export default function PersonelEkle({
         });
 
         const apiResult = getApiResult(result);
-        console.log("PersonelEkle createPersonel apiResult:", apiResult); // Debugging log
         const testValue = Number(apiResult.test);
-        console.log("PersonelEkle createPersonel testValue:", testValue); // Debugging log
+
         if (testValue == 0) {
           toast.error(apiResult.sonuc || "Personel oluşturulamadı.");
           return;

@@ -4,7 +4,14 @@ import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { RowAction, RowActions } from "../customs/RowActions";
-import { UserPlus, Pencil, Trash2, Search, Hospital } from "lucide-react";
+import {
+  UserPlus,
+  Pencil,
+  Trash2,
+  Search,
+  Hospital,
+  UserCog,
+} from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
 import {
@@ -21,11 +28,16 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "../customs/ConfirmDialog";
 import PersonelSgkDialog from "./PersonelSgkDialog";
+import PersonelSettingsDialog, {
+  PersonelSettingsPersonel,
+} from "./PersonelSettingsDialog";
 
 type Personel = {
   SicilNo: string;
   TcKimlikNo: string;
   BolumAdi: string;
+  Telefon: string;
+  KullaniciAktif: boolean;
   AdSoyad: string;
   AdSoyad2: string;
   Ucret: number;
@@ -74,7 +86,9 @@ const Personel = () => {
   );
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
   const [sgkDialog, setSgkDialog] = useState<SgkDialogState | null>(null);
-
+  const [settingsPersonel, setSettingsPersonel] =
+    useState<PersonelSettingsPersonel | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     if (filters || !context?.IDSube) return;
 
@@ -209,6 +223,19 @@ const Personel = () => {
             label: "Düzenle",
             icon: Pencil,
             onClick: (r) => setDuzenlenecekId(r.IDSubePersonel),
+          },
+          {
+            label: "Kullanıcı Ayarları",
+            icon: UserCog,
+            onClick: (r) => {
+              setSettingsPersonel({
+                IDSubePersonel: r.IDSubePersonel,
+                AdSoyad: r.AdSoyad,
+                Telefon: r.Telefon,
+                KullaniciAktif: r.KullaniciAktif,
+              });
+              setSettingsOpen(true);
+            },
           },
           {
             label: personel.Durum ? "SGK İşten Çıkış Yap" : "SGK İşe Giriş Yap",
@@ -417,6 +444,12 @@ const Personel = () => {
           }
         }}
         id={duzenlenecekId}
+      />
+
+      <PersonelSettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        personel={settingsPersonel}
       />
 
       <PersonelSgkDialog

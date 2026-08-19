@@ -10,7 +10,7 @@ import {
 } from "react-hook-form";
 import { format as formatDate, parseISO, isValid } from "date-fns";
 import { tr } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Eye, EyeOff } from "lucide-react";
 import type { HTMLInputTypeAttribute } from "react";
 
 import { cn } from "@/lib/utils";
@@ -238,7 +238,8 @@ export function FormInput<T extends FieldValues>({
   vertical = true,
 }: FormInputProps<T>) {
   const formatMeta = format ? FORMAT_META[format] : undefined;
-
+  const isPassword = type === "password";
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <Controller
       control={control}
@@ -251,6 +252,24 @@ export function FormInput<T extends FieldValues>({
             {label}
             {required && <span className="ml-1 text-destructive">*</span>}
           </Label>
+        );
+
+        const resolvedEndIcon = isPassword ? (
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+          >
+            {showPassword ? (
+              <Eye className="size-4" />
+            ) : (
+              <EyeOff className="size-4" />
+            )}
+          </button>
+        ) : (
+          endIcon
         );
 
         const inputNode =
@@ -310,7 +329,13 @@ export function FormInput<T extends FieldValues>({
                     : event.target.value;
                   field.onChange(nextValue);
                 }}
-                type={formatMeta?.htmlType ?? type}
+                type={
+                  isPassword
+                    ? showPassword
+                      ? "text"
+                      : "password"
+                    : (formatMeta?.htmlType ?? type)
+                }
                 inputMode={formatMeta?.inputMode}
                 placeholder={placeholder}
                 disabled={disabled}
@@ -319,14 +344,14 @@ export function FormInput<T extends FieldValues>({
                 maxLength={formatMeta?.maxLength ?? maxLength}
                 className={cn(
                   startIcon && "pl-10",
-                  endIcon && "pr-10",
+                  resolvedEndIcon && "pr-10",
                   inputClassName,
                 )}
               />
 
-              {endIcon && (
+              {resolvedEndIcon && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {endIcon}
+                  {resolvedEndIcon}
                 </div>
               )}
             </div>
