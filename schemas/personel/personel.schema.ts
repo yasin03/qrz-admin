@@ -3,17 +3,20 @@ import { z } from "zod";
 export const personelSchema = z.object({
   // Personel Bilgileri
   SicilNo: z.string(),
-  TcKimlikNo: z.string(),
+  TcKimlikNo: z
+    .string()
+    .min(1, "TC Kimlik No zorunludur.")
+    .length(11, "TC Kimlik No 11 haneli olmalıdır."),
   Ad: z.string().min(1, "Ad zorunludur."),
   Soyad: z.string().min(1, "Soyad zorunludur."),
   IlkSoyad: z.string(),
-  Cinsiyet: z.string(),
-  DogumTarihi: z.string(),
+  Cinsiyet: z.string().min(1, "Cinsiyet zorunludur."),
+  DogumTarihi: z.string().min(1, "Doğum Tarihi zorunludur."),
   DogumYeri: z.string(),
   MedeniDurum: z.string(),
-  Uyruk: z.string(),
+  Uyruk: z.string().min(1, "Uyruk zorunludur."),
   KanGurubu: z.string(),
-  OgrenimDurumu: z.string(),
+  OgrenimDurumu: z.string().min(1, "Öğrenim Durumu zorunludur."),
   MezuniyetYili: z.string(),
   MezuniyetBolumu: z.string(),
   Boy: z.string(),
@@ -28,11 +31,11 @@ export const personelSchema = z.object({
 
   // Giriş/Çıkış Bilgileri
   IseIlkGirisTarihi: z.string(),
-  IseSonGirisTarihi: z.string(),
+  IseSonGirisTarihi: z.string().min(1, "İşe Giriş Tarihi zorunludur."),
   CikisTarihi: z.string(),
   Durum: z.boolean(),
-  SgkDurumu: z.string(),
-  IstihdamDurumu: z.string(),
+  SgkDurumu: z.string().min(1, "SGK Durumu zorunludur."),
+  IstihdamDurumu: z.string().min(1, "İstihdam Durumu zorunludur."),
   CalismaDurumu: z.string(),
   PersonelAyrilisKodu: z.string(),
   IDPersonelIstisnaDurum: z.string(),
@@ -51,10 +54,10 @@ export const personelSchema = z.object({
   GecmistenKalanIzinGun: z.string(),
 
   // Bordro Bilgileri
-  Ucret: z.string(),
-  MaasParaBirimi: z.string(),
-  OdemeSekli: z.string(),
-  UcretTipi: z.string(),
+  Ucret: z.string().min(1, "Ücret zorunludur."),
+  MaasParaBirimi: z.string().min(1, "Maaş Para Birimi zorunludur."),
+  OdemeSekli: z.string().min(1, "Ödeme Şekli zorunludur."),
+  UcretTipi: z.string().min(1, "Ücret Tipi zorunludur."),
   GunlukUcret: z.string(),
   SaatlikUcret: z.string(),
   SozlesmeUcret: z.string(),
@@ -88,15 +91,16 @@ export const personelSchema = z.object({
   BankaSubeKodu: z.string(),
   BankaHesapNo: z.string(),
   BankaIbanNo: z.string(),
-  PersonelMeslekKodu: z.string(),
-  PersonelSgkBelgeTuru: z.string(),
-  PersonelKanunNo: z.string(),
+  PersonelMeslekKodu: z.string().min(1, "Meslek Kodu zorunludur."),
+  PersonelSgkBelgeTuru: z.string().min(1, "SGK Belge Türü zorunludur."),
+  PersonelKanunNo: z.string().min(1, "SGK Kanun No zorunludur."),
   PersonelGorevKodu: z.string(),
-  PersonelSigortaKolu: z.string(),
+  PersonelSigortaKolu: z.string().min(1, "Sigorta Kolu zorunludur."),
   GorevAdi: z.string(),
   UnvanAdi: z.string(),
   OzelKod: z.string(),
   OzelKod2: z.string(),
+  VardiyaliCalismaDurumu: z.boolean(),
 
   // Adres Bilgileri
   Adres: z.string(),
@@ -204,6 +208,7 @@ export const DEFAULT_PERSONEL_FORM: PersonelForm = {
   UnvanAdi: "",
   OzelKod: "",
   OzelKod2: "",
+  VardiyaliCalismaDurumu: false,
 
   Adres: "",
   Telefon: "",

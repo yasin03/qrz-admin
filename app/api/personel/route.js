@@ -120,7 +120,7 @@ const queryTypes = {
   INSERT_PERSONEL: (params) =>
     `[SubePersonel_INSERT] ${buildPersonelParams(params)}`,
   UPDATE_PERSONEL: (params) =>
-    `[SubePersonel_UPDATEByIDSubePersonel] @IDSubePersonel=${sqlNum(params.IDSubePersonel)},${buildPersonelParams(params)}`,
+    `[SubePersonel_UPDATEByIDSubePersonel] ${sqlNum(params.IDSubePersonel)}, ${buildPersonelParams(params)}`,
 };
 
 export async function POST(request) {

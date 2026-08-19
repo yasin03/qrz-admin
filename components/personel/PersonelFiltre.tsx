@@ -45,12 +45,12 @@ const CALISMA_DURUMU_OPTIONS = [
 type FormValues = {
   IDSube: string | number;
   IDBolum: string | number;
-  Durum: string;
+  Durum: "TÜMÜ" | "AKTİF" | "PASİF" | "YENİ";
   DurumTarihi: string;
-  UcretTipi: "" | "BRÜT" | "NET";
-  Cinsiyet: "" | "KADIN" | "ERKEK";
-  MedeniDurum: "" | "BEKAR" | "EVLİ";
-  CalismaDurumu: "" | "ÇALISIYOR" | "ÇALIŞMIYOR";
+  UcretTipi: "TÜMÜ" | "BRÜT" | "NET";
+  Cinsiyet: "TÜMÜ" | "KADIN" | "ERKEK";
+  MedeniDurum: "TÜMÜ" | "BEKAR" | "EVLİ";
+  CalismaDurumu: "TÜMÜ" | "ÇALISIYOR" | "ÇALIŞMIYOR";
 };
 
 type Props = {
@@ -68,10 +68,10 @@ export default function PersonelFiltre({ onApply }: Props) {
       IDBolum: "",
       Durum: "TÜMÜ",
       DurumTarihi: format(new Date(), "yyyy-MM-dd"),
-      UcretTipi: "",
-      Cinsiyet: "",
-      MedeniDurum: "",
-      CalismaDurumu: "",
+      UcretTipi: "TÜMÜ",
+      Cinsiyet: "TÜMÜ",
+      MedeniDurum: "TÜMÜ",
+      CalismaDurumu: "TÜMÜ",
     },
   });
 
@@ -93,16 +93,32 @@ export default function PersonelFiltre({ onApply }: Props) {
   }, [selectedSube]);
 
   const handleApply = (values: FormValues) => {
+    const normalizeUcretTipi = (
+      value: FormValues["UcretTipi"],
+    ): PersonelFilters["UcretTipi"] => (value === "TÜMÜ" ? "" : value);
+
+    const normalizeCinsiyet = (
+      value: FormValues["Cinsiyet"],
+    ): PersonelFilters["Cinsiyet"] => (value === "TÜMÜ" ? "" : value);
+
+    const normalizeMedeniDurum = (
+      value: FormValues["MedeniDurum"],
+    ): PersonelFilters["MedeniDurum"] => (value === "TÜMÜ" ? "" : value);
+
+    const normalizeCalismaDurumu = (
+      value: FormValues["CalismaDurumu"],
+    ): PersonelFilters["CalismaDurumu"] => (value === "TÜMÜ" ? "" : value);
+
     const tumu = values.Durum === "TÜMÜ";
     const filters = {
       IDSube: values.IDSube,
       IDBolum: values.IDBolum,
       Durum: tumu ? "" : (values.Durum as PersonelFilters["Durum"]),
       DurumTarihi: tumu ? "" : values.DurumTarihi,
-      UcretTipi: values.UcretTipi,
-      Cinsiyet: values.Cinsiyet,
-      MedeniDurum: values.MedeniDurum,
-      CalismaDurumu: values.CalismaDurumu,
+      UcretTipi: normalizeUcretTipi(values.UcretTipi),
+      Cinsiyet: normalizeCinsiyet(values.Cinsiyet),
+      MedeniDurum: normalizeMedeniDurum(values.MedeniDurum),
+      CalismaDurumu: normalizeCalismaDurumu(values.CalismaDurumu),
     };
     onApply(filters);
   };
@@ -113,10 +129,10 @@ export default function PersonelFiltre({ onApply }: Props) {
       IDBolum: "",
       Durum: "TÜMÜ",
       DurumTarihi: format(new Date(), "yyyy-MM-dd"),
-      UcretTipi: "",
-      Cinsiyet: "",
-      MedeniDurum: "",
-      CalismaDurumu: "",
+      UcretTipi: "TÜMÜ",
+      Cinsiyet: "TÜMÜ",
+      MedeniDurum: "TÜMÜ",
+      CalismaDurumu: "TÜMÜ",
     });
   };
 

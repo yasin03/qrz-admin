@@ -9,6 +9,7 @@ const queryTypes = {
   GET_VERGIDAIRELERI: (params) =>
     `[VergiDairesi_SELECTByIlKodu] '${params.IlKodu}',''`,
   GET_SABIT_TANIMLAR: (params) => `[SabitTanimMadde_SELECTAll]`,
+  GET_PERSONEL_SABIT_TANIMLAR: (params) => `[PersonelSgkBelgeTuru_SELECTAllTypes]`,
 };
 
 export async function POST(request) {
@@ -48,7 +49,7 @@ export async function POST(request) {
 
     const query = queryFunction(queryParams);
     let result;
-    if (type == "GET_SABIT_TANIMLAR") {
+    if (type == "GET_SABIT_TANIMLAR" || type == "GET_PERSONEL_SABIT_TANIMLAR") {
       result = await ExecuteQueryDataset(query);
     } else {
       result = await ExecuteQuery(query);

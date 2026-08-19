@@ -11,12 +11,14 @@ import {
 import { format as formatDate, parseISO, isValid } from "date-fns";
 import { tr } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
+import type { HTMLInputTypeAttribute } from "react";
 
 import { cn } from "@/lib/utils";
 
 import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -35,11 +37,24 @@ export type InputFormat =
   | "text"
   | "money";
 
+/** Field'ın davranışını belirleyen "tip". Native input type'larından
+ *  ayrı tutuyoruz çünkü "date" ve "textarea" tamamen farklı component'lere
+ *  render ediliyor, native <input type="..."> değiller. */
+export type FormInputType =
+  | "text"
+  | "email"
+  | "password"
+  | "tel"
+  | "url"
+  | "search"
+  | "date"
+  | "textarea";
+
 /** Her format için native input'a verilecek en uygun tip/inputMode/maxLength. */
 const FORMAT_META: Record<
   InputFormat,
   {
-    htmlType: string;
+    htmlType: HTMLInputTypeAttribute;
     inputMode?: "numeric" | "text" | "decimal";
     maxLength?: number;
   }
@@ -153,10 +168,16 @@ type FormInputProps<T extends FieldValues> = {
 
   placeholder?: string;
 
-  type?: React.HTMLInputTypeAttribute;
+  /**
+   * "date" -> Calendar + Popover seçici
+   * "textarea" -> çok satırlı metin alanı
+   * diğerleri -> native <input type="...">
+   */
+  type?: FormInputType;
 
   /**
    * Girdiyi otomatik filtreleyip biçimlendirir. Verilmezse normal input.
+   * (type="textarea" veya type="date" iken dikkate alınmaz.)
    * - "tcno": sadece rakam, 11 karakter
    * - "vergino": sadece rakam, 10 karakter
    * - "tel": sadece rakam, 10 haneli, "555 444 22 33" formatında, başında 0 olmaz
@@ -186,6 +207,9 @@ type FormInputProps<T extends FieldValues> = {
 
   endIcon?: ReactNode;
 
+  /** Sadece type="textarea" için satır sayısı. Varsayılan 4. */
+  rows?: number;
+
   /**
    * true verilirse label ve input yan yana render edilir (label ~%25,
    * input ~%75). Varsayılan false: label üstte, input altta.
@@ -210,6 +234,7 @@ export function FormInput<T extends FieldValues>({
   maxLength,
   startIcon,
   endIcon,
+  rows,
   vertical = true,
 }: FormInputProps<T>) {
   const formatMeta = format ? FORMAT_META[format] : undefined;
@@ -236,6 +261,21 @@ export function FormInput<T extends FieldValues>({
               placeholder={placeholder}
               disabled={disabled}
               className={inputClassName}
+            />
+          ) : type === "textarea" ? (
+            <Textarea
+              id={name}
+              name={field.name}
+              ref={field.ref}
+              value={field.value ?? ""}
+              onChange={(event) => field.onChange(event.target.value)}
+              onBlur={field.onBlur}
+              placeholder={placeholder}
+              disabled={disabled}
+              readOnly={readOnly}
+              maxLength={maxLength}
+              rows={rows ?? 4}
+              className={cn("resize-y", inputClassName)}
             />
           ) : format === "money" ? (
             <MoneyField

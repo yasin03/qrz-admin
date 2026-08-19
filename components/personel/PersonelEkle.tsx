@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +23,7 @@ import { PERSONEL_DEFAULT_VALUES, PersonelForm } from "./PersonelFormType";
 import { toast } from "sonner";
 import { useCurrentContext } from "@/hooks/use-context";
 import { PersonelFormFields } from "./PersonelFormFields";
-
-
+import { personelSchema } from "@/schemas/personel/personel.schema";
 
 type Props = {
   open: boolean;
@@ -51,8 +51,9 @@ export default function PersonelEkle({
   const { data: context } = useCurrentContext();
   const form = useForm<PersonelForm>({
     defaultValues: PERSONEL_DEFAULT_VALUES,
+    resolver: zodResolver(personelSchema),
   });
-
+  console.log("PersonelEkle form defaultValues:", form.getValues()); // Debugging log
   // Veri gelince (ya da modal kapanınca) formu doldur/sıfırla.
   useEffect(() => {
     if (!open) {
@@ -71,9 +72,15 @@ export default function PersonelEkle({
         DogumTarihi: personel.DogumTarihi?.slice(0, 10) ?? "",
         DogumYeri: personel.DogumYeri ?? "",
         MedeniDurum: personel.MedeniDurum ?? "",
-        Uyruk: personel.Uyruk ?? "",
+        Uyruk:
+          personel.Uyruk != null
+            ? String(personel.Uyruk)
+            : PERSONEL_DEFAULT_VALUES.Uyruk,
         KanGurubu: personel.KanGurubu ?? "",
-        OgrenimDurumu: personel.OgrenimDurumu ?? "51",
+        OgrenimDurumu:
+          personel.OgrenimDurumu != null
+            ? String(personel.OgrenimDurumu)
+            : "51",
         MezuniyetYili: personel.MezuniyetYili ?? "",
         MezuniyetBolumu: personel.MezuniyetBolumu ?? "",
         Boy: personel.Boy != null ? String(personel.Boy) : "",
@@ -95,13 +102,18 @@ export default function PersonelEkle({
         IseSonGirisTarihi: personel.IseSonGirisTarihi?.slice(0, 10) ?? "",
         CikisTarihi: personel.CikisTarihi?.slice(0, 10) ?? "",
         Durum: Boolean(personel.Durum),
-        SgkDurumu: personel.SgkDurumu != null ? String(personel.SgkDurumu) : "",
+        SgkDurumu:
+          personel.SgkDurumu != null
+            ? String(personel.SgkDurumu)
+            : PERSONEL_DEFAULT_VALUES.SgkDurumu,
         IstihdamDurumu:
           personel.IstihdamDurumu != null
             ? String(personel.IstihdamDurumu)
-            : "",
+            : PERSONEL_DEFAULT_VALUES.IstihdamDurumu,
         CalismaDurumu:
-          personel.CalismaDurumu != null ? String(personel.CalismaDurumu) : "",
+          personel.CalismaDurumu != null
+            ? String(personel.CalismaDurumu)
+            : PERSONEL_DEFAULT_VALUES.CalismaDurumu,
         PersonelAyrilisKodu: personel.PersonelAyrilisKodu ?? "",
         IDPersonelIstisnaDurum:
           personel.IDPersonelIstisnaDurum != null
@@ -133,10 +145,15 @@ export default function PersonelEkle({
         MaasParaBirimi:
           personel.MaasParaBirimi != null
             ? String(personel.MaasParaBirimi)
-            : "",
+            : PERSONEL_DEFAULT_VALUES.MaasParaBirimi,
         OdemeSekli:
-          personel.OdemeSekli != null ? String(personel.OdemeSekli) : "",
-        UcretTipi: personel.UcretTipi != null ? String(personel.UcretTipi) : "",
+          personel.OdemeSekli != null
+            ? String(personel.OdemeSekli)
+            : PERSONEL_DEFAULT_VALUES.OdemeSekli,
+        UcretTipi:
+          personel.UcretTipi != null
+            ? String(personel.UcretTipi)
+            : PERSONEL_DEFAULT_VALUES.UcretTipi,
         GunlukUcret:
           personel.GunlukUcret != null ? String(personel.GunlukUcret) : "",
         SaatlikUcret:
@@ -146,7 +163,7 @@ export default function PersonelEkle({
         SozlesmeOdemeSekli:
           personel.SozlesmeOdemeSekli != null
             ? String(personel.SozlesmeOdemeSekli)
-            : "",
+            : PERSONEL_DEFAULT_VALUES.SozlesmeOdemeSekli,
         SozlesmeUcret2:
           personel.SozlesmeUcret2 != null
             ? String(personel.SozlesmeUcret2)
@@ -154,7 +171,7 @@ export default function PersonelEkle({
         SozlesmeOdemeSekli2:
           personel.SozlesmeOdemeSekli2 != null
             ? String(personel.SozlesmeOdemeSekli2)
-            : "",
+            : PERSONEL_DEFAULT_VALUES.SozlesmeOdemeSekli2,
         Ucret2: personel.Ucret2 != null ? String(personel.Ucret2) : "",
         GunlukUcret2:
           personel.GunlukUcret2 != null ? String(personel.GunlukUcret2) : "",
@@ -196,13 +213,22 @@ export default function PersonelEkle({
         BankaHesapNo: personel.BankaHesapNo ?? "",
         BankaIbanNo: personel.BankaIbanNo ?? "",
         PersonelMeslekKodu: personel.PersonelMeslekKodu ?? "",
-        PersonelSgkBelgeTuru: personel.PersonelSgkBelgeTuru ?? "",
-        PersonelKanunNo: personel.PersonelKanunNo ?? "",
+        PersonelSgkBelgeTuru:
+          personel.PersonelSgkBelgeTuru != null
+            ? String(personel.PersonelSgkBelgeTuru)
+            : PERSONEL_DEFAULT_VALUES.PersonelSgkBelgeTuru,
+        PersonelKanunNo:
+          personel.PersonelKanunNo != null
+            ? String(personel.PersonelKanunNo)
+            : PERSONEL_DEFAULT_VALUES.PersonelKanunNo,
         PersonelGorevKodu:
           personel.PersonelGorevKodu != null
             ? String(personel.PersonelGorevKodu)
             : "",
-        PersonelSigortaKolu: personel.PersonelSigortaKolu ?? "",
+        PersonelSigortaKolu:
+          personel.PersonelSigortaKolu != null
+            ? String(personel.PersonelSigortaKolu)
+            : PERSONEL_DEFAULT_VALUES.PersonelSigortaKolu,
         GorevAdi: personel.GorevAdi ?? "",
         UnvanAdi: personel.UnvanAdi ?? "",
         OzelKod: personel.OzelKod ?? "",
@@ -229,21 +255,56 @@ export default function PersonelEkle({
   const isSaving = isEditMode ? isUpdating : isCreating;
 
   const handleSubmit = async (values: PersonelForm) => {
+    const getApiResult = (
+      result: unknown,
+    ): { test?: unknown; sonuc?: string } => {
+      if (Array.isArray(result)) {
+        const first = result[0];
+        if (first && typeof first === "object") {
+          return first as { test?: unknown; sonuc?: string };
+        }
+      }
+
+      if (result && typeof result === "object") {
+        return result as { test?: unknown; sonuc?: string };
+      }
+
+      return {};
+    };
+
     try {
       if (isEditMode && personel) {
-        await updatePersonel({
+        const result = await updatePersonel({
           ...values,
           IDSubePersonel: personel.IDSubePersonel,
           IDSube: personel.IDSube,
           IDBolum: personel.IDBolum,
         });
+
+        const apiResult = getApiResult(result);
+        const testValue = Number(apiResult.test);
+        if (testValue === 0) {
+          toast.error(apiResult.sonuc || "Personel güncellenemedi.");
+          return;
+        }
+
         toast.success("Personel başarıyla güncellendi.");
       } else {
-        await createPersonel({
+        const result = await createPersonel({
           ...values,
           IDSube: context?.IDSube,
           IDBolum: context?.IDBolum ?? "",
         });
+
+        const apiResult = getApiResult(result);
+        console.log("PersonelEkle createPersonel apiResult:", apiResult); // Debugging log
+        const testValue = Number(apiResult.test);
+        console.log("PersonelEkle createPersonel testValue:", testValue); // Debugging log
+        if (testValue == 0) {
+          toast.error(apiResult.sonuc || "Personel oluşturulamadı.");
+          return;
+        }
+
         toast.success("Personel başarıyla oluşturuldu.");
       }
 

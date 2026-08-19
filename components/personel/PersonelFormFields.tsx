@@ -23,12 +23,11 @@ import {
 import { useIlceler, useIller } from "@/hooks/use-il-ilce-vergi-data";
 import { useEffect, useMemo, useRef } from "react";
 import { PersonelForm } from "./PersonelFormType";
-import { useSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
+import {
+  usePersonelSabitTanimlar,
+  useSabitTanimlar,
+} from "@/hooks/use-sabit-tanimlar";
 
-function currentValueOption(value: unknown) {
-  if (value === null || value === undefined || value === "") return [];
-  return [{ value: String(value), label: String(value) }];
-}
 
 const CINSIYET_OPTIONS = [
   { label: "Kadın", value: "KADIN" },
@@ -77,7 +76,6 @@ const SECTION_FIELDS = {
     "PersonelAyrilisKodu",
     "SgkDurumu",
     "IstihdamDurumu",
-    "CalismaDurumu",
     "PersonelSgkBelgeTuru",
     "PersonelKanunNo",
     "PersonelMeslekKodu",
@@ -166,9 +164,6 @@ type Props = {
 export function PersonelFormFields({ control, setValue, personel }: Props) {
   const { errors } = useFormState({ control });
 
-  const hasError = (section: keyof typeof SECTION_FIELDS) =>
-    SECTION_FIELDS[section].some((field) => Boolean(errors[field]));
-
   const selectedIlKodu = useWatch({ control, name: "IlKodu" });
   const { data: iller = [] } = useIller();
   const { data: ilceler = [] } = useIlceler(selectedIlKodu || undefined);
@@ -200,26 +195,13 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     kanBagiDurumlari,
   } = useSabitTanimlar();
 
-  const personelAyrilisKoduOptions = useMemo(
-    () => currentValueOption(personel?.PersonelAyrilisKodu),
-    [personel],
-  );
-  const istisnaDurumOptions = useMemo(
-    () => currentValueOption(personel?.IDPersonelIstisnaDurum),
-    [personel],
-  );
-  const agiOranIDOptions = useMemo(
-    () => currentValueOption(personel?.AgiOranID),
-    [personel],
-  );
-  const idBankaOptions = useMemo(
-    () => currentValueOption(personel?.IDBanka),
-    [personel],
-  );
-  const personelGorevKoduOptions = useMemo(
-    () => currentValueOption(personel?.PersonelGorevKodu),
-    [personel],
-  );
+  const {
+    sgkBelgeTurleri,
+    sigortaKollari,
+    sgkKanunNolar,
+    gorevKodlari,
+    isLoading,
+  } = usePersonelSabitTanimlar();
 
   return (
     <Accordion type="single" defaultValue="personel" className="w-full">
@@ -231,7 +213,7 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
           </span>
         </AccordionTrigger>
         <AccordionContent className="p-4">
-          <div className=" space-y-2 pt-1">
+          <div className=" space-y-2 py-1">
             <FormInput
               control={control}
               name="TcKimlikNo"
@@ -310,13 +292,13 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               control={control}
               name="PersonelKanunNo"
               label="* SGK Kanun No"
-              options={sgkDurumlari}
+              options={sgkKanunNolar}
             />
             <FormSelect
               control={control}
               name="PersonelSgkBelgeTuru"
               label="* SGK Belge Türü"
-              options={sgkDurumlari}
+              options={sgkBelgeTurleri}
             />
             <FormSelect
               control={control}
@@ -328,13 +310,13 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               control={control}
               name="PersonelSigortaKolu"
               label="* Sigorta Kolu"
-              options={sgkDurumlari}
+              options={sigortaKollari}
             />
             <FormSelect
               control={control}
               name="PersonelGorevKodu"
               label="2821 SK Gereğince Belirlenen Sigortalının Görev Kodu"
-              options={sgkDurumlari}
+              options={gorevKodlari}
             />
 
             <FormInput
@@ -477,7 +459,12 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
                 disabled={!selectedIlKodu}
               />
             </FormLabel>
-            <FormInput control={control} name="Adres" label="Adres" />
+            <FormInput
+              control={control}
+              type="textarea"
+              name="Adres"
+              label="Adres"
+            />
             <FormInput
               control={control}
               name="Telefon"
@@ -489,32 +476,5 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-  );
-}
-
-function SectionTitle({
-  title,
-  subtitle,
-  hasError,
-}: {
-  title: string;
-  subtitle?: string;
-  hasError?: boolean;
-}) {
-  return (
-    <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-      {title}
-      {subtitle && (
-        <span className="text-xs font-normal text-muted-foreground">
-          ({subtitle})
-        </span>
-      )}
-      {hasError && (
-        <span
-          className={cn("size-1.5 rounded-full bg-destructive")}
-          aria-label="Bu bölümde hata var"
-        />
-      )}
-    </span>
   );
 }
