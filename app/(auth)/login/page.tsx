@@ -14,9 +14,6 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  ShieldCheck,
-  BarChart3,
-  Users2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,24 +32,6 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
-
-const features = [
-  {
-    icon: ShieldCheck,
-    title: "Kurumsal düzeyde güvenlik",
-    description: "Rol bazlı erişim ve oturum denetimi",
-  },
-  {
-    icon: BarChart3,
-    title: "Gerçek zamanlı raporlama",
-    description: "Tüm metrikleriniz tek panelde",
-  },
-  {
-    icon: Users2,
-    title: "Ekip ve yetki yönetimi",
-    description: "Kullanıcıları saniyeler içinde yönetin",
-  },
-];
 
 const Page = () => {
   const router = useRouter();
@@ -260,34 +239,6 @@ const Page = () => {
             </p>
           </Card>
         </div>
-
-        {/*         <div className="relative z-10 px-10">
-          <h1 className="max-w-md text-3xl font-semibold text-balance text-sidebar-foreground">
-            Yönetim panelinize hoş geldiniz
-          </h1>
-          <p className="mt-3 max-w-sm text-sm text-sidebar-foreground/70">
-            Verilerinizi tek ekrandan yönetin, ekibinizi yönlendirin ve işinizi
-            büyütün.
-          </p>
-
-          <ul className="mt-10 space-y-5">
-            {features.map(({ icon: Icon, title, description }) => (
-              <li key={title} className="flex items-start gap-3">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent text-info">
-                  <Icon className="size-4" />
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-sidebar-foreground">
-                    {title}
-                  </p>
-                  <p className="text-xs text-sidebar-foreground/60">
-                    {description}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div> */}
 
         <div className="relative z-10 p-10 text-xs text-sidebar-foreground/50 text-center">
           © {new Date().getFullYear()} QR-Zaman. Tüm hakları saklıdır.

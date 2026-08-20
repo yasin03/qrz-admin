@@ -1,3 +1,4 @@
+import { KullaniciTipi } from "@/lib/roles";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -84,3 +85,18 @@ const user = useUser();
 
 // sadece IDFirma lazımsa, gereksiz re-render'ları önlemek için:
 const idFirma = useAuthStore((state) => state.user?.IDFirma); */
+
+/**
+ * Kullanıcının rolü verilen listede mi diye bakar. Sidebar menü filtresinde
+ * de, sayfa/aksiyon bazlı yetki kontrollerinde de aynı hook kullanılabilir.
+ *
+ *   const isAdmin = useHasRole(KULLANICI_TIPI.ADMIN);
+ *   const canManageUsers = useHasRole([KULLANICI_TIPI.ADMIN, KULLANICI_TIPI.YONETICI]);
+ */
+export function useHasRole(allowed: KullaniciTipi | KullaniciTipi[]) {
+  return useAuthStore((state) => {
+    if (!state.user) return false;
+    const list = Array.isArray(allowed) ? allowed : [allowed];
+    return list.includes(state.user.IDKullaniciTip as KullaniciTipi);
+  });
+}

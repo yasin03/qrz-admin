@@ -21,13 +21,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/services/auth";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore, useHasRole } from "@/stores/auth-store";
+import { KULLANICI_TIPI } from "@/lib/roles";
 
 const ProfileMenu = () => {
   const router = useRouter();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
+  const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
 
@@ -60,16 +61,25 @@ const ProfileMenu = () => {
 
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onClick={() => router.push("/profile")}>
-          <User /> Profil Bilgileri
+          <User />
+          Profil Bilgileri
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => router.push("/kurumsal")}>
-          <Building /> Kurumsal Yönetim
-        </DropdownMenuItem>
+        {!isPersonel && (
+          <>
+            <DropdownMenuItem onClick={() => router.push("/kurumsal")}>
+              <Building />
+              Kurumsal Yönetim
+            </DropdownMenuItem>
 
-        <DropdownMenuItem  onClick={() => router.push("/kurumsal/kullanici-yonetimi")}>
-          <ContactRound /> Kullanıcı Yönetim
-        </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => router.push("/kurumsal/kullanici-yonetimi")}
+            >
+              <ContactRound />
+              Kullanıcı Yönetimi
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuSeparator />
 

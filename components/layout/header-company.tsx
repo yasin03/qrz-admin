@@ -77,6 +77,7 @@ const HeaderCompany = () => {
 
   const { data: savedContext, isLoading: isLoadingContext } =
     useCurrentContext();
+    console.log("savedContext", savedContext);
   const saveContext = useSaveContext();
   const hasHydratedFromContext = useRef(false);
 

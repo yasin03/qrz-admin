@@ -5,13 +5,15 @@ import HeaderCompany from "./header-company";
 import ProfileMenu from "./profile-menu";
 import { ThemeToggle } from "./theme-toggle";
 import { useState } from "react";
+import { useAuthHasHydrated, useHasRole } from "@/stores/auth-store";
+import { KULLANICI_TIPI } from "@/lib/roles";
 
 type HeaderProps = {
   onToggleSidebar: () => void;
 };
 
 export function Header({ onToggleSidebar }: HeaderProps) {
-  const [openHeaderCompany, setOpenHeaderCompany] = useState(false);
+  const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/70 bg-background/90 px-4 backdrop-blur lg:px-6">
       <div className="flex items-center gap-3">
@@ -25,7 +27,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
         >
           <PanelLeft className="size-5" />
         </Button>
-        <HeaderCompany />
+        {!isPersonel && <HeaderCompany />}
       </div>
 
       <div className="flex items-center gap-2">
