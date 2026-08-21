@@ -10,6 +10,7 @@ import {
   MapPinned,
   Parasol,
   QrCode,
+  ScanBarcode,
   Users,
 } from "lucide-react";
 import { useState } from "react";
@@ -54,7 +55,7 @@ const personelMenuItems: MenuItem[] = [
   { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/avans", label: "Avans", icon: HandCoins },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
-  { href: "/barkod", label: "Barkod", icon: QrCode },
+  { href: "/barkod", label: "Barkod", icon: ScanBarcode },
 ];
 
 /** IDKullaniciTip -> gösterilecek menü. Yeni bir rol eklenirse sadece buraya satır eklenir. */
