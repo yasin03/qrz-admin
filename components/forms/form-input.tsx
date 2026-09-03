@@ -34,6 +34,7 @@ export type InputFormat =
   | "vergino"
   | "tel"
   | "number"
+  | "decimal"
   | "text"
   | "money";
 
@@ -63,6 +64,7 @@ const FORMAT_META: Record<
   vergino: { htmlType: "text", inputMode: "numeric", maxLength: 10 },
   tel: { htmlType: "tel", inputMode: "numeric", maxLength: 13 }, // "555 444 22 33" -> 13 karakter
   number: { htmlType: "text", inputMode: "numeric" },
+  decimal: { htmlType: "text", inputMode: "decimal" },
   text: { htmlType: "text" },
   money: { htmlType: "text", inputMode: "decimal" },
 };
@@ -92,6 +94,20 @@ function applyFormat(raw: string, format?: InputFormat): string {
       return raw.replace(/\D/g, "").slice(0, 10);
     case "number":
       return raw.replace(/\D/g, "");
+    case "decimal": {
+      // Enlem/Boylam gibi alanlar için: tek leading '-', tek ondalık ayıracı.
+      const cleaned = raw.replace(/[^\d,.-]/g, "");
+      const hasMinus = cleaned.startsWith("-");
+      const unsigned = cleaned.replace(/-/g, "").replace(/,/g, ".");
+      const firstDot = unsigned.indexOf(".");
+      const normalized =
+        firstDot === -1
+          ? unsigned
+          : unsigned.slice(0, firstDot + 1) +
+            unsigned.slice(firstDot + 1).replace(/\./g, "");
+
+      return `${hasMinus ? "-" : ""}${normalized}`;
+    }
     case "text":
       return raw.replace(/[0-9]/g, "");
     case "tel":
@@ -182,6 +198,7 @@ type FormInputProps<T extends FieldValues> = {
    * - "vergino": sadece rakam, 10 karakter
    * - "tel": sadece rakam, 10 haneli, "555 444 22 33" formatında, başında 0 olmaz
    * - "number": sadece rakam
+   * - "decimal": işaretli ondalık sayı (-122.406417 gibi), tek '-' ve tek '.'
    * - "text": sadece harf/metin, rakam girilemez
    * - "money": Türkçe para gösterimi ("1.250.000,54"), form değeri düz
    */
@@ -312,7 +329,7 @@ export function FormInput<T extends FieldValues>({
           ) : (
             <div className="relative">
               {startIcon && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <div className="absolute left-3 top-1/2 z-10 -translate-y-1/2">
                   {startIcon}
                 </div>
               )}
@@ -350,7 +367,7 @@ export function FormInput<T extends FieldValues>({
               />
 
               {resolvedEndIcon && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="absolute right-3 top-1/2 z-10 -translate-y-1/2">
                   {resolvedEndIcon}
                 </div>
               )}

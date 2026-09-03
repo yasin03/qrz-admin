@@ -1,29 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@/services/auth";
 import { useAuthStore, User } from "@/stores/auth-store";
+import { FormInput, FormSwitch } from "@/components/forms";
 
 const loginSchema = z.object({
   username: z.string(),
@@ -35,15 +26,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Page = () => {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
+  const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { username: "", password: "", remember: false },
   });
@@ -56,7 +41,6 @@ const Page = () => {
     try {
       const data = await loginMutation(values);
       if (String(data?.Sonuc ?? "") != "1") {
-        console.log("Login response:", data); // Log the response for debugging
         toast.error("Giris basarisiz", {
           description:
             (data?.message as string) || "Kullanici adi veya sifre hatali.",
@@ -136,82 +120,40 @@ const Page = () => {
               className="space-y-4"
               noValidate
             >
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Kullanıcı Adı</Label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="username"
-                    autoComplete="username"
-                    className="pl-9"
-                    aria-invalid={!!errors.username}
-                    {...register("username")}
-                  />
-                </div>
-                {errors.username && (
-                  <p className="text-xs text-destructive">
-                    {errors.username.message}
-                  </p>
-                )}
-              </div>
+              <FormInput
+                control={control}
+                name="username"
+                label="Kullanıcı Adı"
+                autoComplete="username"
+                vertical={false}
+                startIcon={
+                  <Mail className="pointer-events-none size-4 text-muted-foreground" />
+                }
+              />
 
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Şifre</Label>
-                </div>
-                <div className="relative">
-                  <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    className="pr-9 pl-9"
-                    aria-invalid={!!errors.password}
-                    {...register("password")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    tabIndex={-1}
-                    aria-label={
-                      showPassword ? "Şifreyi gizle" : "Şifreyi göster"
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-xs text-destructive">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
+              <FormInput
+                control={control}
+                name="password"
+                label="Şifre"
+                type="password"
+                vertical={false}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                startIcon={
+                  <Lock className="pointer-events-none size-4 text-muted-foreground" />
+                }
+              />
 
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Controller
+                  <FormSwitch
                     control={control}
                     name="remember"
-                    render={({ field }) => (
-                      <Checkbox
-                        id="remember"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
+                    className="p-0"
                   />
-                  <Label
-                    htmlFor="remember"
-                    className="text-sm font-normal text-muted-foreground"
-                  >
+                  <span className="text-sm text-muted-foreground text-nowrap">
                     Beni hatırla
-                  </Label>
+                  </span>
                 </div>
                 <Link
                   href="/forgot-password"

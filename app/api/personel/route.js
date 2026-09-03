@@ -172,7 +172,6 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
-    console.log("Executing query====================:", query);
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

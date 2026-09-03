@@ -36,6 +36,16 @@ async function verifySession(token: string) {
 // adı bu şekilde değişti, mantığın kendisi birebir aynı kaldı).
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // Browser/devtools veya statik istemcilerden gelen non-page isteklerde
+  // login redirect'i uygulama (ör: /.well-known/*.json).
+  const accept = request.headers.get("accept") ?? "";
+  const isHtmlNavigation = accept.includes("text/html");
+  const isWellKnown = pathname.startsWith("/.well-known");
+  if (!isHtmlNavigation || isWellKnown) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const session = token ? await verifySession(token) : null;
   const isAuthenticated = session !== null;
@@ -75,6 +85,6 @@ export const config = {
      * - Next.js statik dosyaları / görsel optimizasyonu
      * - favicon, public klasöründeki dosyalar (logolar, resimler vb.)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|logos|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|logos|\\.well-known|.*\\.(?:png|jpg|jpeg|svg|webp|ico|json)$).*)",
   ],
 };
