@@ -153,7 +153,7 @@ export default function Grup() {
           const status = row.original.Durum;
           return (
             <Badge
-              variant={status ? "success" : "destructive"}
+              variant={status ? "success" : "danger"}
               className="w-20"
             >
               {status ? "Aktif" : "Pasif"}

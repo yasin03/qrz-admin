@@ -19,7 +19,7 @@ export interface QrPayload {
  * Sadece telefonun ihtiyaç duyduğu alanları QR payload'ına koyuyoruz
  * (BolumAdi, LokasyonAdi gibi görsel alanları QR'a gömmüyoruz, kod boyutunu şişirmesin)
  */
-export function generateQrPayload(data: LokasyonQrData): string {
+/* export function generateQrPayload(data: LokasyonQrData): string {
   const payload: QrPayload = {
     IDBolumLokasyon: data.IDBolumLokasyon,
     IDBolum: data.IDBolum,
@@ -28,4 +28,10 @@ export function generateQrPayload(data: LokasyonQrData): string {
   };
 
   return JSON.stringify(payload);
+} */
+
+export function generateQrPayload(data: LokasyonQrData): string {
+  return [data.IDBolumLokasyon, data.IDBolum, data.Enlem, data.Boylam].join(
+    "|",
+  );
 }

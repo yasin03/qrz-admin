@@ -23,6 +23,8 @@ import LokasyonFiltre from "./LokasyonFiltre";
 import LokasyonEkle from "./LokasyonEkle";
 import { LokasyonQrData } from "@/lib/qr-utils";
 import { QrKodDialog } from "./QRKodDialog";
+import { useBolumler } from "@/hooks/use-kurumsal-data";
+import { useCurrentContext } from "@/hooks/use-context";
 
 const INITIAL_FILTERS: LokasyonFilters = {
   IDBolum: "",
@@ -31,6 +33,8 @@ const INITIAL_FILTERS: LokasyonFilters = {
 };
 
 const Lokasyon = () => {
+  const { data: savedContext, isLoading: isLoadingContext } =
+    useCurrentContext();
   const [filters, setFilters] = useState<LokasyonFilters>(INITIAL_FILTERS);
   const deleteLokasyon = useDeleteLokasyon();
   const [searchText, setSearchText] = useState("");
@@ -48,18 +52,24 @@ const Lokasyon = () => {
     refetch: refetchLokasyonListesi,
   } = useLokasyonList(INITIAL_FILTERS);
 
+  const {
+    data: bolumler = [],
+    isLoading: isLoadingSubeler,
+    isError: isErrorSubeler,
+  } = useBolumler(Number(savedContext?.IDSube));
+
   const bolumOptions = useMemo(() => {
     const map = new Map<string, string>();
 
-    lokasyonListesi.forEach((lokasyon) => {
-      map.set(String(lokasyon.IDBolum), lokasyon.BolumAdi);
+    bolumler.forEach((bolum) => {
+      map.set(String(bolum.IDBolum), bolum.BolumAdi);
     });
 
     return Array.from(map.entries()).map(([value, label]) => ({
       value,
       label,
     }));
-  }, [lokasyonListesi]);
+  }, [bolumler]);
 
   const seciliLokasyon = useMemo(
     () =>
