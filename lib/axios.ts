@@ -7,6 +7,19 @@ const axiosInstance = axios.create({
   },
 });
 
+// Özel hata sınıfı
+export class ApiClientError extends Error {
+  status?: number;
+  code?: string;
+
+  constructor(message: string, status?: number, code?: string) {
+    super(message);
+    this.name = "ApiClientError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 // İstek interceptor'ı
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -27,7 +40,6 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Örneğin 401 olduğunda login sayfasına yönlendirebilirsin
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
@@ -35,8 +47,19 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error);
+    // Backend'den gelen mesajı yakala (kendi API response formatınıza göre uyarlayın)
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Beklenmeyen bir hata oluştu.";
+
+    const status = error.response?.status;
+    const code = error.response?.data?.code;
+
+    return Promise.reject(new ApiClientError(message, status, code));
   },
 );
 
 export default axiosInstance;
+export const api = axiosInstance;

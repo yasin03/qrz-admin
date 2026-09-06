@@ -11,6 +11,7 @@ import {
   Search,
   Hospital,
   UserCog,
+  Smartphone,
 } from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
@@ -31,6 +32,8 @@ import PersonelSgkDialog from "./PersonelSgkDialog";
 import PersonelSettingsDialog, {
   PersonelSettingsPersonel,
 } from "./PersonelSettingsDialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api, ApiClientError } from "@/lib/axios";
 
 type Personel = {
   SicilNo: string;
@@ -75,6 +78,7 @@ type SgkDialogState = {
 };
 
 const Personel = () => {
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<PersonelFilters | null>(null);
   const [searchText, setSearchText] = useState("");
   const { data: context } = useCurrentContext();
@@ -89,6 +93,8 @@ const Personel = () => {
   const [settingsPersonel, setSettingsPersonel] =
     useState<PersonelSettingsPersonel | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [resetlenecekPersonel, setResetlenecekPersonel] =
+    useState<Personel | null>(null);
   useEffect(() => {
     if (filters || !context?.IDSube) return;
 
@@ -208,6 +214,44 @@ const Personel = () => {
     });
   };
 
+  const resetAktivasyonMutation = useMutation({
+    mutationFn: async (personel: Personel) => {
+      const response = await api.post("/api/personel", {
+        type: "RESET_PHONE_AKTIVASYON",
+        IDSubePersonel: personel.IDSubePersonel,
+      });
+      return response.data;
+    },
+    onSuccess: (data, personel) => {
+      toast.success(
+        data?.message ||
+          `Telefon aktivasyonu ${personel.AdSoyad} için resetlendi.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["personel"] });
+    },
+    onError: (error) => {
+      const message =
+        error instanceof ApiClientError
+          ? error.message
+          : "Telefon aktivasyonu resetlenemedi.";
+      toast.error(message);
+    },
+  });
+
+  const handleAktivasyonResetle = (personel: Personel) => {
+    setResetlenecekPersonel(personel);
+  };
+
+  const handleAktivasyonResetConfirm = () => {
+    if (!resetlenecekPersonel) return;
+
+    resetAktivasyonMutation.mutate(resetlenecekPersonel, {
+      onSettled: () => {
+        setResetlenecekPersonel(null);
+      },
+    });
+  };
+
   // ---- 3. Kolon tanımları ----------------------------------------------
   const columns: ColumnDef<Personel>[] = [
     {
@@ -241,6 +285,12 @@ const Personel = () => {
             label: personel.Durum ? "SGK İşten Çıkış Yap" : "SGK İşe Giriş Yap",
             icon: Hospital,
             onClick: (r) => handleSgkAction(r, r.Durum),
+          },
+          {
+            label: "Telefon Aktivasyon Resetle",
+            icon: Smartphone,
+            separatorBefore: true,
+            onClick: (r) => handleAktivasyonResetle(r),
           },
           {
             label: "Sil",
@@ -470,6 +520,17 @@ const Personel = () => {
         confirmLabel="Sil"
         isLoading={deletePersonel.isPending}
         onConfirm={handleDeleteConfirm}
+      />
+
+      <ConfirmDialog
+        open={!!resetlenecekPersonel}
+        onOpenChange={(open) => !open && setResetlenecekPersonel(null)}
+        title="Telefon aktivasyonunu resetle"
+        description={`"${resetlenecekPersonel?.AdSoyad}" adlı personelin telefon aktivasyonu resetlenecek. Personel bir sonraki girişte telefonunu yeniden eşleştirmek zorunda kalacak.`}
+        variant="warning"
+        confirmLabel="Resetle"
+        isLoading={resetAktivasyonMutation.isPending}
+        onConfirm={handleAktivasyonResetConfirm}
       />
     </div>
   );
