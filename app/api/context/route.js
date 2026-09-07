@@ -1,10 +1,17 @@
+// api/context/route.js
 import { NextResponse } from "next/server";
-import { joseDecrypt, joseEncrypt } from "@/lib/token";
+import { joseDecrypt } from "@/lib/token";
+import { ExecuteQuery } from "@/lib/db";
+import {
+  buildSessionToken,
+  fetchSessionFromDb,
+  setSessionCookie,
+  CONTEXT_COOKIE_NAME,
+} from "@/lib/session";
 
-const CONTEXT_COOKIE_NAME = "grsisudo";
-
-// Mevcut çalışma bağlamını (grup/şirket/şube/dönem) okur — HeaderCompany
-// açılışta formu bununla dolduruyor.
+// Mevcut çalışma bağlamını okur. grsisudo cookie'si varsa direkt onu decode
+// eder (hızlı yol); yoksa (ör. ilk login, cookie henüz oluşmadıysa) DB'den
+// çekip cookie'yi de o an oluşturur.
 export async function GET(request) {
   try {
     const sid = request.cookies.get("sid")?.value;
@@ -17,22 +24,30 @@ export async function GET(request) {
       );
     }
 
-    const token = request.cookies.get(CONTEXT_COOKIE_NAME)?.value;
-    if (!token) {
-      return NextResponse.json({ context: null });
+    const cookieToken = request.cookies.get(CONTEXT_COOKIE_NAME)?.value;
+    let context = cookieToken ? await joseDecrypt(cookieToken) : null;
+
+    if (!context) {
+      const { session, token } = await buildSessionToken(user.IDKullanici);
+      if (!session) {
+        return NextResponse.json({ context: null });
+      }
+      context = session;
+      const response = NextResponse.json({ context });
+      setSessionCookie(response, token);
+      return response;
     }
 
-    const context = await joseDecrypt(token);
-    return NextResponse.json({ context: context ?? null });
+    return NextResponse.json({ context });
   } catch (err) {
     console.error("context GET error", err);
     return NextResponse.json({ message: "Bir hata oluştu." }, { status: 500 });
   }
 }
 
-// Yeni çalışma bağlamını kaydeder — sid ile aynı desende (jose, HS256),
-// httpOnly cookie olarak yazılıyor. Tüm diğer API route'ları bundan sonra
-// bu cookie'yi decrypt edip IDSirket/Yil/IDSube okuyabilir.
+// Yeni çalışma bağlamını DB'ye yazar (KullaniciSonIslem_UPDATE), ardından
+// güncel satırı tekrar SELECT edip cookie'yi tazeler. Böylece grsisudo her
+// zaman DB ile senkron kalır.
 export async function POST(request) {
   try {
     const sid = request.cookies.get("sid")?.value;
@@ -46,7 +61,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { IDGurup, IDSirket, IDSube, Yil, Ay } = body;
+    const { IDSirket, IDSube, Yil, Ay } = body;
 
     if (!IDSirket || !Yil) {
       return NextResponse.json(
@@ -55,26 +70,24 @@ export async function POST(request) {
       );
     }
 
-    const contextPayload = {
-      IDGurup: IDGurup ?? null,
-      IDSirket,
-      IDSube: IDSube ?? null,
-      Yil,
-      Ay: Ay ?? null,
-    };
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "0.0.0.0";
 
-    // 30 gün — bu bir güvenlik token'ı değil, kalıcı bir tercih; "sid" gibi
-    // kısa ömürlü olmasına gerek yok, ama yine de imzalı (client tahrif edemez).
-    const token = await joseEncrypt(contextPayload, "30d");
+    const updateQuery = `[KullaniciSonIslem_UPDATE] '${user.IDKullanici}', '${Yil}', '${Ay ?? ""}', '${IDSirket}', '${IDSube ?? ""}', '${ip}'`;
+    await ExecuteQuery(updateQuery);
 
-    const response = NextResponse.json({ Sonuc: "1", context: contextPayload });
-    response.cookies.set(CONTEXT_COOKIE_NAME, token, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
-      sameSite: "lax",
-    });
+    const { session, token } = await buildSessionToken(user.IDKullanici);
+    if (!session) {
+      return NextResponse.json(
+        { message: "Güncelleme sonrası oturum bilgisi okunamadı." },
+        { status: 500 },
+      );
+    }
 
+    const response = NextResponse.json({ Sonuc: "1", context: session });
+    setSessionCookie(response, token);
     return response;
   } catch (err) {
     console.error("context POST error", err);

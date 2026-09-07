@@ -8,7 +8,8 @@ const queryTypes = {
     `[KullaniciAlan_SELECT_IDGurup] '${params.IDKullanici}'`,
   ADD_GRUP: (params) =>
     `[Gurup_INSERT] '${params.GurupAdi}', '${params.YetkiliKisi}', '${params.IsTel}', '${params.Tel}', '${params.IDKullanici}', '${params.Durum}'`,
-  UPDATE_GRUP: (params) => `[Gurup_UPDATEByIDGurup] '${params.IDGurup}','${params.GurupAdi}', '${params.YetkiliKisi}', '${params.IsTel}', '${params.Tel}', '${params.IDKullanici}', '${params.Durum}'`,
+  UPDATE_GRUP: (params) =>
+    `[Gurup_UPDATEByIDGurup] '${params.IDGurup}','${params.GurupAdi}', '${params.YetkiliKisi}', '${params.IsTel}', '${params.Tel}', '${params.IDKullanici}', '${params.Durum}'`,
   DELETE_GRUP: (params) => `[Gurup_DELETEByIDGurup] '${params.IDGurup}'`,
 };
 
@@ -17,12 +18,11 @@ export async function POST(request) {
     const payload = await request.json();
     const { type } = payload;
 
-    const sid = request.cookies.get("sid")?.value;
-    const grsisudo = request.cookies.get("grsisudo")?.value;
-
-    const user = await joseDecrypt(sid);
-    const gruSisudo = await joseDecrypt(grsisudo);
-
+    const user_token = request.cookies.get("sid")?.value;
+    const user = await joseDecrypt(user_token);
+    const grsisudo_token = request.cookies.get("grsisudo")?.value;
+    const grsisudo = await joseDecrypt(grsisudo_token);
+    
     if (!user) {
       return NextResponse.json(
         { message: "Kullanıcı Bilgisi Bulunamadı." },
@@ -31,8 +31,8 @@ export async function POST(request) {
     }
 
     const queryParams = {
-      IDSirket: grsisudo.IDSirket,
-      Yil: grsisudo.Yil,
+      IDSirket: grsisudo?.IDSirket,
+      Yil: grsisudo?.Yil,
       IDKullanici: user.IDKullanici,
       IDGurup: payload.IDGurup,
       GurupAdi: payload.GurupAdi,
@@ -52,9 +52,7 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
-    console.log("Executing query:", query);
     const result = await ExecuteQuery(query);
-    console.log("Query result:", result);
 
     return NextResponse.json(result);
   } catch (err) {

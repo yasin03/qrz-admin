@@ -19,10 +19,11 @@ export async function POST(request) {
     const payload = await request.json();
     const { type } = payload;
 
-    const sid = request.cookies.get("sid")?.value;
-    const grsisudo = request.cookies.get("grsisudo")?.value;
-    const user = await joseDecrypt(sid);
-    const gruSisudo = await joseDecrypt(grsisudo);
+    const user_token = request.cookies.get("sid")?.value;
+    const user = await joseDecrypt(user_token);
+    const grsisudo_token = request.cookies.get("grsisudo")?.value;
+    const grsisudo = await joseDecrypt(grsisudo_token);
+
 
     if (!user) {
       return NextResponse.json(
@@ -33,7 +34,7 @@ export async function POST(request) {
 
     const queryParams = {
       IDSirket: grsisudo.IDSirket,
-      IDSube: gruSisudo.IDSube,
+      IDSube: grsisudo.IDSube,
       IDBolum: payload.IDBolum ?? "0",
       IDBolumLokasyon: payload.IDBolumLokasyon,
       Yil: grsisudo.Yil,
@@ -56,7 +57,6 @@ export async function POST(request) {
 
     const query = queryFunction(queryParams);
     let result;
-    console.log("query", query);
     result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

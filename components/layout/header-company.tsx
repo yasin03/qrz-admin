@@ -92,6 +92,7 @@ const HeaderCompany = () => {
       if (savedContext.Ay) {
         form.setValue("Ay", String(savedContext.Ay).padStart(2, "0"));
       }
+      setPreferredContext(savedContext);
     }
   }, [isLoadingContext, savedContext, form]);
 
@@ -160,6 +161,42 @@ const HeaderCompany = () => {
 
     form.setValue("IDSube", nextSube);
   }, [subeler, form, preferredContext]);
+
+  const hasAutoSaved = useRef(false);
+
+  // Kullanıcının hiç seçim yapmadığı ilk girişte grsisudo cookie'si hiç
+  // oluşmaz; diğer sayfalar (personel, lokasyon, ...) IDSirket'i bu
+  // cookie'den okuduğu için null hataları alır. Bu yüzden kaydedilmiş bir
+  // context yoksa, otomatik seçilen varsayılanları arka planda kaydediyoruz.
+  useEffect(() => {
+    if (
+      hasAutoSaved.current ||
+      isLoadingContext ||
+      savedContext ||
+      saveContext.isPending ||
+      !selectedSirket
+    ) {
+      return;
+    }
+
+    hasAutoSaved.current = true;
+    saveContext.mutate({
+      IDGurup: selectedGrup || null,
+      IDSirket: selectedSirket,
+      IDSube: selectedSube || null,
+      Yil: selectedYear,
+      Ay: selectedMonth,
+    });
+  }, [
+    isLoadingContext,
+    savedContext,
+    selectedSirket,
+    selectedGrup,
+    selectedSube,
+    selectedYear,
+    selectedMonth,
+    saveContext,
+  ]);
 
   const currentGrup = useMemo(
     () => gruplar.find((x) => x.IDGurup === selectedGrup),

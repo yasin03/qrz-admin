@@ -12,7 +12,6 @@ export type WorkingContext = {
 async function fetchContext(): Promise<WorkingContext | null> {
   const response = await fetch("/api/context");
   if (!response.ok) return null;
-
   const data = await response.json();
   return data.context ?? null;
 }

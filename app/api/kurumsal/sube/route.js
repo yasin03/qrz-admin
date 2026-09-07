@@ -115,8 +115,10 @@ export async function POST(request) {
     const payload = await request.json();
     const { type } = payload;
 
-    const sid = request.cookies.get("sid")?.value;
-    const user = sid ? await joseDecrypt(sid) : null;
+    const user_token = request.cookies.get("sid")?.value;
+    const user = await joseDecrypt(user_token);
+    const grsisudo_token = request.cookies.get("grsisudo")?.value;
+    const grsisudo = await joseDecrypt(grsisudo_token);
 
     if (!user) {
       return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ExecuteQuery } from "@/lib/db";
 import { joseEncrypt } from "@/lib/token";
+import { buildSessionToken, setSessionCookie } from "@/lib/session";
 
 export async function POST(request) {
   try {
@@ -17,8 +18,6 @@ export async function POST(request) {
       "[LoginKontrol] '" + username + "', '" + password + "'",
     );
 
-    console.log("auth POST sonuc", sonuc);
-
     const response = NextResponse.json(sonuc ?? { Sonuc: "0" });
 
     if (sonuc?.Sonuc == "1") {
@@ -29,6 +28,9 @@ export async function POST(request) {
         path: "/",
         sameSite: "lax",
       });
+
+      const { token: sirketToken } = await buildSessionToken(sonuc.IDKullanici);
+      setSessionCookie(response, sirketToken);
     }
 
     return response;
