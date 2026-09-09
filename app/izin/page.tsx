@@ -1,7 +1,7 @@
-export default function Page() {
-  return (
-    <div className="h-full">
-      <h1 className="text-2xl font-bold">İzin Yönetimi</h1>
-    </div>
-  );
-}
+import IzinPage from "@/components/izin/Izin";
+
+const Page = () => {
+  return <IzinPage />;
+};
+
+export default Page;

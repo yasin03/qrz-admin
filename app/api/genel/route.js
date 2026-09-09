@@ -8,6 +8,7 @@ const queryTypes = {
   GET_ILCELER: (params) => `[Ilce_SELECTByIlKodu] '${params.IlKodu}',''`,
   GET_VERGIDAIRELERI: (params) =>
     `[VergiDairesi_SELECTByIlKodu] '${params.IlKodu}',''`,
+  GET_IZIN_TIPLERI: (params) => `[PersonelEksikGunNedeni_SELECTAll]`,
   GET_SABIT_TANIMLAR: (params) => `[SabitTanimMadde_SELECTAll]`,
   GET_PERSONEL_SABIT_TANIMLAR: (params) => `[PersonelSgkBelgeTuru_SELECTAllTypes]`,
 };

@@ -1,3 +1,4 @@
+"use client";
 import { useQuery } from "@tanstack/react-query";
 
 type SabitTanimlarResponse = unknown[];
@@ -35,6 +36,11 @@ type SgkKanunNo = {
 type GorevKodu = {
   IDPersonelSigortaliGorevKodu: string | number;
   Aciklama: string;
+};
+
+type IzinTipleri = {
+  Kod: string;
+  KisaKod: string;
 };
 
 function toSabitTanimList(value: unknown): SabitTanimMadde[] {
@@ -141,6 +147,14 @@ function toGorevKoduOptions(value: unknown): SelectOption[] {
   }));
 }
 
+function toIzinTipleriOptions(value: unknown): SelectOption[] {
+  if (!Array.isArray(value)) return [];
+  return (value as IzinTipleri[]).map((item) => ({
+    value: String(item.KisaKod),
+    label: item.Kod,
+  }));
+}
+
 // ---- GET_PERSONEL_SABIT_TANIMLAR --------------------------------------
 
 async function getPersonelSabitTanimlar(): Promise<SabitTanimlarResponse> {
@@ -161,6 +175,24 @@ async function getPersonelSabitTanimlar(): Promise<SabitTanimlarResponse> {
   return response.json();
 }
 
+async function getIzinTipleri(): Promise<SabitTanimlarResponse> {
+  const response = await fetch("/api/genel", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      type: "GET_IZIN_TIPLERI",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Personel izin tipleri alınamadı.");
+  }
+
+  return response.json();
+}
+
 export const personelSabitTanimlarKeys = {
   all: ["personel-sabit-tanimlar"] as const,
 };
@@ -172,7 +204,14 @@ export function usePersonelSabitTanimlar() {
     staleTime: 1000 * 60 * 60, // 1 saat
   });
 
+  const izinQuery = useQuery({
+    queryKey: ["izin-tipleri"],
+    queryFn: getIzinTipleri,
+    staleTime: 1000 * 60 * 60, // 1 saat
+  });
+
   const data = query.data ?? [];
+  const izinData = izinQuery.data ?? [];
   return {
     ...query,
 
@@ -180,5 +219,6 @@ export function usePersonelSabitTanimlar() {
     sigortaKollari: toSigortaKoluOptions(data[1]),
     sgkKanunNolar: toSgkKanunNoOptions(data[2]),
     gorevKodlari: toGorevKoduOptions(data[3]),
+    izinTipleri: toIzinTipleriOptions(izinData),
   };
 }

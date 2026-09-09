@@ -39,6 +39,7 @@ type MenuItem = {
 
 const adminMenuItems: MenuItem[] = [
   { href: "/personel", label: "Personel", icon: Users },
+  { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
 ];

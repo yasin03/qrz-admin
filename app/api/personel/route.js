@@ -113,6 +113,8 @@ function buildPersonelParams(p) {
 const queryTypes = {
   GET_PERSONEL: (params) =>
     `[SubePersonel_SELECTByTarih] '${params.IDSube}','${params.IDBolum}','${params.DurumTarihi}','${params.Durum}'`,
+  GET_AKTIF_PERSONEL: (params) =>
+    `[SubePersonel_SELECTByIDSube3] '${params.IDSube}', '${params.TcKimlikNo}','${params.Adi}','${params.Yil}','${params.Ay}'`,
   GET_PERSONEL_DETAY: (params) =>
     `[SubePersonel_SELECTByIDSubePersonel] '${params.IDSubePersonel}'`,
   DELETE_PERSONEL: (params) =>
@@ -136,7 +138,7 @@ export async function POST(request) {
     const user = await joseDecrypt(user_token);
     const grsisudo_token = request.cookies.get("grsisudo")?.value;
     const grsisudo = await joseDecrypt(grsisudo_token);
-
+console.log(grsisudo);
     if (!user) {
       return NextResponse.json(
         { message: "Kullanıcı Bilgisi Bulunamadı." },
@@ -154,9 +156,10 @@ export async function POST(request) {
     const queryParams = {
       IDSirket: grsisudo.IDSirket,
       Yil: grsisudo.Yil,
+      Ay: grsisudo.Ay,
       IDKullanici: user.IDKullanici,
       IDSubePersonel: payload.IDSubePersonel,
-      IDSube: payload.IDSube,
+      IDSube: payload.IDSube ? payload.IDSube : grsisudo.IDSube,
       IDBolum: payload.IDBolum ?? "",
       DurumTarihi: payload.DurumTarihi,
       Durum: payload.Durum ?? "",
@@ -173,6 +176,7 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
+    console.log("query : ", query);
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

@@ -92,6 +92,19 @@ export function usePersonelListesi(filters: PersonelFilters | null) {
   });
 }
 
+export function useAktifPersonelListesi() {
+  return useQuery({
+    queryKey: personelKeys.all,
+    queryFn: () =>
+      callPersonelApi<unknown>({
+        type: "GET_AKTIF_PERSONEL",
+        TcKimlikNo: "",
+        Adi: "",
+      }),
+    select: (data) => normalizeListResponse<any>(data),
+  });
+}
+
 // ---- Personel Detay ----------------------------------------------------
 
 export function usePersonelDetay(id: string | number | undefined) {

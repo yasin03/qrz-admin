@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { Filter } from "lucide-react";
@@ -59,9 +59,6 @@ type Props = {
 
 export default function PersonelFiltre({ onApply }: Props) {
   const { data: context } = useCurrentContext();
-
-  const { data: subeler = [] } = useSubeler(Number(context?.IDSirket) || 0);
-
   const form = useForm<FormValues>({
     defaultValues: {
       IDSube: "",
@@ -75,53 +72,68 @@ export default function PersonelFiltre({ onApply }: Props) {
     },
   });
 
-  const selectedSube = form.watch("IDSube");
-  const { data: bolumler = [] } = useBolumler(Number(selectedSube) || 0);
+  const { data: subeler = [] } = useSubeler(Number(context?.IDSirket) || 0);
 
-  // Context'teki (üstten seçilen) şubeyi filtreye varsayılan olarak koy —
-  // kullanıcı sonradan farklı bir şube seçebilir, bu sadece ilk açılış.
+  const selectedSube = form.watch("IDSube");
+  const { data: bolumlerData = [] } = useBolumler(Number(selectedSube) || 0);
+
+  const bolumler = useMemo(
+    () => [{ IDBolum: "", BolumAdi: "Tümü" }, ...bolumlerData],
+    [bolumlerData],
+  );
+
   useEffect(() => {
     if (context?.IDSube && !form.getValues("IDSube")) {
       form.setValue("IDSube", context.IDSube);
     }
   }, [context, form]);
 
-  // Şube değişince eski bölüm seçili kalmasın.
   useEffect(() => {
     form.setValue("IDBolum", "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSube]);
 
-  const handleApply = (values: FormValues) => {
-    const normalizeUcretTipi = (
-      value: FormValues["UcretTipi"],
-    ): PersonelFilters["UcretTipi"] => (value === "TÜMÜ" ? "" : value);
-
-    const normalizeCinsiyet = (
-      value: FormValues["Cinsiyet"],
-    ): PersonelFilters["Cinsiyet"] => (value === "TÜMÜ" ? "" : value);
-
-    const normalizeMedeniDurum = (
-      value: FormValues["MedeniDurum"],
-    ): PersonelFilters["MedeniDurum"] => (value === "TÜMÜ" ? "" : value);
-
-    const normalizeCalismaDurumu = (
-      value: FormValues["CalismaDurumu"],
-    ): PersonelFilters["CalismaDurumu"] => (value === "TÜMÜ" ? "" : value);
+  const buildFilters = useCallback((values: FormValues): PersonelFilters => {
+    const normalize = <T extends string>(value: T): T | "" =>
+      value === "TÜMÜ" ? "" : value;
 
     const tumu = values.Durum === "TÜMÜ";
-    const filters = {
+
+    return {
       IDSube: values.IDSube,
       IDBolum: values.IDBolum,
       Durum: tumu ? "" : (values.Durum as PersonelFilters["Durum"]),
       DurumTarihi: tumu ? "" : values.DurumTarihi,
-      UcretTipi: normalizeUcretTipi(values.UcretTipi),
-      Cinsiyet: normalizeCinsiyet(values.Cinsiyet),
-      MedeniDurum: normalizeMedeniDurum(values.MedeniDurum),
-      CalismaDurumu: normalizeCalismaDurumu(values.CalismaDurumu),
+      UcretTipi: normalize(values.UcretTipi) as PersonelFilters["UcretTipi"],
+      Cinsiyet: normalize(values.Cinsiyet) as PersonelFilters["Cinsiyet"],
+      MedeniDurum: normalize(
+        values.MedeniDurum,
+      ) as PersonelFilters["MedeniDurum"],
+      CalismaDurumu: normalize(
+        values.CalismaDurumu,
+      ) as PersonelFilters["CalismaDurumu"],
     };
-    onApply(filters);
-  };
+  }, []);
+
+  // Seçim değişince otomatik uygula (lokasyon filtresiyle aynı pattern)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      // Context henüz IDSube'u set etmediyse bekle, boş filtre atmayalım
+      if (!values.IDSube) return;
+
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        onApply(buildFilters(values as FormValues));
+      }, 250);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [form, buildFilters, onApply]);
 
   const handleReset = () => {
     form.reset({
@@ -134,6 +146,7 @@ export default function PersonelFiltre({ onApply }: Props) {
       MedeniDurum: "TÜMÜ",
       CalismaDurumu: "TÜMÜ",
     });
+    // form.reset watch subscription'ı tetikler, ayrıca onApply çağırmaya gerek yok
   };
 
   return (
@@ -216,13 +229,6 @@ export default function PersonelFiltre({ onApply }: Props) {
             onClick={handleReset}
           >
             Sıfırla
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={form.handleSubmit(handleApply)}
-          >
-            Uygula
           </Button>
         </div>
       </PopoverContent>
