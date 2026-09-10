@@ -10,6 +10,16 @@ const queryTypes = {
     `[IzinGenel_Insert] '${params.IDSubePersonel}','${params.BaslangicTarihi}','${params.BitisTarihi}','${params.Aciklama}','${params.Gun}','${params.AitOlduguYil}','${params.CizelgeDurum}'`,
   DELETE_IZIN: (params) =>
     `[IzinGenel_DELETEByIDIzinGenel] '${params.IDIzinGenel}'`,
+
+  SELECT_TALEP: (params) =>
+    `[SubePersonelIzinTalep_SELECT] '${params.IDSube}','${params.IDSubePersonel}','${params.BaslangicTarihi}','${params.BitisTarihi}'`,
+  INSERT_TALEP: (params) =>
+    `[SubePersonelIzinTalep_INSERT] '${params.IDSubePersonel}','${params.BaslangicTarihi}','${params.BitisTarihi}','${params.Gun}','${params.Aciklama}', '${params.Mesaj}','${params.AitOlduguYil}','${params.Adres}','${params.Dosyalar}'`,
+  UPDATE_TALEP: (params) =>
+    `[SubePersonelIzinTalep_Update] '${params.IDSubePersonelIzinTalep}','${params.IDKullanici}','${params.KabulRed}','${params.RedAciklama}'`,
+
+  GET_IZINSURE: (params) =>
+    `[SubePersonelIzin_HESAPLAByIDSubePersonel] '${params.IDSubePersonel}','${params.Tarih}'`,
 };
 
 export async function POST(request) {
@@ -36,10 +46,18 @@ export async function POST(request) {
       BaslangicTarihi: payload.BaslangicTarihi,
       BitisTarihi: payload.BitisTarihi,
       Aciklama: payload.Aciklama,
+      Mesaj: payload.Mesaj,
       Gun: payload.Gun,
       AitOlduguYil: payload.AitOlduguYil,
       CizelgeDurum: payload.CizelgeDurum,
       IDIzinGenel: payload.IDIzinGenel,
+      Adres: payload.Adres,
+      Dosyalar: payload.Dosyalar,
+      Tarih: payload.Tarih,
+      IDSubePersonelIzinTalep: payload.IDSubePersonelIzinTalep,
+      IDKullanici: user.IDKullanici,
+      KabulRed: payload.KabulRed,
+      RedAciklama: payload.RedAciklama,
     };
 
     const queryFunction = queryTypes[type];
@@ -52,7 +70,6 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
-    console.log("query : ", query);
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

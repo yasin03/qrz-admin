@@ -138,7 +138,7 @@ export async function POST(request) {
     const user = await joseDecrypt(user_token);
     const grsisudo_token = request.cookies.get("grsisudo")?.value;
     const grsisudo = await joseDecrypt(grsisudo_token);
-console.log(grsisudo);
+
     if (!user) {
       return NextResponse.json(
         { message: "Kullanıcı Bilgisi Bulunamadı." },
@@ -176,7 +176,6 @@ console.log(grsisudo);
     }
 
     const query = queryFunction(queryParams);
-    console.log("query : ", query);
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

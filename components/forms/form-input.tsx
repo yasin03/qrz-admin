@@ -175,66 +175,61 @@ function padMoneyApiValue(api: string): string {
 
 // ---- FormInput ------------------------------------------------------------
 
-type FormInputProps<T extends FieldValues> = {
-  control: Control<T>;
-  name: FieldPath<T>;
-
-  /** Boş bırakılırsa (veya hiç verilmezse) hiç label alanı render edilmez — vertical fark etmeksizin tam genişlik. */
+// ---- Ortak (T'den bağımsız) alanlar ---------------------------------------
+type FormInputBaseProps = {
   label?: string;
-
   placeholder?: string;
-
-  /**
-   * "date" -> Calendar + Popover seçici
-   * "textarea" -> çok satırlı metin alanı
-   * diğerleri -> native <input type="...">
-   */
   type?: FormInputType;
-
-  /**
-   * Girdiyi otomatik filtreleyip biçimlendirir. Verilmezse normal input.
-   * (type="textarea" veya type="date" iken dikkate alınmaz.)
-   * - "tcno": sadece rakam, 11 karakter
-   * - "vergino": sadece rakam, 10 karakter
-   * - "tel": sadece rakam, 10 haneli, "555 444 22 33" formatında, başında 0 olmaz
-   * - "number": sadece rakam
-   * - "decimal": işaretli ondalık sayı (-122.406417 gibi), tek '-' ve tek '.'
-   * - "text": sadece harf/metin, rakam girilemez
-   * - "money": Türkçe para gösterimi ("1.250.000,54"), form değeri düz
-   */
   format?: InputFormat;
-
   required?: boolean;
-
   disabled?: boolean;
-
   readOnly?: boolean;
-
   description?: string;
-
   className?: string;
-
   inputClassName?: string;
-
   autoComplete?: string;
-
   maxLength?: number;
-
   startIcon?: ReactNode;
-
   endIcon?: ReactNode;
-
-  /** Sadece type="textarea" için satır sayısı. Varsayılan 4. */
   rows?: number;
-
-  /**
-   * true verilirse label ve input yan yana render edilir (label ~%25,
-   * input ~%75). Varsayılan false: label üstte, input altta.
-   */
   vertical?: boolean;
+  transform?: (value: string) => string;
 };
 
-export function FormInput<T extends FieldValues>({
+// ---- Controlled mod: react-hook-form'a bağlı -------------------------------
+type ControlledFormInputProps<T extends FieldValues> = FormInputBaseProps & {
+  control: Control<T>;
+  name: FieldPath<T>;
+  value?: never;
+  defaultValue?: never;
+  onChange?: never;
+};
+
+// ---- Uncontrolled mod: value/onChange ile çalışan, forma bağlı olmayan -----
+type UncontrolledFormInputProps = FormInputBaseProps & {
+  control?: undefined;
+  name?: undefined;
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+};
+
+type FormInputProps<T extends FieldValues> =
+  | ControlledFormInputProps<T>
+  | UncontrolledFormInputProps;
+
+export function FormInput<T extends FieldValues>(props: FormInputProps<T>) {
+  const { control, name, ...rest } = props;
+
+  // control/name verilmediyse uncontrolled modda çalış — Controller'a hiç girme.
+  if (!control || !name) {
+    return <UncontrolledFormInput {...rest} />;
+  }
+
+  return <ControlledFormInput {...props} control={control} name={name} />;
+}
+
+function ControlledFormInput<T extends FieldValues>({
   control,
   name,
   label,
@@ -244,6 +239,7 @@ export function FormInput<T extends FieldValues>({
   required,
   disabled,
   readOnly,
+  transform,
   description,
   className,
   inputClassName,
@@ -253,10 +249,11 @@ export function FormInput<T extends FieldValues>({
   endIcon,
   rows,
   vertical = true,
-}: FormInputProps<T>) {
+}: FormInputProps<T> & { control: Control<T>; name: FieldPath<T> }) {
   const formatMeta = format ? FORMAT_META[format] : undefined;
   const isPassword = type === "password";
   const [showPassword, setShowPassword] = useState(false);
+
   return (
     <Controller
       control={control}
@@ -341,9 +338,14 @@ export function FormInput<T extends FieldValues>({
                 onBlur={field.onBlur}
                 value={field.value ?? ""}
                 onChange={(event) => {
-                  const nextValue = format
+                  let nextValue = format
                     ? applyFormat(event.target.value, format)
                     : event.target.value;
+
+                  if (transform) {
+                    nextValue = transform(nextValue);
+                  }
+
                   field.onChange(nextValue);
                 }}
                 type={
@@ -378,8 +380,6 @@ export function FormInput<T extends FieldValues>({
           <p className="text-sm text-destructive">{fieldState.error.message}</p>
         );
 
-        // Label verilmediyse (FormLabel/FormGroup içinde tek başlık altında
-        // birden fazla input kullanılıyorsa) hiç label alanı ayırma.
         if (!hasLabel) {
           return (
             <Field className={className}>
@@ -414,18 +414,174 @@ export function FormInput<T extends FieldValues>({
         return (
           <Field className={className}>
             {labelNode}
-
             {description && (
               <p className="text-xs text-muted-foreground">{description}</p>
             )}
-
             {inputNode}
-
             {errorNode}
           </Field>
         );
       }}
     />
+  );
+}
+
+// ---- Uncontrolled mod (control/name verilmediğinde) ------------------------
+// Form state'ine hiç dokunmuyor — sadece value/defaultValue/onChange ile
+// çalışan basit bir gösterim/giriş alanı. "date" ve "money" gibi field.*
+// nesnesine bağımlı özel alt bileşenler bu modda desteklenmiyor (aşağıda
+// düz input/textarea'ya düşülüyor); ihtiyaç olursa ayrıca eklenebilir.
+
+function UncontrolledFormInput(props: UncontrolledFormInputProps) {
+  const {
+    label,
+    placeholder,
+    type = "text",
+    format,
+    required,
+    disabled,
+    readOnly,
+    description,
+    className,
+    inputClassName,
+    autoComplete,
+    maxLength,
+    startIcon,
+    endIcon,
+    rows,
+    vertical = true,
+    value,
+    defaultValue,
+    onChange,
+  } = props;
+
+  const formatMeta = format ? FORMAT_META[format] : undefined;
+  const isPassword = type === "password";
+  const [showPassword, setShowPassword] = useState(false);
+  const inputId = `uncontrolled-${label ?? "input"}`;
+
+  const hasLabel = Boolean(label);
+
+  const labelNode = hasLabel && (
+    <Label htmlFor={inputId} className={cn(vertical && "w-1/4 shrink-0")}>
+      {label}
+      {required && <span className="ml-1 text-destructive">*</span>}
+    </Label>
+  );
+
+  const resolvedEndIcon = isPassword ? (
+    <button
+      type="button"
+      tabIndex={-1}
+      onClick={() => setShowPassword((prev) => !prev)}
+      className="text-muted-foreground hover:text-foreground"
+      aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+    >
+      {showPassword ? (
+        <Eye className="size-4" />
+      ) : (
+        <EyeOff className="size-4" />
+      )}
+    </button>
+  ) : (
+    endIcon
+  );
+
+  const inputNode =
+    type === "textarea" ? (
+      <Textarea
+        id={inputId}
+        value={value}
+        defaultValue={defaultValue}
+        onChange={(event) => onChange?.(event.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+        readOnly={readOnly}
+        maxLength={maxLength}
+        rows={rows ?? 4}
+        className={cn("resize-y", inputClassName)}
+      />
+    ) : (
+      <div className="relative">
+        {startIcon && (
+          <div className="absolute left-3 top-1/2 z-10 -translate-y-1/2">
+            {startIcon}
+          </div>
+        )}
+
+        <Input
+          id={inputId}
+          value={value}
+          defaultValue={defaultValue}
+          onChange={(event) => {
+            const nextValue = format
+              ? applyFormat(event.target.value, format)
+              : event.target.value;
+            onChange?.(nextValue);
+          }}
+          type={
+            isPassword
+              ? showPassword
+                ? "text"
+                : "password"
+              : (formatMeta?.htmlType ?? type)
+          }
+          inputMode={formatMeta?.inputMode}
+          placeholder={placeholder}
+          disabled={disabled}
+          readOnly={readOnly}
+          autoComplete={autoComplete}
+          maxLength={formatMeta?.maxLength ?? maxLength}
+          className={cn(
+            startIcon && "pl-10",
+            resolvedEndIcon && "pr-10",
+            inputClassName,
+          )}
+        />
+
+        {resolvedEndIcon && (
+          <div className="absolute right-3 top-1/2 z-10 -translate-y-1/2">
+            {resolvedEndIcon}
+          </div>
+        )}
+      </div>
+    );
+
+  if (!hasLabel) {
+    return (
+      <Field className={className}>
+        {description && (
+          <p className="text-xs text-muted-foreground">{description}</p>
+        )}
+        {inputNode}
+      </Field>
+    );
+  }
+
+  if (vertical) {
+    return (
+      <Field className={className}>
+        <div className="flex items-center gap-3">
+          {labelNode}
+          <div className="flex-1 space-y-1.5">
+            {description && (
+              <p className="text-xs text-muted-foreground">{description}</p>
+            )}
+            {inputNode}
+          </div>
+        </div>
+      </Field>
+    );
+  }
+
+  return (
+    <Field className={className}>
+      {labelNode}
+      {description && (
+        <p className="text-xs text-muted-foreground">{description}</p>
+      )}
+      {inputNode}
+    </Field>
   );
 }
 

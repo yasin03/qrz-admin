@@ -30,7 +30,6 @@ import { CustomDatePicker } from "../customs/CustomDatePicker";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
 };
 
 const izinSchema = z.object({
@@ -51,7 +50,7 @@ const DEFAULT_VALUES: IzinForm = {
   izinTipi: "",
 };
 
-const IzinEkle = ({ open, onOpenChange, onSuccess }: Props) => {
+const IzinEkle = ({ open, onOpenChange }: Props) => {
   const { data: personelListesi = [], isLoading: isLoadingPersonel } =
     useAktifPersonelListesi();
   const { izinTipleri } = usePersonelSabitTanimlar();
@@ -112,7 +111,6 @@ const IzinEkle = ({ open, onOpenChange, onSuccess }: Props) => {
           : "İzin başarıyla oluşturuldu.",
       );
 
-      onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error?.message || "İzin oluşturulamadı.");

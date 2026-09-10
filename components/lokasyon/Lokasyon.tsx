@@ -250,7 +250,6 @@ const Lokasyon = () => {
         loading={isLoadingLokasyon}
         getRowId={(row) => row.IDBolumLokasyon}
         pagination
-        onRowClick={(row) => console.log("satıra tıklandı", row)}
         emptyMessage="Lokasyon bulunamadı."
       />
 

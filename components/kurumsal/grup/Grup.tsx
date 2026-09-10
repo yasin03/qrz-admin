@@ -212,7 +212,6 @@ export default function Grup() {
         <CustomDataTable
           data={filteredGruplar}
           columns={columns}
-          onRowClick={(row) => console.log("satıra tıklandı", row)}
           expandable
           expandedRowContent={(row) => (
             <Sirket idGurup={row.original.IDGurup} />

@@ -476,7 +476,6 @@ const Personel = () => {
         loading={isLoadingPersonel}
         getRowId={(row) => row.id}
         pagination
-        onRowClick={(row) => console.log("satıra tıklandı", row)}
         emptyMessage="Personel bulunamadı."
         expandable
         expandedRowContent={(row) => {

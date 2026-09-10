@@ -4,7 +4,6 @@ import { joseDecrypt } from "@/lib/token";
 import { ExecuteQuery } from "@/lib/db";
 import {
   buildSessionToken,
-  fetchSessionFromDb,
   setSessionCookie,
   CONTEXT_COOKIE_NAME,
 } from "@/lib/session";
@@ -76,8 +75,7 @@ export async function POST(request) {
       "0.0.0.0";
 
     const updateQuery = `[KullaniciSonIslem_UPDATE] '${user.IDKullanici}', '${Yil}', '${Ay ?? ""}', '${IDSirket}', '${IDSube ?? ""}', '${ip}'`;
-    await ExecuteQuery(updateQuery);
-
+    const resp = await ExecuteQuery(updateQuery);
     const { session, token } = await buildSessionToken(user.IDKullanici);
     if (!session) {
       return NextResponse.json(

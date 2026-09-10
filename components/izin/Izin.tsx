@@ -2,24 +2,22 @@
 
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Search, UserPlus, Trash2, HatGlasses } from "lucide-react";
-import { toast } from "sonner";
-import type { ColumnDef } from "@tanstack/react-table";
+import { Search, UserPlus } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import IzinFiltre from "@/components/izin/IzinFiltre";
 import IzinEkle from "@/components/izin/IzinEkle";
-import { useIzinList, useDeleteIzin } from "@/hooks/use-izin";
+import IzinListesi from "@/components/izin/IzinListesi";
+import TalepEkle from "@/components/izin/TalepEkle";
+import TalepListesi from "@/components/izin/TalepListesi";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 import { useUser } from "@/stores/auth-store";
 import { KULLANICI_TIPI } from "@/lib/roles";
-import { IzinFilters, IzinType } from "@/types/izin";
-import { RowAction, RowActions } from "../customs/RowActions";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
+import { IzinFilters } from "@/types/izin";
+import { useCurrentContext } from "@/hooks/use-context";
 
 function getDefaultDateRange() {
   const now = new Date();
@@ -30,23 +28,36 @@ function getDefaultDateRange() {
   };
 }
 
+function getYearBounds() {
+  const year = new Date().getFullYear();
+  return {
+    BaslangicTarihi: `${year}-01-01`,
+    BitisTarihi: `${year}-12-31`,
+  };
+}
+
+type TabValue = "izin" | "talepler";
+
 const IzinPage = () => {
   const user = useUser();
   const isPersonel = user?.IDKullaniciTip === KULLANICI_TIPI.PERSONEL;
-
+  const { data: savedContext, isLoading: isLoadingContext } =
+    useCurrentContext();
   const { izinTipleri } = usePersonelSabitTanimlar();
 
+  const [activeTab, setActiveTab] = useState<TabValue>("izin");
   const [filters, setFilters] = useState<IzinFilters>(() => ({
     ...getDefaultDateRange(),
-    Aciklama: "0",
+    Aciklama: "",
   }));
   const [searchText, setSearchText] = useState("");
-  const [silinecekId, setSilinecekId] = useState<string | null>(null);
+  const [talepSearchText, setTalepSearchText] = useState("");
   const [openIzinEkle, setOpenIzinEkle] = useState(false);
+  const [openTalepEkle, setOpenTalepEkle] = useState(false);
 
   const selectParams = useMemo(
     () => ({
-      IDSube: user?.IDSube,
+      IDSube: isPersonel ? String(user?.IDSube ?? null) : null,
       IDSubePersonel: isPersonel ? String(user?.IDSubePersonel ?? "0") : "0",
       BaslangicTarihi: filters.BaslangicTarihi,
       BitisTarihi: filters.BitisTarihi,
@@ -55,186 +66,133 @@ const IzinPage = () => {
     [isPersonel, user?.IDSubePersonel, filters],
   );
 
-  const {
-    data: izinListesi = [],
-    isLoading,
-    refetch,
-  } = useIzinList(selectParams, Boolean(user));
-
-  const deleteIzin = useDeleteIzin();
-
-  // Ad/Soyad/Sicil/Bölüm proc parametresi olmadığı için client-side arama.
-  // Personel rolünde zaten tek kişinin verisi geldiği için arama kutusunu
-  // hiç göstermiyoruz.
-  const filteredIzinListesi = useMemo(() => {
-    if (isPersonel) return izinListesi;
-    const query = searchText.trim().toLocaleLowerCase("tr-TR");
-    if (!query) return izinListesi;
-
-    return izinListesi.filter((izin) => {
-      return (
-        izin.Ad?.toLocaleLowerCase("tr-TR").includes(query) ||
-        izin.Soyad?.toLocaleLowerCase("tr-TR").includes(query) ||
-        izin.SicilNo?.toLocaleLowerCase("tr-TR").includes(query) ||
-        izin.BolumAdi?.toLocaleLowerCase("tr-TR").includes(query)
-      );
-    });
-  }, [izinListesi, searchText, isPersonel]);
-
-  const handleDeleteConfirm = () => {
-    if (!silinecekId) return;
-
-    deleteIzin.mutate(
-      { IDIzinGenel: silinecekId },
-      {
-        onSuccess: () => {
-          toast.success("İzin kaydı silindi");
-          refetch();
-          setSilinecekId(null);
-        },
-        onError: () => {
-          toast.error("İzin kaydı silinemedi", {
-            description: "Lütfen daha sonra tekrar deneyiniz.",
-          });
-        },
-      },
-    );
-  };
-
-  const columns: ColumnDef<IzinType>[] = useMemo(() => {
-    const actionColumn: ColumnDef<IzinType> = {
-      id: "actions",
-      size: 50,
-      header: "",
-      enableSorting: false,
-      cell: ({ row }) => {
-        const actions: RowAction<IzinType>[] = [
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            onClick: (r) => setSilinecekId(r.IDIzinGenel),
-          },
-        ];
-        return (
-          <div className="flex justify-end">
-            <RowActions row={row.original} actions={actions} />
-          </div>
-        );
-      },
-    };
-
-    const personelBilgiColumns: ColumnDef<IzinType>[] = [
-      { accessorKey: "SicilNo", header: "Sicil No" },
-      {
-        id: "adSoyad",
-        header: "Ad Soyad",
-        cell: ({ row }) => `${row.original.Ad} ${row.original.Soyad}`,
-      },
-      { accessorKey: "BolumAdi", header: "Bölüm" },
-    ];
-
-    const ortakColumns: ColumnDef<IzinType>[] = [
-      {
-        accessorKey: "BaslangicTarihi",
-        header: "Başlangıç",
-        cell: ({ row }) =>
-          format(new Date(row.original.BaslangicTarihi), "dd.MM.yyyy"),
-      },
-      {
-        accessorKey: "BitisTarihi",
-        header: "Bitiş",
-        cell: ({ row }) =>
-          format(new Date(row.original.BitisTarihi), "dd.MM.yyyy"),
-      },
-      { accessorKey: "Gun", header: "Gün" },
-      {
-        accessorKey: "Aciklama",
-        header: "İzin Tipi",
-        cell: ({ row }) => (
-          <Badge variant="secondary">{row.original.Aciklama}</Badge>
-        ),
-      },
-    ];
-
-    return isPersonel
-      ? [actionColumn, ...ortakColumns]
-      : [actionColumn, ...personelBilgiColumns, ...ortakColumns];
-  }, [isPersonel]);
+  const talepSelectParams = useMemo(
+    () => ({
+      IDSube: isPersonel ? "0" : String(savedContext?.IDSube ?? "0"),
+      IDSubePersonel: isPersonel ? String(user?.IDSubePersonel ?? "0") : "0",
+      ...getYearBounds(),
+    }),
+    [isPersonel, user?.IDSube, user?.IDSubePersonel, savedContext?.IDSube],
+  );
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">İzin Yönetimi</h1>
-
-        <div className="flex items-center gap-2">
-          {!isPersonel && (
-            <Input
-              startIcon={<Search className="h-4 w-4" />}
-              placeholder="Ara..."
-              className="w-48"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          )}
-
-          <IzinFiltre
-            filters={filters}
-            izinTipleri={izinTipleri}
-            onChange={setFilters}
-            onReset={() =>
-              setFilters({ ...getDefaultDateRange(), Aciklama: "" })
-            }
-          />
-          {isPersonel ? (
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setOpenIzinEkle(true)}
-            >
-              <HatGlasses className="size-4" />
-              İzin Taleplerim
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setOpenIzinEkle(true)}
-            >
-              <UserPlus className="size-4" />
-              Yeni İzin Ekle
-            </Button>
-          )}
-        </div>
       </div>
 
-      <CustomDataTable
-        data={filteredIzinListesi}
-        columns={columns}
-        loading={isLoading}
-        getRowId={(row) => row.IDIzinGenel}
-        pagination
-        emptyMessage="İzin kaydı bulunamadı."
-      />
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as TabValue)}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <TabsList>
+            <TabsTrigger value="izin">
+              {isPersonel ? "İzinlerim" : "Tüm İzinler"}
+            </TabsTrigger>
+            <TabsTrigger value="talepler">
+              {isPersonel ? "Taleplerim" : "Tüm Talepler"}
+            </TabsTrigger>
+          </TabsList>
+
+          {activeTab === "izin" && (
+            <div className="flex items-center gap-2">
+              {!isPersonel && (
+                <Input
+                  startIcon={<Search className="h-4 w-4" />}
+                  placeholder="Ara..."
+                  className="w-48"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+              )}
+
+              <IzinFiltre
+                filters={filters}
+                izinTipleri={izinTipleri}
+                onChange={setFilters}
+                onReset={() =>
+                  setFilters({ ...getDefaultDateRange(), Aciklama: "" })
+                }
+              />
+
+              {!isPersonel && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setOpenIzinEkle(true)}
+                >
+                  <UserPlus className="size-4" />
+                  Yeni İzin Ekle
+                </Button>
+              )}
+            </div>
+          )}
+
+          {activeTab === "talepler" && (
+            <div className="flex items-center gap-2">
+              {!isPersonel && (
+                <Input
+                  startIcon={<Search className="h-4 w-4" />}
+                  placeholder="Ara..."
+                  className="w-48"
+                  value={talepSearchText}
+                  onChange={(e) => setTalepSearchText(e.target.value)}
+                />
+              )}
+
+              <IzinFiltre
+                filters={filters}
+                izinTipleri={izinTipleri}
+                onChange={setFilters}
+                onReset={() =>
+                  setFilters({ ...getDefaultDateRange(), Aciklama: "" })
+                }
+              />
+
+              {isPersonel && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setOpenTalepEkle(true)}
+                >
+                  <UserPlus className="size-4" />
+                  Talep Ekle
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+
+        <TabsContent value="izin" className="mt-4">
+          <IzinListesi
+            selectParams={selectParams}
+            isPersonel={isPersonel}
+            searchText={searchText}
+            enabled={Boolean(user) && activeTab === "izin"}
+          />
+        </TabsContent>
+
+        <TabsContent value="talepler" className="mt-4">
+          <TalepListesi
+            isPersonel={isPersonel}
+            searchText={talepSearchText}
+            selectParams={talepSelectParams}
+          />
+        </TabsContent>
+      </Tabs>
 
       {openIzinEkle && (
-        <IzinEkle
-          open={openIzinEkle}
-          onOpenChange={setOpenIzinEkle}
-          onSuccess={() => refetch()}
-        />
+        <IzinEkle open={openIzinEkle} onOpenChange={setOpenIzinEkle} />
       )}
 
-      <ConfirmDialog
-        open={!!silinecekId}
-        onOpenChange={(open) => !open && setSilinecekId(null)}
-        title="İzin kaydını sil"
-        description="Bu izin kaydı kalıcı olarak silinecek. Bu işlem geri alınamaz. Onaylıyor musunuz?"
-        variant="danger"
-        confirmLabel="Sil"
-        isLoading={deleteIzin.isPending}
-        onConfirm={handleDeleteConfirm}
-      />
+      {openTalepEkle && (
+        <TalepEkle
+          open={openTalepEkle}
+          onOpenChange={setOpenTalepEkle}
+          user={user}
+        />
+      )}
     </div>
   );
 };
