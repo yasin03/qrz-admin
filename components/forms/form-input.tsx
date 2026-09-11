@@ -49,6 +49,7 @@ export type FormInputType =
   | "url"
   | "search"
   | "date"
+  | "time"
   | "textarea";
 
 /** Her format için native input'a verilecek en uygun tip/inputMode/maxLength. */

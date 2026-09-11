@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 
 export function formatDate(
   value: string | Date | null | undefined,
@@ -6,7 +6,18 @@ export function formatDate(
 ) {
   if (!value) return "-";
 
-  return format(new Date(value), pattern);
+  if (typeof value === "string") {
+    const localDateString = value.replace("Z", "");
+    const date = parse(
+      localDateString,
+      "yyyy-MM-dd'T'HH:mm:ss.SSS",
+      new Date(),
+    );
+
+    return format(date, pattern);
+  }
+
+  return format(value, pattern);
 }
 
 // lib/format.ts içine ekleyin

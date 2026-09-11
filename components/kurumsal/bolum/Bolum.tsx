@@ -34,7 +34,7 @@ export default function Bolum({ idSube }: BolumProps) {
     null,
   );
   const [searchText, setSearchText] = useState<string>("");
-
+console.log("bolumler", bolumler);
   const filteredBolumler = useMemo(() => {
     if (!searchText.trim()) return bolumler;
 

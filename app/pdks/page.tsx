@@ -1,7 +1,7 @@
-export default function PdksPage() {
-  return (
-    <div className="h-full">
-      <h1 className="text-2xl font-bold">PDKS</h1>
-    </div>
-  );
-}
+import PdksPage from "@/components/pdks/Pdks";
+
+const Page = () => {
+  return <PdksPage />;
+};
+
+export default Page;
