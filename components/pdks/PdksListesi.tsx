@@ -1,102 +1,107 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { format } from "date-fns";
-import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge";
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { RowAction, RowActions } from "../customs/RowActions";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
-import { useIzinList, useDeleteIzin } from "@/hooks/use-izin";
-import { IzinSelectParams, IzinType } from "@/types/izin";
+import { usePdksList } from "@/hooks/use-pdks";
+import { PDKSSelectRequestType, PDKSSelectResponseType } from "@/types/pdks";
 
-const PdksListesi = () => {
-  const columns: ColumnDef<IzinType>[] = useMemo(() => {
-    const actionColumn: ColumnDef<IzinType> = {
+type Props = {
+  selectParams: PDKSSelectRequestType;
+  enabled: boolean;
+};
+
+const PdksListesi = ({ selectParams, enabled }: Props) => {
+  const {
+    data: pdksData = [],
+    isLoading: isPdksLoading,
+    isError: isPdksError,
+  } = usePdksList(selectParams, enabled);
+
+  const columns: ColumnDef<PDKSSelectResponseType>[] = [
+    {
       id: "actions",
       size: 50,
       header: "",
       enableSorting: false,
       cell: ({ row }) => {
-        // Personel kendi onaylanmış izinlerini sadece görüntüler, silemez.
+        const kayit = row.original;
 
-        const actions: RowAction<IzinType>[] = [
+        const actions: RowAction<PDKSSelectResponseType>[] = [
+          {
+            label: "Düzenle",
+            icon: Pencil,
+            onClick: (r) => console.log(r),
+          },
           {
             label: "Sil",
             icon: Trash2,
             variant: "danger",
-            onClick: (r) => console.log(r.IDIzinGenel),
+            separatorBefore: true,
+            onClick: (r) => console.log(r),
           },
         ];
+
         return (
           <div className="flex justify-end">
-            <RowActions row={row.original} actions={actions} />
+            <RowActions row={kayit} actions={actions} />
           </div>
         );
       },
-    };
-
-    const personelBilgiColumns: ColumnDef<IzinType>[] = [
-      { accessorKey: "SicilNo", header: "Sicil No" },
-      {
-        id: "adSoyad",
-        header: "Ad Soyad",
-        cell: ({ row }) => `${row.original.Ad} ${row.original.Soyad}`,
-      },
-      { accessorKey: "BolumAdi", header: "Bölüm" },
-    ];
-
-    const ortakColumns: ColumnDef<IzinType>[] = [
-      {
-        accessorKey: "BaslangicTarihi",
-        header: "Başlangıç",
-        cell: ({ row }) =>
-          format(new Date(row.original.BaslangicTarihi), "dd.MM.yyyy"),
-      },
-      {
-        accessorKey: "BitisTarihi",
-        header: "Bitiş",
-        cell: ({ row }) =>
-          format(new Date(row.original.BitisTarihi), "dd.MM.yyyy"),
-      },
-      { accessorKey: "Gun", header: "Gün" },
-      {
-        accessorKey: "Aciklama",
-        header: "İzin Tipi",
-        cell: ({ row }) => (
-          <Badge variant="secondary">{row.original.Aciklama}</Badge>
-        ),
-      },
-    ];
-
-    return [actionColumn, ...personelBilgiColumns, ...ortakColumns];
-  }, []);
+    },
+    { accessorKey: "AdSoyad", header: "Ad Soyad" },
+    { accessorKey: "Tarih", header: "Tarih" },
+    {
+      accessorKey: "Giris",
+      header: "Giris",
+      cell: ({ row }) => row.original.Giris ?? "-",
+    },
+    {
+      accessorKey: "Cikis",
+      header: "Cikis",
+      cell: ({ row }) => row.original.Cikis ?? "-",
+    },
+    {
+      accessorKey: "NormalSure",
+      header: "NormalSure",
+      cell: ({ row }) => row.original.NormalSure ?? "-",
+    },
+    {
+      accessorKey: "MesaiSure",
+      header: "MesaiSure",
+      cell: ({ row }) => row.original.MesaiSure ?? "-",
+    },
+    {
+      accessorKey: "IzinSure",
+      header: "IzinSure",
+      cell: ({ row }) => row.original.IzinSure ?? "-",
+    },
+    {
+      accessorKey: "ToplamSure",
+      header: "ToplamSure",
+      cell: ({ row }) => row.original.ToplamSure ?? "-",
+    },
+    {
+      accessorKey: "Aciklama",
+      header: "Aciklama",
+      cell: ({ row }) => row.original.Aciklama ?? "-",
+    },
+  ];
 
   return (
-    <>
-    
-      <CustomDataTable
-        data={[]}
-        columns={columns}
-        loading={false}
-        pagination
-        emptyMessage="Pdks kaydı bulunamadı."
-      />
-
-      {/*       <ConfirmDialog
-        open={false}
-        onOpenChange={(open) => !open && setSilinecekId(null)}
-        title="İzin kaydını sil"
-        description="Bu izin kaydı kalıcı olarak silinecek. Bu işlem geri alınamaz. Onaylıyor musunuz?"
-        variant="danger"
-        confirmLabel="Sil"
-        isLoading={deleteIzin.isPending}
-        onConfirm={handleDeleteConfirm}
-      /> */}
-    </>
+    <CustomDataTable
+      data={pdksData}
+      columns={columns}
+      loading={isPdksLoading}
+      pagination
+      emptyMessage={
+        isPdksError
+          ? "Kayıtlar yüklenirken hata oluştu."
+          : "Pdks kaydı bulunamadı."
+      }
+    />
   );
 };
 

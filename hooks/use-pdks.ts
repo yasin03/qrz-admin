@@ -1,11 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axiosInstance from "@/lib/axios";
+import api from "@/lib/axios";
 import {
   BolumVardiyaInsertInput,
   BolumVardiyaSaat,
   BolumVardiyaUpdateInput,
+  PDKSSelectRequestType,
+  PDKSSelectResponseType,
   SubeVardiyaInsertInput,
   SubeVardiyaSaat,
   SubeVardiyaUpdateInput,
@@ -15,13 +17,34 @@ const ENDPOINT = "/api/pdks";
 const SUBE_QUERY_KEY = "sube-vardiya-saat";
 const BOLUM_QUERY_KEY = "bolum-vardiya-saat";
 
-// ---- Şube -------------------------------------------------------------
+export function usePdksList(params: PDKSSelectRequestType, enabled = true) {
+  return useQuery({
+    queryKey: [
+      SUBE_QUERY_KEY,
+      params.IDSube,
+      params.IDBolum,
+      params.Tarih1,
+      params.Tarih2,
+    ],
+    queryFn: async () => {
+      const { data } = await api.post<PDKSSelectResponseType[]>(ENDPOINT, {
+        type: "SELECT_PDKS",
+        ...params,
+      });
+
+      return data;
+    },
+    enabled,
+  });
+}
+
+// ---- Şube Vardiya Ayar -------------------------------------------------------------
 
 export function useSubeVardiyaList(enabled = true) {
   return useQuery({
     queryKey: [SUBE_QUERY_KEY],
     queryFn: async () => {
-      const { data } = await axiosInstance.post<SubeVardiyaSaat[]>(ENDPOINT, {
+      const { data } = await api.post<SubeVardiyaSaat[]>(ENDPOINT, {
         type: "SELECT_PDKS_SUBE",
       });
       return data;
@@ -34,7 +57,7 @@ export function useInsertSubeVardiya() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: SubeVardiyaInsertInput) => {
-      const { data } = await axiosInstance.post(ENDPOINT, {
+      const { data } = await api.post(ENDPOINT, {
         type: "INSERT_PDKS_SUBE",
         ...payload,
       });
@@ -50,7 +73,7 @@ export function useUpdateSubeVardiya() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: SubeVardiyaUpdateInput) => {
-      const { data } = await axiosInstance.post(ENDPOINT, {
+      const { data } = await api.post(ENDPOINT, {
         type: "UPDATE_PDKS_SUBE",
         ...payload,
       });
@@ -66,7 +89,7 @@ export function useDeleteSubeVardiya() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { IDSubeVardiyaSaat: number }) => {
-      const { data } = await axiosInstance.post(ENDPOINT, {
+      const { data } = await api.post(ENDPOINT, {
         type: "DELETE_PDKS_SUBE",
         ...payload,
       });
@@ -84,7 +107,7 @@ export function useBolumVardiyaList(idBolum: number | null, enabled = true) {
   return useQuery({
     queryKey: [BOLUM_QUERY_KEY, idBolum],
     queryFn: async () => {
-      const { data } = await axiosInstance.post<BolumVardiyaSaat[]>(ENDPOINT, {
+      const { data } = await api.post<BolumVardiyaSaat[]>(ENDPOINT, {
         type: "SELECT_PDKS_BOLUM",
         IDBolum: idBolum,
       });
@@ -98,7 +121,7 @@ export function useInsertBolumVardiya() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: BolumVardiyaInsertInput) => {
-      const { data } = await axiosInstance.post(ENDPOINT, {
+      const { data } = await api.post(ENDPOINT, {
         type: "INSERT_PDKS_BOLUM",
         ...payload,
       });
@@ -116,7 +139,7 @@ export function useUpdateBolumVardiya() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: BolumVardiyaUpdateInput) => {
-      const { data } = await axiosInstance.post(ENDPOINT, {
+      const { data } = await api.post(ENDPOINT, {
         type: "UPDATE_PDKS_BOLUM",
         ...payload,
       });
@@ -134,7 +157,7 @@ export function useDeleteBolumVardiya() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { IDBolumVardiyaSaat: number }) => {
-      const { data } = await axiosInstance.post(ENDPOINT, {
+      const { data } = await api.post(ENDPOINT, {
         type: "DELETE_PDKS_BOLUM",
         ...payload,
       });

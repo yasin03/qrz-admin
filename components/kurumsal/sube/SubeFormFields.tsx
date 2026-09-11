@@ -23,14 +23,6 @@ import {
 } from "@/hooks/use-il-ilce-vergi-data";
 import { useEffect, useRef } from "react";
 
-const IL_OPTIONS = [
-  { label: "Ankara", value: "006" },
-  { label: "İstanbul", value: "034" },
-];
-const ILCE_OPTIONS = [
-  { label: "Keçiören", value: "79" },
-  { label: "Çankaya", value: "06" },
-];
 const MULKIYET_OPTIONS = [
   { label: "Kendi Mülkü", value: "Kendi Mülkü" },
   { label: "Kiralık", value: "Kiralık" },

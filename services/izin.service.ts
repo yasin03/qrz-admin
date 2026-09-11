@@ -1,4 +1,4 @@
-import axiosInstance from "@/lib/axios";
+import api from "@/lib/axios";
 import {
   IzinType,
   IzinSelectParams,
@@ -16,7 +16,7 @@ const IZIN_ENDPOINT = "/api/izin";
 
 export const izinService = {
   select: async (params: IzinSelectParams): Promise<IzinType[]> => {
-    const { data } = await axiosInstance.post(IZIN_ENDPOINT, {
+    const { data } = await api.post(IZIN_ENDPOINT, {
       type: "SELECT_IZIN",
       ...params,
     });
@@ -24,7 +24,7 @@ export const izinService = {
   },
 
   insert: async (params: IzinInsertParams) => {
-    const { data } = await axiosInstance.post(IZIN_ENDPOINT, {
+    const { data } = await api.post(IZIN_ENDPOINT, {
       type: "INSERT_IZIN",
       ...params,
     });
@@ -32,7 +32,7 @@ export const izinService = {
   },
 
   delete: async (params: IzinDeleteParams) => {
-    const { data } = await axiosInstance.post(IZIN_ENDPOINT, {
+    const { data } = await api.post(IZIN_ENDPOINT, {
       type: "DELETE_IZIN",
       ...params,
     });
@@ -42,7 +42,7 @@ export const izinService = {
   selectTalep: async (
     params: IzinTalepSelectParams,
   ): Promise<IzinTalepType[]> => {
-    const { data } = await axiosInstance.post(IZIN_ENDPOINT, {
+    const { data } = await api.post(IZIN_ENDPOINT, {
       type: "SELECT_TALEP",
       ...params,
     });
@@ -50,7 +50,7 @@ export const izinService = {
   },
 
   insertTalep: async (params: IzinTalepInsertParams) => {
-    const { data } = await axiosInstance.post(IZIN_ENDPOINT, {
+    const { data } = await api.post(IZIN_ENDPOINT, {
       type: "INSERT_TALEP",
       ...params,
     });
@@ -58,7 +58,7 @@ export const izinService = {
   },
 
   updateTalep: async (params: IzinTalepUpdateParams) => {
-    const { data } = await axiosInstance.post(IZIN_ENDPOINT, {
+    const { data } = await api.post(IZIN_ENDPOINT, {
       type: "UPDATE_TALEP",
       ...params,
     });
@@ -66,7 +66,7 @@ export const izinService = {
   },
 
   getIzinSure: async (params: IzinSureParams): Promise<IzinSureType | null> => {
-    const { data } = await axiosInstance.post(IZIN_ENDPOINT, {
+    const { data } = await api.post(IZIN_ENDPOINT, {
       type: "GET_IZINSURE",
       ...params,
     });

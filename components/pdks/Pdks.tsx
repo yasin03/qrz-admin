@@ -17,21 +17,32 @@ import SubeVardiyaEkle from "@/components/pdks/SubeVardiyaEkle";
 import SubeVardiyaListesi from "@/components/pdks/SubeVardiyaListesi";
 import BolumVardiyaEkle from "@/components/pdks/BolumVardiyaEkle";
 import BolumVardiyaListesi from "@/components/pdks/BolumVardiyaListesi";
-import { SubeVardiyaSaat, BolumVardiyaSaat } from "@/types/pdks";
+import PdksFiltre from "@/components/pdks/PdksFiltre";
+import PdksListesi from "@/components/pdks/PdksListesi";
+import {
+  SubeVardiyaSaat,
+  BolumVardiyaSaat,
+  PDKSSelectParams,
+  PDKSSelectRequestType,
+} from "@/types/pdks";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext } from "@/hooks/use-context";
-import PdksListesi from "./PdksListesi";
 
-type TabValue = "kayitlar" | "sube-vardiya" | "bolum-vardiya";
+type TabValue = "pdks" | "sube-vardiya" | "bolum-vardiya";
 
 const PdksPage = () => {
-  const [activeTab, setActiveTab] = useState<TabValue>("kayitlar");
+  const [activeTab, setActiveTab] = useState<TabValue>("pdks");
 
   const { data: savedContext } = useCurrentContext();
   const idSube = savedContext?.IDSube ? Number(savedContext.IDSube) : 0;
 
   const { data: bolumler = [], isLoading: isLoadingBolumler } =
     useBolumler(idSube);
+
+  // ---- PDKS kayıt filtresi -------------------------------------------
+  const [pdksFilters, setPdksFilters] = useState<PDKSSelectRequestType | null>(
+    null,
+  );
 
   // ---- Şube vardiya dialog state -----------------------------------------
   const [openSubeVardiyaEkle, setOpenSubeVardiyaEkle] = useState(false);
@@ -87,7 +98,7 @@ const PdksPage = () => {
       >
         <div className="flex items-center justify-between gap-2">
           <TabsList>
-            <TabsTrigger value="kayitlar">
+            <TabsTrigger value="pdks">
               <Clock /> PDKS Kayıtları
             </TabsTrigger>
             <TabsTrigger value="sube-vardiya">
@@ -97,6 +108,12 @@ const PdksPage = () => {
               <Settings /> Bölüm Vardiya Ayarları
             </TabsTrigger>
           </TabsList>
+
+          {activeTab === "pdks" && (
+            <div className="flex items-center gap-2">
+              <PdksFiltre onApply={setPdksFilters} />
+            </div>
+          )}
 
           {activeTab === "sube-vardiya" && (
             <div className="flex items-center gap-2">
@@ -139,8 +156,18 @@ const PdksPage = () => {
           )}
         </div>
 
-        <TabsContent value="kayitlar" className="mt-4">
-          <PdksListesi />
+        <TabsContent value="pdks" className="mt-4">
+          <PdksListesi
+            selectParams={
+              pdksFilters ?? {
+                IDSube: "0",
+                IDBolum: "0",
+                Tarih1: "",
+                Tarih2: "",
+              }
+            }
+            enabled={Boolean(pdksFilters) && activeTab === "pdks"}
+          />
         </TabsContent>
 
         <TabsContent value="sube-vardiya" className="mt-4">

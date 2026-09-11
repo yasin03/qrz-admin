@@ -1,3 +1,30 @@
+export interface PDKSSelectParams {
+  IDSube: string; // "0" | context'teki IDSube
+  IDBolum: string; // "0" | seçilen bölüm
+  Tarih1: string; // "yyyy-MM-dd"
+  Tarih2: string; // "yyyy-MM-dd"
+}
+export type PDKSSelectRequestType = {
+  IDSube: string | number;
+  IDBolum: string | number;
+  Tarih1: string;
+  Tarih2: string;
+};
+
+export type PDKSSelectResponseType = {
+  IDSubePersonelSaat: string;
+  IDSubePersonel: string;
+  AdSoyad: string;
+  Tarih: string;
+  Giris: string;
+  Cikis: string | null;
+  NormalSure: string | null;
+  MesaiSure: string | null;
+  IzinSure: string | null;
+  ToplamSure: string | null;
+  Aciklama: string | null;
+};
+
 export interface SubeVardiyaSaat {
   IDSubeVardiyaSaat: number;
   VardiyaAdi: string;

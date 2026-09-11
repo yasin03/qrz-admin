@@ -33,7 +33,7 @@ import PersonelSettingsDialog, {
   PersonelSettingsPersonel,
 } from "./PersonelSettingsDialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, ApiClientError } from "@/lib/axios";
+import api, { ApiClientError } from "@/lib/axios";
 
 type Personel = {
   SicilNo: string;

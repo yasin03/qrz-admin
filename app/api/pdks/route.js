@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { joseDecrypt } from "@/lib/token";
 import { ExecuteQuery, ExecuteQueryDataset } from "@/lib/db";
-import { getCookie } from "cookies-next";
 
 const queryTypes = {
+  SELECT_PDKS: (params) => `[SubePersonelSaat_SelectByIDSubeBolum] '${params.IDSube}','${params.IDBolum}','${params.Tarih1}','${params.Tarih2}'`,
+  
   SELECT_PDKS_SUBE: (params) => `[SubeVardiyaSaat_SELECT] '${params.IDSube}'`,
   INSERT_PDKS_SUBE: (params) =>
     `[SubeVardiyaSaat_INSERT] '${params.IDSube}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HT}','${params.HTGun}'`,
@@ -50,6 +51,8 @@ export async function POST(request) {
       Gece: payload.Gece,
       HT: payload.HT,
       HTGun: payload.HTGun,
+      Tarih1: payload.Tarih1,
+      Tarih2: payload.Tarih2,
     };
 
     const queryFunction = queryTypes[type];
@@ -62,8 +65,7 @@ export async function POST(request) {
     }
 
     const query = queryFunction(queryParams);
-    let result;
-    result = await ExecuteQuery(query);
+    const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);
   } catch (err) {
