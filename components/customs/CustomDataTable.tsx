@@ -7,7 +7,9 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  OnChangeFn,
   useReactTable,
+  VisibilityState,
   type ColumnDef,
   type PaginationState,
   type Row,
@@ -22,6 +24,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ChevronsUpDown,
+  Columns3,
   Inbox,
   Loader2,
   Search,
@@ -32,6 +35,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 export type CustomDataTableProps<TData> = {
   /** Row data. */
@@ -49,6 +60,17 @@ export type CustomDataTableProps<TData> = {
   paginationTotalRows?: number;
   onChangePage?: (pageIndex: number) => void;
   onChangeRowsPerPage?: (pageSize: number) => void;
+
+  /** Sağ üstte "Kolonlar" görünürlük menüsünü göster. Default: false. */
+  columnVisibility?: boolean;
+  /** Verilirse seçim localStorage'a bu anahtarla kaydedilir, sayfa yenilense de korunur. */
+  columnVisibilityStorageKey?: string;
+  showColumnVisibilityMenu?: boolean;
+
+  /** Kontrollü kolon görünürlük state'i. Verilirse tablo bunu kullanır;
+   *  vermezseniz tablo kendi iç state'ini yönetir (eski davranış). */
+  columnVisibilityValue?: VisibilityState;
+  onColumnVisibilityValueChange?: (value: VisibilityState) => void;
 
   // ---- selection ----
   selectableRows?: boolean;
@@ -110,6 +132,11 @@ export function CustomDataTable<TData>({
   onChangePage,
   onChangeRowsPerPage,
 
+  columnVisibility = false,
+  columnVisibilityValue,
+  onColumnVisibilityValueChange,
+  columnVisibilityStorageKey,
+
   selectableRows = false,
   selectableRowDisabled,
   onSelectedRowsChange,
@@ -145,6 +172,33 @@ export function CustomDataTable<TData>({
     pageIndex: 0,
     pageSize: paginationPerPage,
   });
+  const [internalVisibility, setInternalVisibility] = useState<VisibilityState>(
+    () => {
+      if (!columnVisibilityStorageKey || typeof window === "undefined")
+        return {};
+      try {
+        const raw = window.localStorage.getItem(columnVisibilityStorageKey);
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    },
+  );
+
+  useEffect(() => {
+    // Kontrollü kullanımda (columnVisibilityValue verilmişse) localStorage
+    // senkronizasyonu dışarıdaki state sahibine bırakılır, burada yapılmaz.
+    if (columnVisibilityValue !== undefined) return;
+    if (!columnVisibilityStorageKey || typeof window === "undefined") return;
+    window.localStorage.setItem(
+      columnVisibilityStorageKey,
+      JSON.stringify(internalVisibility),
+    );
+  }, [internalVisibility, columnVisibilityStorageKey, columnVisibilityValue]);
+
+  // Tablo genelinde kullanılacak gerçek state: dışarıdan verildiyse o, yoksa iç state
+  const visibility = columnVisibilityValue ?? internalVisibility;
+  const setVisibility = onColumnVisibilityValueChange ?? setInternalVisibility;
 
   const toggleRowExpanded = (rowId: string) => {
     setExpandedRows((prev) => {
@@ -248,7 +302,15 @@ export function CustomDataTable<TData>({
     return result;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns, selectableRows, expandable]);
-
+  const handleVisibilityChange: OnChangeFn<VisibilityState> = (
+    updaterOrValue,
+  ) => {
+    const next =
+      typeof updaterOrValue === "function"
+        ? updaterOrValue(visibility)
+        : updaterOrValue;
+    setVisibility(next);
+  };
   const table = useReactTable({
     data,
     columns: resolvedColumns,
@@ -258,9 +320,10 @@ export function CustomDataTable<TData>({
       sorting,
       globalFilter,
       rowSelection,
+      columnVisibility: visibility,
       ...(pagination && { pagination: paginationState }),
     },
-
+    onColumnVisibilityChange: handleVisibilityChange,
     // Exposed to cell renderers via `table.options.meta` — lets the expand
     // column read live state without being a dependency of resolvedColumns.
     meta: {
@@ -323,7 +386,7 @@ export function CustomDataTable<TData>({
 
   return (
     <div className={cn("space-y-3", className)}>
-      {(title || actions || searchable) && (
+      {(title || actions || searchable || columnVisibility) && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           {title ? (
             <div className="text-base font-semibold text-foreground">
@@ -357,6 +420,86 @@ export function CustomDataTable<TData>({
                   </button>
                 )}
               </div>
+            )}
+
+            {columnVisibility && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    color="secondary"
+                    appearance="outline"
+                    className="gap-1.5"
+                  >
+                    <Columns3 className="size-4" />
+                    Kolonlar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Görünür Kolonlar</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  {(() => {
+                    const toggleableColumns = table
+                      .getAllLeafColumns()
+                      .filter((column) => column.getCanHide());
+                    const hepsiGorunur = toggleableColumns.every((c) =>
+                      c.getIsVisible(),
+                    );
+                    const hicbiriGorunur = toggleableColumns.every(
+                      (c) => !c.getIsVisible(),
+                    );
+
+                    return (
+                      <DropdownMenuCheckboxItem
+                        checked={hepsiGorunur}
+                        // Karışık durumda (bazısı görünür bazısı değil) tıklayınca hepsini gösterir
+                        onCheckedChange={(checked) => {
+                          toggleableColumns.forEach((column) =>
+                            column.toggleVisibility(!!checked),
+                          );
+                        }}
+                        onSelect={(e) => e.preventDefault()}
+                        className="font-medium"
+                      >
+                        {hepsiGorunur
+                          ? "Seçimi Kaldır"
+                          : hicbiriGorunur
+                            ? "Tümünü Seç"
+                            : "Tümünü Seç"}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })()}
+
+                  <DropdownMenuSeparator />
+
+                  {table
+                    .getAllLeafColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => {
+                      const meta = column.columnDef.meta as
+                        | { label?: string }
+                        | undefined;
+                      const header = column.columnDef.header;
+                      const label =
+                        meta?.label ??
+                        (typeof header === "string" ? header : column.id);
+
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(checked) =>
+                            column.toggleVisibility(!!checked)
+                          }
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          {label}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             {actions}
           </div>

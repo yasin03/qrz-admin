@@ -20,7 +20,17 @@ export function formatDate(
   return format(value, pattern);
 }
 
-// lib/format.ts içine ekleyin
+export const formatMoney = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined || value === "") {
+    return "0,00";
+  }
+
+  return Number(value).toLocaleString("tr-TR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 export function clampNumberString(
   value: string,
   min: number,

@@ -1,23 +1,15 @@
 "use client";
-import { useState } from "react";
+
 import { useCurrentContext } from "@/hooks/use-context";
 import { KULLANICI_TIPI } from "@/lib/roles";
 import PuantajListesi from "./PuantajListesi";
 import PersonelPuantajTakvimi from "./PersonelPuantajTakvimi";
-import PuantajToolbar, { type AktifPuantajAraci } from "./PuantajToolbar";
 import { AY_DATA } from "@/constants/data";
-import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
-import { Input } from "../ui/input";
-import { Search } from "lucide-react";
 import { useHasRole } from "@/stores/auth-store";
 
 const PuantajPage = () => {
   const { data: savedContext } = useCurrentContext();
   const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
-
-  const { izinTipleri } = usePersonelSabitTanimlar();
-  const [activeTool, setActiveTool] = useState<AktifPuantajAraci | null>(null);
-  const [searchText, setSearchText] = useState("");
 
   const sessionMonth =
     AY_DATA.find((ay) => ay.value === savedContext?.Ay)?.label || "";

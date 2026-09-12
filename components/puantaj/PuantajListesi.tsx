@@ -24,6 +24,8 @@ import { Input } from "../ui/input";
 import { Search } from "lucide-react";
 import PuantajToolbar from "./PuantajToolbar";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 
 type Props = {
   selectParams: PuantajSelectRequestType;
@@ -50,7 +52,9 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
   const { mutateAsync: deletePuantaj, isPending: isDeleting } =
     useDeletePuantaj();
   const [activeTool, setActiveTool] = useState<AktifPuantajAraci | null>(null);
-
+  const [columnVisibility, setColumnVisibility] = useColumnVisibility(
+    "puantaj-kolonlar", // localStorage anahtarı, kalıcı olsun istiyorsanız
+  );
   const isPending = isUpdating || isDeleting;
   const [searchText, setSearchText] = useState("");
   const [selectedRows, setSelectedRows] = useState<PuantajSelectResponseType[]>(
@@ -274,13 +278,21 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
             onChange={setActiveTool}
           />
         </div>
+        <div className="shrink-0">
+          <CustomColumnVisibility
+            columns={columns}
+            value={columnVisibility}
+            onChange={setColumnVisibility}
+          />
+        </div>
       </div>
 
       <CustomDataTable
         data={filteredData}
         columns={columns}
         loading={isPuantajLoading}
-        pagination
+        columnVisibilityValue={columnVisibility}
+        onColumnVisibilityValueChange={setColumnVisibility}
         selectableRows
         onSelectedRowsChange={({ selectedRows }) =>
           setSelectedRows(selectedRows)

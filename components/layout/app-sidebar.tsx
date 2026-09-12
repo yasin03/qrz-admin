@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarRange,
+  ContactRound,
   Fingerprint,
   HandCoins,
   LogOut,
@@ -44,6 +45,7 @@ const adminMenuItems: MenuItem[] = [
   { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
   { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
+  { href: "/bordro", label: "Bordro", icon: ContactRound },
 ];
 
 const yoneticiMenuItems: MenuItem[] = [
