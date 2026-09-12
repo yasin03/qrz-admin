@@ -28,11 +28,11 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
     <div className="relative flex min-h-screen w-full bg-[radial-gradient(circle_at_top_right,oklch(0.985_0.01_230),transparent_40%),radial-gradient(circle_at_bottom_left,oklch(0.97_0.015_250),transparent_45%)]">
       <AppSidebar />
 
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <Header onToggleSidebar={toggleSidebar} />
 
         <main className="flex-1 p-4 lg:p-6">
-          <section className="h-full min-h-[400px] rounded-xl border border-border/80 bg-card/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300">
+          <section className="h-full min-h-100 rounded-xl border border-border/80 bg-card/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300">
             {children}
           </section>
         </main>

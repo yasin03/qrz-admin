@@ -57,7 +57,7 @@ export function FormLabel({
   // dizilir. [&>*]:flex-1 -> doğrudan her çocuğa flex-1 uygular, ayrıca
   // her input'u tek tek sarmalamana gerek kalmaz.
   const childrenRow = (
-    <div className="flex flex-1 items-start gap-3 [&>*]:flex-1">
+    <div className="flex flex-1 items-start gap-3 *:flex-1">
       {children}
     </div>
   );

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  CalendarRange,
   Fingerprint,
   HandCoins,
   LogOut,
@@ -42,6 +43,7 @@ const adminMenuItems: MenuItem[] = [
   { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
+  { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
 ];
 
 const yoneticiMenuItems: MenuItem[] = [
@@ -49,14 +51,14 @@ const yoneticiMenuItems: MenuItem[] = [
   { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/avans", label: "Avans", icon: HandCoins },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
-  { href: "/barkod", label: "Barkod", icon: QrCode },
+  { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
 ];
 
 const personelMenuItems: MenuItem[] = [
   { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/avans", label: "Avans", icon: HandCoins },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
-  { href: "/barkod", label: "Barkod", icon: ScanBarcode },
+  { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
 ];
 
 /** IDKullaniciTip -> gösterilecek menü. Yeni bir rol eklenirse sadece buraya satır eklenir. */
@@ -92,7 +94,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="items-center py-5">
-        <div className="relative h-16 w-full max-w-[240px] transition-all duration-300 group-data-[collapsible=icon]:max-w-9">
+        <div className="relative h-16 w-full max-w-60] transition-all duration-300 group-data-[collapsible=icon]:max-w-9">
           <Image
             src={isCollapsed ? "/logos/logo-icon.png" : "/logos/logo-big.png"}
             alt="QRZ"

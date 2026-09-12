@@ -17,7 +17,7 @@ import {
 import { Button } from "../ui/button";
 import { FormInput, FormLabel, FormSelect, FormSwitch } from "../forms";
 
-import { HAFTA_GUNLERI } from "@/constants/hafta-gunleri";
+import { HAFTA_DATA } from "@/constants/data";
 import { useInsertBolumVardiya, useUpdateBolumVardiya } from "@/hooks/use-pdks";
 import { BolumVardiyaSaat } from "@/types/pdks";
 
@@ -86,7 +86,7 @@ const BolumVardiyaEkle = ({
     );
   }, [open, duzenlenecekKayit, form]);
 
-  const haftaGunuOptions = HAFTA_GUNLERI.map((gun) => ({
+  const haftaGunuOptions = HAFTA_DATA.map((gun) => ({
     value: gun.value,
     label: gun.label,
   }));
@@ -99,7 +99,7 @@ const BolumVardiyaEkle = ({
 
     const htNumber = Number(values.HT);
     const HTGun =
-      HAFTA_GUNLERI.find((gun) => gun.value === values.HT)?.label ?? "";
+      HAFTA_DATA.find((gun) => gun.value === values.HT)?.label ?? "";
 
     try {
       if (isEdit && duzenlenecekKayit) {

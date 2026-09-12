@@ -155,9 +155,7 @@ export function CustomDataTable<TData>({
           : { [rowId]: true }
         : { ...prev, [rowId]: !isOpen };
 
-      onExpandedRowsChange?.(
-        Object.keys(next).filter((id) => next[id]),
-      );
+      onExpandedRowsChange?.(Object.keys(next).filter((id) => next[id]));
       return next;
     });
   };
@@ -195,7 +193,14 @@ export function CustomDataTable<TData>({
         ),
         enableSorting: false,
         enableHiding: false,
-        size: 20,
+        size: 40,
+        meta: {
+          headerClassName:
+            "sticky left-0 z-30 bg-background border-r border-border",
+          cellClassName:
+            "sticky left-0 z-20 bg-background border-r border-border",
+          stickyLeft: 0,
+        },
       };
       result = [selectionColumn, ...result];
     }
@@ -358,14 +363,17 @@ export function CustomDataTable<TData>({
         </div>
       )}
 
-      <div className="relative w-full overflow-auto rounded-lg border border-border">
+      <div className="relative w-full overflow-x-auto overflow-y-hidden rounded-lg border border-border">
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
         )}
 
-        <table className="w-full caption-bottom text-sm">
+        <table
+          className="table-fixed caption-bottom text-sm border-separate border-spacing-0"
+          style={{ minWidth: "100%" }}
+        >
           <thead className="border-b border-border bg-muted/50">
             {table.getHeaderGroups().map((headerGroup, index) => (
               <tr key={index}>
@@ -393,18 +401,27 @@ export function CustomDataTable<TData>({
                               : "none"
                           : undefined
                       }
-                      style={
-                        header.column.columnDef.size !== undefined
+                      style={{
+                        ...(header.column.columnDef.size !== undefined
                           ? {
                               width: header.column.columnDef.size,
                               minWidth: header.column.columnDef.size,
                               maxWidth: header.column.columnDef.size,
                             }
-                          : undefined
-                      }
+                          : undefined),
+                        ...((header.column.columnDef.meta as any)
+                          ?.stickyLeft !== undefined
+                          ? {
+                              position: "sticky",
+                              left: (header.column.columnDef.meta as any)
+                                .stickyLeft,
+                            }
+                          : undefined),
+                      }}
                       className={cn(
-                        "text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+                        "text-left align-middle font-medium text-muted-foreground border-b border-border [&:has([role=checkbox])]:pr-0",
                         cellPadding,
+                        (header.column.columnDef.meta as any)?.headerClassName,
                       )}
                     >
                       {header.isPlaceholder ? null : canSort ? (
@@ -456,7 +473,7 @@ export function CustomDataTable<TData>({
                           : undefined
                       }
                       className={cn(
-                        "border-b border-border transition-colors last:border-0 data-[state=selected]:bg-accent",
+                        "transition-colors data-[state=selected]:bg-accent",
                         striped && index % 2 === 1 && "bg-muted/30",
                         highlightOnHover && "hover:bg-muted/40",
                         onRowClick && "cursor-pointer",
@@ -466,18 +483,27 @@ export function CustomDataTable<TData>({
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={`${row.id}-${cell.column.id}`}
-                          style={
-                            cell.column.columnDef.size !== undefined
+                          style={{
+                            ...(cell.column.columnDef.size !== undefined
                               ? {
                                   width: cell.column.columnDef.size,
                                   minWidth: cell.column.columnDef.size,
                                   maxWidth: cell.column.columnDef.size,
                                 }
-                              : undefined
-                          }
+                              : undefined),
+                            ...((cell.column.columnDef.meta as any)
+                              ?.stickyLeft !== undefined
+                              ? {
+                                  position: "sticky",
+                                  left: (cell.column.columnDef.meta as any)
+                                    .stickyLeft,
+                                }
+                              : undefined),
+                          }}
                           className={cn(
-                            "align-middle [&:has([role=checkbox])]:pr-0",
+                            "align-middle border-b border-border [&:has([role=checkbox])]:pr-0",
                             cellPadding,
+                            (cell.column.columnDef.meta as any)?.cellClassName,
                           )}
                         >
                           {flexRender(
@@ -489,7 +515,10 @@ export function CustomDataTable<TData>({
                     </tr>
 
                     {isExpanded && expandedRowContent && (
-                      <tr key={`${row.id}-expanded`} className="border-b border-border last:border-0">
+                      <tr
+                        key={`${row.id}-expanded`}
+                        className="border-b border-border last:border-0"
+                      >
                         <td colSpan={columnCount} className="bg-muted/20 p-0">
                           <div className={dense ? "px-3 py-2" : "px-4 py-3"}>
                             {expandedRowContent(row)}
