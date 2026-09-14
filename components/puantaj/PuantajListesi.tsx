@@ -208,7 +208,7 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
             ),
             cellClassName: cn(
               "relative p-0 border-r border-border text-center hover:bg-primary/10 hover:ring-1 hover:ring-inset hover:ring-primary/40 transition-colors",
-              isWeekend && "bg-red-50/50",
+              isWeekend && "bg-red-50/50 dark:bg-red-700/30",
               activeTool?.tur === TEMIZLE_CODE &&
                 "hover:bg-destructive/10 hover:ring-destructive/40",
             ),

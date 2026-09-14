@@ -297,7 +297,7 @@ const BordroListesi = () => {
           <div
             className={cn(
               "flex h-full items-center px-3 py-3",
-              onayli ? "bg-emerald-50" : "bg-red-50",
+              onayli ? "bg-emerald-50 dark:bg-emerald-900" : "bg-red-50 dark:bg-red-900",
             )}
           >
             {row.original.TcKimlikNo ?? "-"}
@@ -324,7 +324,7 @@ const BordroListesi = () => {
           <div
             className={cn(
               "flex h-full items-center px-3 py-3",
-              onayli ? "bg-emerald-50" : "bg-red-50",
+              onayli ? "bg-emerald-50 dark:bg-emerald-900" : "bg-red-50 dark:bg-red-900",
             )}
           >
             {row.original.AdSoyad ?? "-"}
