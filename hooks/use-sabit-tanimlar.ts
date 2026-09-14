@@ -91,6 +91,7 @@ export function useSabitTanimlar() {
     queryKey: sabitTanimlarKeys.all,
     queryFn: getSabitTanimlar,
     staleTime: 1000 * 60 * 60, // 1 saat
+    gcTime: 60 * 60 * 1000, // cache'te 1 saat tutulsun
   });
 
   const data = query.data ?? [];

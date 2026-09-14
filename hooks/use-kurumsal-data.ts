@@ -104,6 +104,7 @@ export function useGruplar() {
       }),
 
     select: (data) => normalizeListResponse(data),
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 
@@ -174,6 +175,7 @@ export function useSirketler(idGurup: number, options?: UseSirketlerOptions) {
 
     enabled: !!idGurup && (options?.enabled ?? true),
     select: (data) => normalizeListResponse(data),
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 
@@ -187,6 +189,7 @@ export function useSirketDetay(idSirket: number) {
       }),
     enabled: !!idSirket,
     select: (data) => normalizeListResponse(data)[0] as SirketType | undefined,
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 
@@ -264,7 +267,7 @@ export function useSubeler(idSirket: number, options?: UseSubelerOptions) {
       }),
 
     enabled: !!idSirket && (options?.enabled ?? true),
-
+    staleTime: 5 * 60 * 1000, // 5 dakika
     select: (data) => normalizeListResponse(data),
   });
 }
@@ -278,6 +281,7 @@ export function useSubeDetay(idSube: number) {
         IDSube: idSube,
       }),
     enabled: !!idSube,
+    staleTime: 5 * 60 * 1000, // 5 dakika
     select: (data) => normalizeListResponse(data)[0] as SubeType | undefined,
   });
 }
@@ -348,7 +352,7 @@ export function useBolumler(idSube: number, options?: UseBolumlerOptions) {
       }),
 
     enabled: !!idSube && (options?.enabled ?? true),
-
+    staleTime: 5 * 60 * 1000, // 5 dakika
     select: (data) => normalizeListResponse(data),
   });
 }

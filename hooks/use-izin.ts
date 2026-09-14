@@ -18,6 +18,7 @@ export function useIzinList(params: IzinSelectParams, enabled = true) {
     queryKey: [IZIN_QUERY_KEY, params],
     queryFn: () => izinService.select(params),
     enabled,
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 

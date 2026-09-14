@@ -89,6 +89,7 @@ export function usePersonelListesi(filters: PersonelFilters | null) {
       }),
     enabled: Boolean(filters?.IDSube),
     select: (data) => normalizeListResponse<any>(data),
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 
@@ -102,6 +103,7 @@ export function useAktifPersonelListesi() {
         Adi: "",
       }),
     select: (data) => normalizeListResponse<any>(data),
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 

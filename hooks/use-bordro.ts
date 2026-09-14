@@ -29,6 +29,7 @@ export function useBordroList(params: BordroSelectRequestType, enabled = true) {
       return data;
     },
     enabled,
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 

@@ -8,6 +8,7 @@ import {
   ContactRound,
   Fingerprint,
   HandCoins,
+  Loader2,
   LogOut,
   MapPinned,
   Parasol,
@@ -15,7 +16,7 @@ import {
   ScanBarcode,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import {
   Sidebar,
@@ -78,6 +79,17 @@ export function AppSidebar() {
   const user = useAuthStore((state) => state.user);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Optimistic navigation state
+  const [isPending, startTransition] = useTransition();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  // Navigation tamamlanınca (pathname gerçekten değişince) pending'i temizle
+  useEffect(() => {
+    if (pendingHref && pathname === pendingHref) {
+      setPendingHref(null);
+    }
+  }, [pathname, pendingHref]);
+
   const menuItems = user ? (MENU_BY_ROLE[user.IDKullaniciTip] ?? []) : [];
 
   const handleLogout = async () => {
@@ -91,6 +103,18 @@ export function AppSidebar() {
       router.push("/login");
       router.refresh();
     }
+  };
+
+  const handleNavigate = (href: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    setOpenMobile(false);
+
+    // senkron state update — event handler body'sinde, startTransition İÇİNDE DEĞİL
+    setPendingHref(href);
+
+    startTransition(() => {
+      router.push(href);
+    });
   };
 
   return (
@@ -113,7 +137,10 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isTargetPending = pendingHref === item.href;
+                const isActive = pendingHref
+                  ? isTargetPending
+                  : pathname === item.href;
                 const Icon = item.icon;
 
                 return (
@@ -122,11 +149,17 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                       tooltip={item.label}
-                      onClick={() => setOpenMobile(false)}
                       className="h-10"
                     >
-                      <Link href={item.href}>
-                        <Icon />
+                      <Link
+                        href={item.href}
+                        onClick={handleNavigate(item.href)}
+                      >
+                        {isTargetPending ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          <Icon />
+                        )}
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>

@@ -1,3 +1,4 @@
+import { AY_DATA } from "@/constants/data";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type WorkingContext = {
@@ -44,6 +45,13 @@ export function useCurrentContext() {
     queryFn: fetchContext,
     staleTime: Infinity,
     gcTime: Infinity,
+    select: (context) =>
+      context
+        ? {
+            ...context,
+            AyAdi: AY_DATA.find((ay) => ay.value === context.Ay)?.label ?? "",
+          }
+        : null,
   });
 }
 

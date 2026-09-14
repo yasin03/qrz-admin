@@ -232,7 +232,7 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
                 {badge && (
                   <span
                     className={cn(
-                      "inline-flex min-w-7 items-center justify-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold",
+                      "inline-flex min-w-7 items-center justify-center rounded-md px-1.5 py-0.5 text-[14px] font-semibold",
                       badge.className,
                     )}
                   >

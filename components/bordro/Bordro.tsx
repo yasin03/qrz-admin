@@ -1,22 +1,21 @@
 "use client";
-import { AY_DATA } from "@/constants/data";
+
 import { useCurrentContext } from "@/hooks/use-context";
 import BordroListesi from "./BordroListesi";
 
 const BordroPage = () => {
-  const { data: savedContext } = useCurrentContext();
-
-  const sessionMonth =
-    AY_DATA.find((ay) => ay.value === savedContext?.Ay)?.label || "";
+  const { data: savedContext, isPending: isContextPending } =
+    useCurrentContext();
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          Bordro Yönetimi
-          <small className="text-gray-400 italic">- {sessionMonth}</small>
-        </h1>
-      </div>
+      <h1 className="text-2xl font-bold mb-0">
+        Bordro Yönetimi
+        <small className="text-gray-400 italic">
+          - {savedContext?.AyAdi ?? ""}
+        </small>
+      </h1>
+
       <BordroListesi />
     </div>
   );

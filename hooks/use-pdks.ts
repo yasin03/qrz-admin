@@ -35,6 +35,7 @@ export function usePdksList(params: PDKSSelectRequestType, enabled = true) {
       return data;
     },
     enabled,
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 
@@ -50,6 +51,7 @@ export function useSubeVardiyaList(enabled = true) {
       return data;
     },
     enabled,
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 
@@ -114,6 +116,7 @@ export function useBolumVardiyaList(idBolum: number | null, enabled = true) {
       return data;
     },
     enabled: enabled && idBolum !== null,
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 

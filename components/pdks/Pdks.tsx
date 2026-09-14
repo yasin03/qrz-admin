@@ -22,7 +22,6 @@ import PdksListesi from "@/components/pdks/PdksListesi";
 import {
   SubeVardiyaSaat,
   BolumVardiyaSaat,
-  PDKSSelectParams,
   PDKSSelectRequestType,
 } from "@/types/pdks";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
@@ -32,7 +31,6 @@ type TabValue = "pdks" | "sube-vardiya" | "bolum-vardiya";
 
 const PdksPage = () => {
   const [activeTab, setActiveTab] = useState<TabValue>("pdks");
-
   const { data: savedContext } = useCurrentContext();
   const idSube = savedContext?.IDSube ? Number(savedContext.IDSube) : 0;
 
@@ -88,9 +86,7 @@ const PdksPage = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">PDKS Yönetimi</h1>
-      </div>
+      <h1 className="text-2xl font-bold ">PDKS Yönetimi</h1>
 
       <Tabs
         value={activeTab}

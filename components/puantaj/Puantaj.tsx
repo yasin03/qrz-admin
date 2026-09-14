@@ -4,20 +4,17 @@ import { useCurrentContext } from "@/hooks/use-context";
 import { KULLANICI_TIPI } from "@/lib/roles";
 import PuantajListesi from "./PuantajListesi";
 import PersonelPuantajTakvimi from "./PersonelPuantajTakvimi";
-import { AY_DATA } from "@/constants/data";
 import { useHasRole } from "@/stores/auth-store";
 
 const PuantajPage = () => {
-  const { data: savedContext } = useCurrentContext();
+  const { data: savedContext, isPending: isContextPending } =
+    useCurrentContext();
   const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
-
-  const sessionMonth =
-    AY_DATA.find((ay) => ay.value === savedContext?.Ay)?.label || "";
 
   if (isPersonel) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Puantajım</h1>
+        <h1 className="text-2xl font-bold mb-0">Puantajım</h1>
         <PersonelPuantajTakvimi
           baseParams={{
             IDSube: savedContext?.IDSube || "0",
@@ -32,12 +29,12 @@ const PuantajPage = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          PDKS Yönetimi{" "}
-          <small className="text-gray-400 italic">- {sessionMonth}</small>
-        </h1>
-      </div>
+      <h1 className="text-2xl font-bold mb-0">
+        Puantaj Yönetimi{" "}
+        <small className="text-gray-400 italic">
+          - {savedContext?.AyAdi ?? ""}
+        </small>
+      </h1>
 
       <PuantajListesi
         selectParams={{

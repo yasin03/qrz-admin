@@ -33,6 +33,7 @@ export function usePuantajList(
 
       return data;
     },
+    staleTime: 5 * 60 * 1000, // 5 dakika
     enabled,
   });
 }

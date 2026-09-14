@@ -49,6 +49,7 @@ export function useLokasyonList(filters: LokasyonFilters | null) {
         IDBolum: filters!.IDBolum || "0",
       }),
     select: (data) => normalizeListResponse<any>(data),
+    staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
 
