@@ -27,6 +27,7 @@ import BordroTopluIslemMenu from "./BordroTopluIslemMenu";
 import { cn } from "@/lib/utils";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import { ExportMenu } from "../export/ExportMenu";
 
 const ACTIONS_WIDTH = 50;
 const TC_WIDTH = 160;
@@ -236,6 +237,51 @@ const BordroListesi = () => {
   const seciliHepsiOnaysiz =
     selectedRows.length > 0 && selectedRows.every((r) => r.OnayTarihi == null);
 
+  const exportColumns = [
+    { header: "Şube", accessorKey: "SubeAdi" },
+    { header: "Bölüm", accessorKey: "BolumAdi" },
+    { header: "Sicil No", accessorKey: "SicilNo" },
+    { header: "Ad Soyad", accessorKey: "AdSoyad" },
+    { header: "Görev", accessorKey: "GorevAdi" },
+    { header: "Unvan", accessorKey: "UnvanAdi" },
+    { header: "İşe Giriş Tarihi", accessorKey: "IseSonGirisTarihi2" },
+    { header: "Çıkış Tarihi", accessorKey: "CikisTarihi2" },
+    { header: "Yıl", accessorKey: "Yil" },
+    { header: "Ay", accessorKey: "Ay" },
+    { header: "Ödeme Şekli", accessorKey: "OdemeSekli" },
+    { header: "Ücret Tipi", accessorKey: "UcretTipi" },
+    { header: "Ücret", accessorKey: "Ucret" },
+    { header: "Net Ücret", accessorKey: "NetUcret" },
+    { header: "Günlük Ücret", accessorKey: "GunlukUcret" },
+    { header: "Saatlik Ücret", accessorKey: "SaatlikUcret" },
+    { header: "Toplam Gün", accessorKey: "ToplamGun" },
+    { header: "SGK Gün Sayısı", accessorKey: "SgkGunSayisi" },
+    { header: "Toplam HT", accessorKey: "ToplamHT" },
+    { header: "Toplam GT", accessorKey: "ToplamGT" },
+    { header: "Toplam YI", accessorKey: "ToplamYI" },
+    { header: "Toplam YK", accessorKey: "ToplamYK" },
+    { header: "Toplam", accessorKey: "Toplam" },
+    { header: "Toplam Yemek", accessorKey: "ToplamYemek" },
+    { header: "Toplam Yol", accessorKey: "ToplamYol" },
+    { header: "SGK Matrahı", accessorKey: "SgkMatrahi" },
+    { header: "SGK İşçi Primi", accessorKey: "SgkIsciPrimi" },
+    { header: "SGK İşveren Primi", accessorKey: "SgkIsverenPrimi" },
+    { header: "Vergi Matrahı", accessorKey: "VergiMatrahi" },
+    { header: "Gelir Vergisi", accessorKey: "GelirVergisi" },
+    { header: "Damga Vergisi", accessorKey: "DamgaVergisi" },
+    {
+      header: "Yasal Kesintiler Toplamı",
+      accessorKey: "YasalKesintilerToplami",
+    },
+    { header: "Kesintiler Toplamı", accessorKey: "KesintilerToplami" },
+    { header: "Toplam Maliyet", accessorKey: "ToplamMaliyet" },
+    { header: "Net Ödenen", accessorKey: "NetOdenen" },
+    { header: "Ödenecek Tutar", accessorKey: "OdenecekTutar" },
+    { header: "SGK Durumu", accessorKey: "SgkDurumu" },
+    { header: "Sendika Durumu", accessorKey: "SendikaDurumu" },
+    { header: "Asgari Ücretli", accessorKey: "AsgeriUcretli" },
+  ];
+
   const columns: ColumnDef<BordroResponseType>[] = [
     {
       id: "actions",
@@ -297,7 +343,9 @@ const BordroListesi = () => {
           <div
             className={cn(
               "flex h-full items-center px-3 py-3",
-              onayli ? "bg-emerald-50 dark:bg-emerald-900" : "bg-red-50 dark:bg-red-900",
+              onayli
+                ? "bg-emerald-50 dark:bg-emerald-900"
+                : "bg-red-50 dark:bg-red-900",
             )}
           >
             {row.original.TcKimlikNo ?? "-"}
@@ -324,7 +372,9 @@ const BordroListesi = () => {
           <div
             className={cn(
               "flex h-full items-center px-3 py-3",
-              onayli ? "bg-emerald-50 dark:bg-emerald-900" : "bg-red-50 dark:bg-red-900",
+              onayli
+                ? "bg-emerald-50 dark:bg-emerald-900"
+                : "bg-red-50 dark:bg-red-900",
             )}
           >
             {row.original.AdSoyad ?? "-"}
@@ -697,26 +747,36 @@ const BordroListesi = () => {
           />
         </div>
 
-        <div className="shrink-0">
-          <BordroTopluIslemMenu
-            seciliSayisi={selectedRows.length}
-            seciliHepsiOnayli={seciliHepsiOnayli}
-            seciliHepsiOnaysiz={seciliHepsiOnaysiz}
-            onTumunuHesapla={handleTumunuHesapla}
-            onTumunuTemizle={handleTumunuTemizle}
-            onSeciliHesapla={handleSeciliHesapla}
-            onSeciliTemizle={handleSeciliTemizle}
-            onOnayla={handleOnayla}
-            onOnayiKaldir={handleOnayiKaldir}
-          />
-        </div>
-        <div className="shrink-0">
-          <CustomColumnVisibility
-            columns={columns}
-            value={columnVisibility}
-            onChange={setColumnVisibility}
-          />
-        </div>
+        <BordroTopluIslemMenu
+          seciliSayisi={selectedRows.length}
+          seciliHepsiOnayli={seciliHepsiOnayli}
+          seciliHepsiOnaysiz={seciliHepsiOnaysiz}
+          onTumunuHesapla={handleTumunuHesapla}
+          onTumunuTemizle={handleTumunuTemizle}
+          onSeciliHesapla={handleSeciliHesapla}
+          onSeciliTemizle={handleSeciliTemizle}
+          onOnayla={handleOnayla}
+          onOnayiKaldir={handleOnayiKaldir}
+        />
+
+        <ExportMenu
+          data={filteredData}
+          exportColumns={exportColumns}
+          title="Bordro Listesi"
+          fileName="bordro-listesi"
+          showImport
+          onImport={(rows) => {
+            // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+            // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+            console.log("İçe aktarılan bordro:", rows);
+          }}
+        />
+
+        <CustomColumnVisibility
+          columns={columns}
+          value={columnVisibility}
+          onChange={setColumnVisibility}
+        />
       </div>
 
       <CustomDataTable

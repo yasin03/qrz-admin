@@ -26,6 +26,8 @@ import PuantajToolbar from "./PuantajToolbar";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { ExportColumn } from "../export/types";
+import { ExportMenu } from "../export/ExportMenu";
 
 type Props = {
   selectParams: PuantajSelectRequestType;
@@ -143,6 +145,22 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
       setSilmeModu(null);
     }
   };
+
+  const gunKolonlari: ExportColumn<Record<string, any>>[] = Array.from(
+    { length: 31 },
+    (_, i) => ({
+      header: String(i + 1),
+      accessorKey: `G${i + 1}`,
+    }),
+  );
+
+  const exportColumns: ExportColumn<Record<string, any>>[] = [
+    { header: "Sicil No", accessorKey: "SicilNo" },
+    { header: "Ad Soyad", accessorKey: "AdSoyad" },
+    { header: "Yıl", accessorKey: "Yil" },
+    { header: "Ay", accessorKey: "Ay" },
+    ...gunKolonlari,
+  ];
 
   const columns: ColumnDef<PuantajSelectResponseType>[] = useMemo(() => {
     const sabitColumns: ColumnDef<PuantajSelectResponseType>[] = [
@@ -263,28 +281,36 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
           />
         </div>
 
-        <div className="shrink-0">
-          <PuantajTopluSilMenu
-            seciliSayisi={selectedRows.length}
-            onSeciliTemizle={handleSeciliTemizle}
-            onHepsiniTemizle={handleHepsiniTemizle}
-          />
-        </div>
+        <PuantajTopluSilMenu
+          seciliSayisi={selectedRows.length}
+          onSeciliTemizle={handleSeciliTemizle}
+          onHepsiniTemizle={handleHepsiniTemizle}
+        />
 
-        <div className="shrink-0">
-          <PuantajToolbar
-            izinTipleri={izinTipleri ?? []}
-            value={activeTool}
-            onChange={setActiveTool}
-          />
-        </div>
-        <div className="shrink-0">
-          <CustomColumnVisibility
-            columns={columns}
-            value={columnVisibility}
-            onChange={setColumnVisibility}
-          />
-        </div>
+        <PuantajToolbar
+          izinTipleri={izinTipleri ?? []}
+          value={activeTool}
+          onChange={setActiveTool}
+        />
+
+        <ExportMenu
+          data={filteredData}
+          exportColumns={exportColumns}
+          title="Puantaj Listesi"
+          fileName="puantaj-listesi"
+          showImport
+          onImport={(rows) => {
+            // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+            // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+            console.log("İçe aktarılan puantaj:", rows);
+          }}
+        />
+
+        <CustomColumnVisibility
+          columns={columns}
+          value={columnVisibility}
+          onChange={setColumnVisibility}
+        />
       </div>
 
       <CustomDataTable

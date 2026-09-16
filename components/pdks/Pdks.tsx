@@ -37,11 +37,6 @@ const PdksPage = () => {
   const { data: bolumler = [], isLoading: isLoadingBolumler } =
     useBolumler(idSube);
 
-  // ---- PDKS kayıt filtresi -------------------------------------------
-  const [pdksFilters, setPdksFilters] = useState<PDKSSelectRequestType | null>(
-    null,
-  );
-
   // ---- Şube vardiya dialog state -----------------------------------------
   const [openSubeVardiyaEkle, setOpenSubeVardiyaEkle] = useState(false);
   const [duzenlenecekSubeVardiya, setDuzenlenecekSubeVardiya] =
@@ -105,12 +100,6 @@ const PdksPage = () => {
             </TabsTrigger>
           </TabsList>
 
-          {activeTab === "pdks" && (
-            <div className="flex items-center gap-2">
-              <PdksFiltre onApply={setPdksFilters} />
-            </div>
-          )}
-
           {activeTab === "sube-vardiya" && (
             <div className="flex items-center gap-2">
               <Button type="button" size="sm" onClick={handleSubeVardiyaEkle}>
@@ -152,28 +141,18 @@ const PdksPage = () => {
           )}
         </div>
 
-        <TabsContent value="pdks" className="mt-4">
-          <PdksListesi
-            selectParams={
-              pdksFilters ?? {
-                IDSube: "0",
-                IDBolum: "0",
-                Tarih1: "",
-                Tarih2: "",
-              }
-            }
-            enabled={Boolean(pdksFilters) && activeTab === "pdks"}
-          />
+        <TabsContent value="pdks">
+          <PdksListesi enabled={Boolean(activeTab === "pdks")} />
         </TabsContent>
 
-        <TabsContent value="sube-vardiya" className="mt-4">
+        <TabsContent value="sube-vardiya">
           <SubeVardiyaListesi
             enabled={activeTab === "sube-vardiya"}
             onDuzenle={handleSubeVardiyaDuzenle}
           />
         </TabsContent>
 
-        <TabsContent value="bolum-vardiya" className="mt-4">
+        <TabsContent value="bolum-vardiya">
           <BolumVardiyaListesi
             idBolum={idBolum}
             enabled={activeTab === "bolum-vardiya"}

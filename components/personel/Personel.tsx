@@ -34,6 +34,9 @@ import PersonelSettingsDialog, {
 } from "./PersonelSettingsDialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api, { ApiClientError } from "@/lib/axios";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { ExportMenu } from "../export/ExportMenu";
 
 type Personel = {
   SicilNo: string;
@@ -89,6 +92,8 @@ const Personel = () => {
     null,
   );
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
+  const [columnVisibility, setColumnVisibility] =
+    useColumnVisibility("personel-kolonlar");
   const [sgkDialog, setSgkDialog] = useState<SgkDialogState | null>(null);
   const [settingsPersonel, setSettingsPersonel] =
     useState<PersonelSettingsPersonel | null>(null);
@@ -251,6 +256,27 @@ const Personel = () => {
       },
     });
   };
+
+  const exportColumns = [
+    { header: "Sicil No", accessorKey: "SicilNo" },
+    { header: "TC Kimlik No", accessorKey: "TcKimlikNo" },
+    { header: "Ad Soyad", accessorKey: "AdSoyad" },
+    { header: "Bölüm", accessorKey: "BolumAdi" },
+    { header: "Cinsiyet", accessorKey: "Cinsiyet" },
+    { header: "Doğum Tarihi", accessorKey: "DogumTarihi" },
+    { header: "Medeni Durum", accessorKey: "MedeniDurum" },
+    { header: "İşe Giriş Tarihi", accessorKey: "IseSonGirisTarihi2" },
+    { header: "Çıkış Tarihi", accessorKey: "CikisTarihi2" },
+    { header: "İstihdam Durumu", accessorKey: "IstihdamDurumu" },
+    { header: "Çalışma Durumu", accessorKey: "CalismaDurumu" },
+    { header: "Durum", accessorKey: "Durum2" },
+    { header: "Ödeme Şekli", accessorKey: "OdemeSekli" },
+    { header: "Ücret Tipi", accessorKey: "UcretTipi" },
+    { header: "Ücret", accessorKey: "Ucret" },
+    { header: "Sendika Durumu", accessorKey: "SendikaDurumu" },
+    { header: "Özürlülük Derecesi", accessorKey: "OzurlulukDerecesi" },
+    { header: "Telefon", accessorKey: "Telefon" },
+  ];
 
   // ---- 3. Kolon tanımları ----------------------------------------------
   const columns: ColumnDef<Personel>[] = [
@@ -468,13 +494,33 @@ const Personel = () => {
             <UserPlus className="size-4" />
             Yeni Personel Ekle
           </Button>
+          <ExportMenu
+            data={filteredPersonelListesi}
+            exportColumns={exportColumns}
+            title="Personel Listesi"
+            fileName="personel-listesi"
+            showImport
+            onImport={(rows) => {
+              // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+              // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+              console.log("İçe aktarılan personeller:", rows);
+            }}
+          />
+          <div className="shrink-0">
+            <CustomColumnVisibility
+              columns={columns}
+              value={columnVisibility}
+              onChange={setColumnVisibility}
+            />
+          </div>
         </div>
       </div>
       <CustomDataTable
         data={filteredPersonelListesi}
         columns={columns}
         loading={isLoadingPersonel}
-        getRowId={(row) => row.id}
+        columnVisibilityValue={columnVisibility}
+        onColumnVisibilityValueChange={setColumnVisibility}
         pagination
         emptyMessage="Personel bulunamadı."
         expandable

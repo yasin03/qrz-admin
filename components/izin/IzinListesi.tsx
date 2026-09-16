@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Search, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -11,28 +11,58 @@ import { CustomDataTable } from "../customs/CustomDataTable";
 import { RowAction, RowActions } from "../customs/RowActions";
 import { ConfirmDialog } from "../customs/ConfirmDialog";
 import { useIzinList, useDeleteIzin } from "@/hooks/use-izin";
-import { IzinSelectParams, IzinType } from "@/types/izin";
+import { IzinFilters, IzinSelectParams, IzinType } from "@/types/izin";
+import { useHasRole, useUser } from "@/stores/auth-store";
+import { KULLANICI_TIPI } from "@/lib/roles";
+import { Input } from "../ui/input";
+import IzinFiltre from "./IzinFiltre";
+import { Button } from "../ui/button";
+import IzinEkle from "./IzinEkle";
+import { ExportMenu } from "../export/ExportMenu";
+import { ExportColumn } from "../export/types";
+import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
+
+function getDefaultDateRange() {
+  const now = new Date();
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+  return {
+    BaslangicTarihi: format(yearStart, "yyyy-MM-dd"),
+    BitisTarihi: format(now, "yyyy-MM-dd"),
+  };
+}
 
 type Props = {
-  selectParams: IzinSelectParams;
-  isPersonel: boolean;
-  searchText: string;
   enabled: boolean;
 };
 
-const IzinListesi = ({
-  selectParams,
-  isPersonel,
-  searchText,
-  enabled,
-}: Props) => {
+const IzinListesi = ({ enabled }: Props) => {
+  const user = useUser();
+  const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
-
+  const [searchText, setSearchText] = useState("");
+  const deleteIzin = useDeleteIzin();
+  const [openIzinEkle, setOpenIzinEkle] = useState(false);
+  const [columnVisibility, setColumnVisibility] =
+    useColumnVisibility("izin-kolonlar");
+  const [filters, setFilters] = useState<IzinFilters>(() => ({
+    ...getDefaultDateRange(),
+    Aciklama: "",
+  }));
+  const selectParams: IzinSelectParams = useMemo(
+    () => ({
+      IDSube: isPersonel ? String(user?.IDSube ?? null) : null,
+      IDSubePersonel: isPersonel ? String(user?.IDSubePersonel ?? "0") : "0",
+      BaslangicTarihi: filters.BaslangicTarihi,
+      BitisTarihi: filters.BitisTarihi,
+      Aciklama: filters.Aciklama,
+    }),
+    [isPersonel, user?.IDSubePersonel, filters],
+  );
   const { data: izinListesi = [], isLoading } = useIzinList(
     selectParams,
     enabled,
   );
-  const deleteIzin = useDeleteIzin();
 
   // Ad/Soyad/Sicil/Bölüm proc parametresi olmadığı için client-side arama.
   // Personel rolünde zaten tek kişinin verisi geldiği için arama kutusu
@@ -70,6 +100,22 @@ const IzinListesi = ({
       },
     );
   };
+
+  const exportColumns: ExportColumn<IzinType>[] = [
+    { header: "Sicil No", accessorKey: "SicilNo" },
+    { header: "Ad", accessorKey: "Ad" },
+    { header: "Soyad", accessorKey: "Soyad" },
+    { header: "Bölüm", accessorKey: "BolumAdi" },
+    { header: "Başlangıç Tarihi", accessorKey: "BaslangicTarihi" },
+    { header: "Bitiş Tarihi", accessorKey: "BitisTarihi" },
+    { header: "Gün", accessorKey: "Gun" },
+    { header: "Açıklama", accessorKey: "Aciklama" },
+    { header: "Ait Olduğu Yıl", accessorKey: "AitOlduguYil" },
+    {
+      header: "Durum",
+      accessorKey: (row: any) => (row.Durum ? "Aktif" : "Pasif"),
+    },
+  ];
 
   const columns: ColumnDef<IzinType>[] = useMemo(() => {
     const actionColumn: ColumnDef<IzinType> = {
@@ -136,14 +182,62 @@ const IzinListesi = ({
   }, [isPersonel]);
 
   return (
-    <>
+    <div className="min-w-0 space-y-3">
+      <div className="flex items-center justify-end gap-2">
+        {!isPersonel && (
+          <div className="w-48 shrink-0">
+            <Input
+              startIcon={<Search className="h-4 w-4" />}
+              placeholder="Ara..."
+              className="w-48"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </div>
+        )}
+
+        <IzinFiltre
+          filters={filters}
+          onChange={setFilters}
+          onReset={() => setFilters({ ...getDefaultDateRange(), Aciklama: "" })}
+        />
+
+        {!isPersonel && (
+          <div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setOpenIzinEkle(true)}
+            >
+              <UserPlus className="size-4" />
+              Yeni İzin Ekle
+            </Button>
+          </div>
+        )}
+        <ExportMenu
+          data={filteredData}
+          exportColumns={exportColumns}
+          title="İzin Listesi"
+          fileName="izin-listesi"
+          showImport
+          onImport={(rows) => {
+            // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+            // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+            console.log("İçe aktarılan izin:", rows);
+          }}
+        />
+        <CustomColumnVisibility
+          columns={columns}
+          value={columnVisibility}
+          onChange={setColumnVisibility}
+        />
+      </div>
       <CustomDataTable
         data={filteredData}
         columns={columns}
         loading={isLoading}
-        getRowId={(row) => row.IDIzinGenel}
-        pagination
-        emptyMessage="İzin kaydı bulunamadı."
+        columnVisibilityValue={columnVisibility}
+        onColumnVisibilityValueChange={setColumnVisibility}
       />
 
       <ConfirmDialog
@@ -156,7 +250,11 @@ const IzinListesi = ({
         isLoading={deleteIzin.isPending}
         onConfirm={handleDeleteConfirm}
       />
-    </>
+
+      {openIzinEkle && (
+        <IzinEkle open={openIzinEkle} onOpenChange={setOpenIzinEkle} />
+      )}
+    </div>
   );
 };
 

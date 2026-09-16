@@ -25,6 +25,9 @@ import { LokasyonQrData } from "@/lib/qr-utils";
 import { QrKodDialog } from "./QRKodDialog";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext } from "@/hooks/use-context";
+import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import { ExportMenu } from "../export/ExportMenu";
 
 const INITIAL_FILTERS: LokasyonFilters = {
   IDBolum: "",
@@ -45,7 +48,9 @@ const Lokasyon = () => {
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<LokasyonQrData | null>(null);
-
+  const [columnVisibility, setColumnVisibility] = useColumnVisibility(
+    "lokasyon-kolonlar", // localStorage anahtarı, kalıcı olsun istiyorsanız
+  );
   const {
     data: lokasyonListesi = [],
     isLoading: isLoadingLokasyon,
@@ -122,6 +127,14 @@ const Lokasyon = () => {
       },
     );
   };
+
+  const lokasyonExportColumns = [
+    { header: "Bölüm", accessorKey: "BolumAdi" },
+    { header: "Lokasyon", accessorKey: "LokasyonAdi" },
+    { header: "Enlem", accessorKey: "Enlem" },
+    { header: "Boylam", accessorKey: "Boylam" },
+    { header: "Aktif", accessorKey: "Aktif" },
+  ];
 
   // ---- 3. Kolon tanımları ----------------------------------------------
   const columns: ColumnDef<LokasyonType>[] = [
@@ -242,15 +255,33 @@ const Lokasyon = () => {
             <UserPlus className="size-4" />
             Yeni Lokasyon Ekle
           </Button>
+          <ExportMenu
+            data={filteredLokasyonListesi}
+            exportColumns={lokasyonExportColumns}
+            title="Lokasyon Listesi"
+            fileName="lokasyon-listesi"
+            showImport
+            onImport={(rows) => {
+              // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+              // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+              console.log("İçe aktarılan lokasyonlar:", rows);
+            }}
+          />
+          <div className="shrink-0">
+            <CustomColumnVisibility
+              columns={columns}
+              value={columnVisibility}
+              onChange={setColumnVisibility}
+            />
+          </div>
         </div>
       </div>
       <CustomDataTable
         data={filteredLokasyonListesi}
         columns={columns}
         loading={isLoadingLokasyon}
-        getRowId={(row) => row.IDBolumLokasyon}
-        pagination
-        emptyMessage="Lokasyon bulunamadı."
+        columnVisibilityValue={columnVisibility}
+        onColumnVisibilityValueChange={setColumnVisibility}
       />
 
       <LokasyonEkle

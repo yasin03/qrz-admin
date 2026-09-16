@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import { FormSelect } from "../forms";
 import { IzinFilters, IzinTipi } from "@/types/izin";
 import { CustomDatePicker } from "../customs/CustomDatePicker";
+import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 
 type FormValues = {
   tarihAraligi: DateRange | undefined;
@@ -20,17 +21,12 @@ type FormValues = {
 
 type IzinFiltreProps = {
   filters: IzinFilters;
-  izinTipleri: IzinTipi[];
   onChange: (next: IzinFilters) => void;
   onReset: () => void;
 };
 
-const IzinFiltre = ({
-  filters,
-  izinTipleri,
-  onChange,
-  onReset,
-}: IzinFiltreProps) => {
+const IzinFiltre = ({ filters, onChange, onReset }: IzinFiltreProps) => {
+  const { izinTipleri } = usePersonelSabitTanimlar();
   const initialFormValues = useMemo<FormValues>(
     () => ({
       tarihAraligi: {

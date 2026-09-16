@@ -1,24 +1,54 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { RowAction, RowActions } from "../customs/RowActions";
 import { usePdksList } from "@/hooks/use-pdks";
 import { PDKSSelectRequestType, PDKSSelectResponseType } from "@/types/pdks";
+import { Input } from "../ui/input";
+import { useState } from "react";
+import PdksFiltre from "./PdksFiltre";
+import { ExportMenu } from "../export/ExportMenu";
+import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { ExportColumn } from "../export/types";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
 
 type Props = {
-  selectParams: PDKSSelectRequestType;
   enabled: boolean;
 };
 
-const PdksListesi = ({ selectParams, enabled }: Props) => {
+const PdksListesi = ({ enabled }: Props) => {
+  const [pdksFilters, setPdksFilters] = useState<PDKSSelectRequestType>({
+    IDSube: "0",
+    IDBolum: "0",
+    Tarih1: "",
+    Tarih2: "",
+  });
   const {
     data: pdksData = [],
     isLoading: isPdksLoading,
     isError: isPdksError,
-  } = usePdksList(selectParams, enabled);
+  } = usePdksList(
+    pdksFilters,
+    enabled && Boolean(pdksFilters.Tarih1 && pdksFilters.Tarih2),
+  );
+  const [searchText, setSearchText] = useState("");
+  const [columnVisibility, setColumnVisibility] =
+    useColumnVisibility("pdks-kolonlar");
+    
+  const exportColumns: ExportColumn<PDKSSelectResponseType>[] = [
+    { header: "Ad Soyad", accessorKey: "AdSoyad" },
+    { header: "Tarih", accessorKey: "Tarih" },
+    { header: "Giriş", accessorKey: "Giris" },
+    { header: "Çıkış", accessorKey: "Cikis" },
+    { header: "NormalSure", accessorKey: "NormalSure" },
+    { header: "MesaiSure", accessorKey: "MesaiSure" },
+    { header: "IzinSure", accessorKey: "IzinSure" },
+    { header: "ToplamSure", accessorKey: "ToplamSure" },
+    { header: "Aciklama", accessorKey: "Aciklama" },
+  ];
 
   const columns: ColumnDef<PDKSSelectResponseType>[] = [
     {
@@ -91,17 +121,48 @@ const PdksListesi = ({ selectParams, enabled }: Props) => {
   ];
 
   return (
-    <CustomDataTable
-      data={pdksData}
-      columns={columns}
-      loading={isPdksLoading}
-      pagination
-      emptyMessage={
-        isPdksError
-          ? "Kayıtlar yüklenirken hata oluştu."
-          : "Pdks kaydı bulunamadı."
-      }
-    />
+    <div className="min-w-0 space-y-3">
+      <div className="flex items-center justify-end gap-2">
+        <div className="w-48 shrink-0">
+          <Input
+            startIcon={<Search className="h-4 w-4" />}
+            placeholder="Ara..."
+            className="w-full"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
+        <PdksFiltre onApply={setPdksFilters} />
+        <ExportMenu
+          data={pdksData}
+          exportColumns={exportColumns}
+          title="İzin Listesi"
+          fileName="izin-listesi"
+          showImport
+          onImport={(rows) => {
+            // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+            // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+            console.log("İçe aktarılan izin:", rows);
+          }}
+        />
+        <CustomColumnVisibility
+          columns={columns}
+          value={columnVisibility}
+          onChange={setColumnVisibility}
+        />
+      </div>
+      <CustomDataTable
+        data={pdksData}
+        columns={columns}
+        loading={isPdksLoading}
+        pagination
+        emptyMessage={
+          isPdksError
+            ? "Kayıtlar yüklenirken hata oluştu."
+            : "Pdks kaydı bulunamadı."
+        }
+      />
+    </div>
   );
 };
 
