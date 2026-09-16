@@ -43,26 +43,16 @@ type MenuItem = {
 const adminMenuItems: MenuItem[] = [
   { href: "/personel", label: "Personel", icon: Users },
   { href: "/izin", label: "İzin", icon: Parasol },
+  { href: "/avans", label: "Avans", icon: HandCoins },
   { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
   { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
   { href: "/bordro", label: "Bordro", icon: ContactRound },
 ];
 
-const yoneticiMenuItems: MenuItem[] = [
-  { href: "/personel", label: "Personel", icon: Users },
-  { href: "/izin", label: "İzin", icon: Parasol },
-  { href: "/avans", label: "Avans", icon: HandCoins },
-  { href: "/pdks", label: "PDKS", icon: Fingerprint },
-  { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
-];
+const yoneticiMenuItems: MenuItem[] = [...adminMenuItems];
 
-const personelMenuItems: MenuItem[] = [
-  { href: "/izin", label: "İzin", icon: Parasol },
-  { href: "/avans", label: "Avans", icon: HandCoins },
-  { href: "/pdks", label: "PDKS", icon: Fingerprint },
-  { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
-];
+const personelMenuItems: MenuItem[] = [...adminMenuItems];
 
 /** IDKullaniciTip -> gösterilecek menü. Yeni bir rol eklenirse sadece buraya satır eklenir. */
 const MENU_BY_ROLE: Record<string, MenuItem[]> = {

@@ -562,7 +562,7 @@ export function CustomDataTable<TData>({
                           : undefined),
                       }}
                       className={cn(
-                        "text-left align-middle font-medium text-muted-foreground border-b border-border [&:has([role=checkbox])]:pr-0",
+                        "text-left align-middle font-medium text-muted-foreground border-b border-border has-[[role=checkbox]]:pr-0",
                         cellPadding,
                         (header.column.columnDef.meta as any)?.headerClassName,
                       )}
@@ -644,7 +644,7 @@ export function CustomDataTable<TData>({
                               : undefined),
                           }}
                           className={cn(
-                            "align-middle border-b border-border [&:has([role=checkbox])]:pr-0",
+                            "align-middle border-b border-border has-[[role=checkbox]]:pr-0",
                             cellPadding,
                             (cell.column.columnDef.meta as any)?.cellClassName,
                           )}
