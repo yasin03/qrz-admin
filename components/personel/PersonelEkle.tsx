@@ -340,7 +340,14 @@ export default function PersonelEkle({
             Personel bilgileri getirilemedi.
           </p>
         ) : (
-          <form onSubmit={form.handleSubmit(handleSubmit)}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+              const errorCount = Object.keys(errors).length;
+              toast.error(
+                `Lütfen zorunlu alanları kontrol edin (${errorCount} alanda hata var).`,
+              );
+            })}
+          >
             <PersonelFormFields
               control={form.control}
               setValue={form.setValue}

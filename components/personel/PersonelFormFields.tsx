@@ -28,7 +28,6 @@ import {
   useSabitTanimlar,
 } from "@/hooks/use-sabit-tanimlar";
 
-
 const CINSIYET_OPTIONS = [
   { label: "Kadın", value: "KADIN" },
   { label: "Erkek", value: "ERKEK" },
@@ -58,6 +57,56 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
   const { data: iller = [] } = useIller();
   const { data: ilceler = [] } = useIlceler(selectedIlKodu || undefined);
 
+  // Dosyanın üstüne, CINSIYET_OPTIONS'ın yanına ekleyin
+  const SECTION_FIELDS = {
+    personel: [
+      "TcKimlikNo",
+      "Ad",
+      "Soyad",
+      "IlkSoyad",
+      "DogumTarihi",
+      "Cinsiyet",
+      "Uyruk",
+      "UnvanAdi",
+      "OgrenimDurumu",
+      "MezuniyetYili",
+      "MezuniyetBolumu",
+    ],
+    "giris-cikis": [
+      "SgkDurumu",
+      "PersonelKanunNo",
+      "PersonelSgkBelgeTuru",
+      "PersonelMeslekKodu",
+      "PersonelSigortaKolu",
+      "PersonelGorevKodu",
+      "IseIlkGirisTarihi",
+      "IseSonGirisTarihi",
+      "KumulatifSgkMatrahi",
+      "DevredenSgkMatrahi",
+      "AuKumulatifVergiMatrahi",
+      "VardiyaliCalismaDurumu",
+      "AzCalismaDurumu",
+      "AzCalismaDurumuGunSayisi",
+    ],
+    bordro: [
+      "IstihdamDurumu",
+      "OdemeSekli",
+      "UcretTipi",
+      "AsgeriUcretli",
+      "EskiHukumluDurumu",
+      "OzurluDurumu",
+      "OzurlulukDerecesi",
+      "MaasParaBirimi",
+      "Ucret",
+      "GunlukUcret",
+      "SaatlikUcret",
+    ],
+    adres: ["IlKodu", "IlceKodu", "Adres", "Telefon"],
+  } as const satisfies Record<string, (keyof PersonelForm)[]>;
+
+  const sectionHasError = (fields: readonly (keyof PersonelForm)[]) =>
+    fields.some((field) => Boolean(errors[field]));
+
   // İl değişince, önceki ile ait seçili ilçe geçersiz kalabileceği için
   // temizliyoruz. İlk render'da (henüz hiç il seçilmemişken) tetiklenmesin
   // diye ref ile "gerçekten değişti mi" kontrolü yapıyoruz.
@@ -73,16 +122,10 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     istihdamDurumlari,
     ucretTipleri,
     odemeSekilleri,
-    sozlesmeOdemeSekilleri,
-    sozlesmeOdemeSekilleri2,
     maasParaBirimleri,
-    calismaDurumlari,
     ogrenimDurumlari,
-    medeniDurumlar,
-    kanGruplari,
     uyruklar,
     ozurlulukDurumlari,
-    kanBagiDurumlari,
   } = useSabitTanimlar();
 
   const {
@@ -98,8 +141,14 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
       {/* ---- Personel Bilgileri ---- */}
       <AccordionItem value="personel">
         <AccordionTrigger className="bg-cyan-100 px-3">
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
             Personel Bilgileri
+            {sectionHasError(SECTION_FIELDS.personel) && (
+              <span
+                className="size-2 rounded-full bg-destructive"
+                title="Bu bölümde hatalı/eksik alan var"
+              />
+            )}
           </span>
         </AccordionTrigger>
         <AccordionContent className="p-4">
@@ -166,8 +215,14 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
       {/* ---- Giriş/Çıkış Bilgileri ---- */}
       <AccordionItem value="giris-cikis">
         <AccordionTrigger className="bg-cyan-100 px-3">
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
             Giriş/Çıkış Bilgileri
+            {sectionHasError(SECTION_FIELDS["giris-cikis"]) && (
+              <span
+                className="size-2 rounded-full bg-destructive"
+                title="Bu bölümde hatalı/eksik alan var"
+              />
+            )}
           </span>
         </AccordionTrigger>
         <AccordionContent className="p-4">
@@ -263,8 +318,14 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
       {/* ---- Bordro Bilgileri ---- */}
       <AccordionItem value="bordro">
         <AccordionTrigger className="bg-cyan-100 px-3">
-          <span className="text-sm font-semibold text-foreground">
-            Bordro Bilgileri
+          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            Bordro Bilgileri{" "}
+            {sectionHasError(SECTION_FIELDS.bordro) && (
+              <span
+                className="size-2 rounded-full bg-destructive"
+                title="Bu bölümde hatalı/eksik alan var"
+              />
+            )}
           </span>
         </AccordionTrigger>
         <AccordionContent className="p-4">
@@ -326,8 +387,14 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
       {/* ---- Adres Bilgileri ---- */}
       <AccordionItem value="adres">
         <AccordionTrigger className="bg-cyan-100 px-3">
-          <span className="text-sm font-semibold text-foreground">
-            Adres Bilgileri
+          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            Adres Bilgileri{" "}
+            {sectionHasError(SECTION_FIELDS.adres) && (
+              <span
+                className="size-2 rounded-full bg-destructive"
+                title="Bu bölümde hatalı/eksik alan var"
+              />
+            )}
           </span>
         </AccordionTrigger>
         <AccordionContent className="p-4">
