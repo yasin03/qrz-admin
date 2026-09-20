@@ -65,16 +65,18 @@ const Page = () => {
 
   return (
     <div className="grid min-h-screen">
-      <div className="relative hidden overflow-hidden bg-sidebar-accent lg:flex lg:flex-col lg:justify-between">
+      <div className="relative flex min-h-screen flex-col justify-between overflow-hidden bg-sidebar-accent">
         {/* Dekoratif ışık lekeleri */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-info/25 blur-3xl"
+          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-info/25 blur-3xl lg:size-96"
         />
+
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 left-0 size-80 rounded-full bg-info/10 blur-3xl"
+          className="pointer-events-none absolute bottom-0 left-0 size-64 rounded-full bg-info/10 blur-3xl lg:size-80"
         />
+
         {/* İnce nokta deseni */}
         <div
           aria-hidden
@@ -87,29 +89,32 @@ const Page = () => {
           }}
         />
 
-        <div className="relative z-10 p-10">
-          <div className="relative h-10 w-40"></div>
+        {/* Üst alan */}
+        <div className="relative z-10 p-5 lg:p-10">
+          <div className="relative h-8 w-32 lg:h-10 lg:w-40" />
         </div>
-        {/* form */}
-        <div className="flex items-center justify-center z-3">
-          <Card className="w-full max-w-sm p-7 shadow-lg lg:max-w-md lg:p-10">
-            <div className="mb-8 flex justify-center">
-              <div className="relative h-36 w-full">
+
+        {/* Form */}
+        <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-6 sm:px-6">
+          <Card className="w-full max-w-sm p-6 shadow-lg sm:p-8 lg:max-w-md lg:p-10">
+            <div className="mb-6 flex justify-center sm:mb-8">
+              <div className="relative h-24 w-full sm:h-28 lg:h-36">
                 <Image
                   src="/logos/logo-big.png"
                   alt="Logo"
                   fill
-                  sizes="(min-width: 768px) 448px, 100vw"
+                  sizes="(min-width: 1024px) 448px, 100vw"
                   className="object-contain"
                   priority
                 />
               </div>
             </div>
 
-            <div className="mb-8 space-y-1.5 text-center">
-              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+            <div className="mb-6 space-y-1.5 text-center sm:mb-8">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 Giriş yap
               </h2>
+
               <p className="text-sm text-muted-foreground">
                 Devam etmek için hesap bilgilerinizi girin.
               </p>
@@ -151,10 +156,12 @@ const Page = () => {
                     name="remember"
                     className="p-0"
                   />
+
                   <span className="text-sm text-muted-foreground text-nowrap">
                     Beni hatırla
                   </span>
                 </div>
+
                 <Link
                   href="/forgot-password"
                   className="text-xs font-medium text-info hover:underline"
@@ -176,13 +183,14 @@ const Page = () => {
               </Button>
             </form>
 
-            <p className="mt-8 text-center text-xs text-muted-foreground">
+            <p className="mt-6 text-center text-xs text-muted-foreground sm:mt-8">
               Hesabınız yok mu? Yöneticinizle iletişime geçin.
             </p>
           </Card>
         </div>
 
-        <div className="relative z-10 p-10 text-xs text-sidebar-foreground/50 text-center">
+        {/* Footer */}
+        <div className="relative z-10 p-5 text-center text-xs text-sidebar-foreground/50 lg:p-10">
           © {new Date().getFullYear()} QR-Zaman. Tüm hakları saklıdır.
         </div>
       </div>
