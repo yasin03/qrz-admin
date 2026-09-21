@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { joseDecrypt } from "@/lib/token";
-import { ExecuteQuery, ExecuteQueryDataset } from "@/lib/db";
-import { getCookie } from "cookies-next";
+import { ExecuteQuery } from "@/lib/db";
+import { ok, fail, withSession } from "@/lib/api-session";
 
 const queryTypes = {
   SELECT_IZIN: (params) =>
@@ -22,26 +21,15 @@ const queryTypes = {
     `[SubePersonelIzin_HESAPLAByIDSubePersonel] '${params.IDSubePersonel}','${params.Tarih}'`,
 };
 
-export async function POST(request) {
+export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
     const { type } = payload;
 
-    const user_token = request.cookies.get("sid")?.value;
-    const user = await joseDecrypt(user_token);
-    const grsisudo_token = request.cookies.get("grsisudo")?.value;
-    const grsisudo = await joseDecrypt(grsisudo_token);
-
-    if (!user) {
-      return NextResponse.json(
-        { message: "Kullanıcı Bilgisi Bulunamadı." },
-        { status: 401 },
-      );
-    }
-
-    const queryParams = {
-      IDSirket: grsisudo.IDSirket,
-      IDSube: payload.IDSube ? payload.IDSube : grsisudo.IDSube,
+   const queryParams = {
+      IDSirket: session.user.IDSirket,
+      IDKullanici: session.user.IDKullanici,
+      IDSube: payload.IDSube ? payload.IDSube : session.user.IDSube,
       IDSubePersonel: payload.IDSubePersonel,
       BaslangicTarihi: payload.BaslangicTarihi,
       BitisTarihi: payload.BitisTarihi,
@@ -55,7 +43,6 @@ export async function POST(request) {
       Dosyalar: payload.Dosyalar,
       Tarih: payload.Tarih,
       IDSubePersonelIzinTalep: payload.IDSubePersonelIzinTalep,
-      IDKullanici: user.IDKullanici,
       KabulRed: payload.KabulRed,
       RedAciklama: payload.RedAciklama,
     };
@@ -63,18 +50,26 @@ export async function POST(request) {
     const queryFunction = queryTypes[type];
 
     if (!queryFunction) {
-      return NextResponse.json(
-        { message: "Geçersiz sorgu tipi" },
-        { status: 400 },
-      );
+      return fail(session.isMobile, "Geçersiz sorgu tipi", 400);
     }
 
     const query = queryFunction(queryParams);
+    console.log("Executing query izin : ", query);
     const result = await ExecuteQuery(query);
 
-    return NextResponse.json(result);
+    return ok(session.isMobile, result);
   } catch (err) {
     console.error("API Error:", err);
+
+    if (session.isMobile) {
+      return fail(
+        true,
+        "Bir hata oluştu. Lütfen tekrar deneyiniz",
+        500,
+        "SERVER_ERROR",
+      );
+    }
+
     return NextResponse.json(
       {
         message: "Bir hata oluştu. Lütfen tekrar deneyiniz",
@@ -83,4 +78,4 @@ export async function POST(request) {
       { status: 500 },
     );
   }
-}
+});

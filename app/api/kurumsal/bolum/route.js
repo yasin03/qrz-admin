@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { joseDecrypt } from "@/lib/token";
 import { ExecuteQuery } from "@/lib/db";
-import { getCookie } from "cookies-next";
+import { ok, fail, withSession } from "@/lib/api-session";
 
 const queryTypes = {
   GET_BOLUMLER: (params) => `[Bolum_SELECTByIDSube] '${params.IDSube}'`,
@@ -12,28 +11,36 @@ const queryTypes = {
   DELETE_BOLUM: (params) => `[Bolum_DELETEByIDBolum] '${params.IDBolum}'`,
 };
 
-export async function POST(request) {
+export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
     const { type } = payload;
 
-    const user_token = request.cookies.get("sid")?.value;
-    const user = await joseDecrypt(user_token);
-    const grsisudo_token = request.cookies.get("grsisudo")?.value;
-    const grsisudo = await joseDecrypt(grsisudo_token);
+    // Mobil: mobile-api'nin orijinal davranisiyla ayni - client'in body'de
+    // baska bir sube gonderip baska subenin bolumlerini gormesini/duzenle-
+    // mesini engellemek icin IDSube her zaman kendi token'indan, payload'i
+    // yok sayiyoruz. Web'de mevcut davranis (payload varsa o, yoksa aktif
+    // sube) korunuyor.
+    const IDSube = session.isMobile
+      ? session.user.IDSube
+      : payload.IDSube
+        ? payload.IDSube
+        : session.user.IDSube;
 
-    if (!user) {
-      return NextResponse.json(
-        { message: "Kullanıcı Bilgisi Bulunamadı." },
-        { status: 401 },
+    if (session.isMobile && !IDSube) {
+      return fail(
+        true,
+        "Kullaniciya ait sube bilgisi bulunamadi.",
+        400,
+        "MISSING_SUBE",
       );
     }
 
     const queryParams = {
-      IDSirket: grsisudo.IDSirket,
-      Yil: grsisudo.Yil,
-      IDKullanici: user.IDKullanici,
-      IDSube: payload.IDSube,
+      IDSirket: session.user.IDSirket,
+      Yil: session.user.Yil,
+      IDKullanici: session.user.IDKullanici,
+      IDSube,
       BolumAdi: payload.BolumAdi,
       IDBolum: payload.IDBolum,
     };
@@ -41,18 +48,25 @@ export async function POST(request) {
     const queryFunction = queryTypes[type];
 
     if (!queryFunction) {
-      return NextResponse.json(
-        { message: "Geçersiz sorgu tipi" },
-        { status: 400 },
-      );
+      return fail(session.isMobile, "Geçersiz sorgu tipi", 400);
     }
 
     const query = queryFunction(queryParams);
     const result = await ExecuteQuery(query);
 
-    return NextResponse.json(result);
+    return ok(session.isMobile, result);
   } catch (err) {
     console.error("API Error:", err);
+
+    if (session.isMobile) {
+      return fail(
+        true,
+        "Bir hata oluştu. Lütfen tekrar deneyiniz",
+        500,
+        "SERVER_ERROR",
+      );
+    }
+
     return NextResponse.json(
       {
         message: "Bir hata oluştu. Lütfen tekrar deneyiniz",
@@ -61,4 +75,4 @@ export async function POST(request) {
       { status: 500 },
     );
   }
-}
+});

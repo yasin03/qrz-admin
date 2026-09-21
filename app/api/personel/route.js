@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { joseDecrypt } from "@/lib/token";
 import { ExecuteQuery } from "@/lib/db";
+import { ok, fail, withSession } from "@/lib/api-session";
+
+// mobil (Bearer) istekleri sadece okuma yapabilir; personel CRUD'u web-only.
+const MOBILE_ALLOWED_TYPES = ["GET_PERSONEL_DETAY", "SELECT_PERSONEL_LIST"];
 
 function sqlStr(value) {
   return `'${String(value ?? "").replace(/'/g, "''")}'`;
@@ -131,58 +134,62 @@ const queryTypes = {
     `[SubePersonel_SELECTByIDSube3] '${params.IDSube}', '${params.TcKimlikNo}','${params.Adi}','${params.Yil}','${params.Ay}'`,
 };
 
-export async function POST(request) {
+export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
     const { type } = payload;
 
-    const user_token = request.cookies.get("sid")?.value;
-    const user = await joseDecrypt(user_token);
-    const grsisudo_token = request.cookies.get("grsisudo")?.value;
-    const grsisudo = await joseDecrypt(grsisudo_token);
+    if (session.isMobile && !MOBILE_ALLOWED_TYPES.includes(type)) {
+      return fail(true, "Bu islem mobilde desteklenmiyor.", 403, "FORBIDDEN");
+    }
 
-    if (!user) {
-      return NextResponse.json(
-        { message: "Kullanıcı Bilgisi Bulunamadı." },
-        { status: 401 },
+    if (!session.isMobile && !session.user.IDSirket) {
+      return fail(
+        false,
+        "Lütfen önce üstten şirket/şube seçimi yapın.",
+        400,
       );
     }
 
-    if (!grsisudo) {
-      return NextResponse.json(
-        { message: "Lütfen önce üstten şirket/şube seçimi yapın." },
-        { status: 400 },
-      );
-    }
-
+    // Onceki siralamada '...payload' en sonda oldugu icin client IDSube/Durum
+    // gibi alanlari null gonderirse asagidaki fallback/default'lari sessizce
+    // eziyordu - payload'i taban alip session/varsayilan degerleri onun
+    // ustune yaziyoruz.
     const queryParams = {
-      IDSirket: grsisudo.IDSirket,
-      Yil: grsisudo.Yil,
-      Ay: grsisudo.Ay,
-      IDKullanici: user.IDKullanici,
-      IDSubePersonel: payload.IDSubePersonel,
-      IDSube: payload.IDSube ? payload.IDSube : grsisudo.IDSube,
-      IDBolum: payload.IDBolum ?? "",
-      DurumTarihi: payload.DurumTarihi,
-      Durum: payload.Durum ?? "",
       ...payload,
+      IDSirket: session.user.IDSirket,
+      IDKullanici: session.user.IDKullanici,
+      Yil: payload.Yil ? payload.Yil : session.user.Yil,
+      Ay: payload.Ay ? payload.Ay : session.user.Ay,
+      IDSube: payload.IDSube ? payload.IDSube : session.user.IDSube,
+      IDBolum: payload.IDBolum ?? "",
+      Durum: payload.Durum ?? "",
+      TcKimlikNo: payload.TcKimlikNo ?? "",
+      Adi: payload.Adi ?? "",
     };
 
     const queryFunction = queryTypes[type];
 
     if (!queryFunction) {
-      return NextResponse.json(
-        { message: "Geçersiz sorgu tipi" },
-        { status: 400 },
-      );
+      return fail(session.isMobile, "Geçersiz sorgu tipi", 400);
     }
 
     const query = queryFunction(queryParams);
     const result = await ExecuteQuery(query);
 
-    return NextResponse.json(result);
+    return ok(session.isMobile, result);
   } catch (err) {
     console.error("API Error:", err);
+
+    if (session.isMobile) {
+      return fail(
+        true,
+        "Bir hata oluştu. Lütfen tekrar deneyiniz",
+        500,
+        "SERVER_ERROR",
+      );
+    }
+
     return NextResponse.json(
       {
         message: "Bir hata oluştu. Lütfen tekrar deneyiniz",
@@ -191,4 +198,4 @@ export async function POST(request) {
       { status: 500 },
     );
   }
-}
+});

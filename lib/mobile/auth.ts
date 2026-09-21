@@ -20,6 +20,12 @@ if (!JWT_SECRET) {
 
 const secret = new TextEncoder().encode(JWT_SECRET);
 
+// Mobil JWT'leri sid/grsisudo cookie token'larından (aynı JWT_SECRET ile
+// imzalanıyor) ayırt etmek için sabit bir audience claim'i kullanıyoruz.
+// Böylece cookie tarafında üretilmiş bir token, kazara Bearer olarak
+// gönderilse bile burada reddedilir.
+const AUDIENCE = "qrz-mobile";
+
 export async function createAccessToken(user: User) {
   return await new SignJWT({
     IDKullanici: user.IDKullanici,
@@ -35,12 +41,15 @@ export async function createAccessToken(user: User) {
     })
     .setIssuedAt()
     .setExpirationTime("7d")
+    .setAudience(AUDIENCE)
     .sign(secret);
 }
 
 export async function verifyAccessToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret, {
+      audience: AUDIENCE,
+    });
 
     return payload;
   } catch {
