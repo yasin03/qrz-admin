@@ -12,6 +12,7 @@ import {
   Hospital,
   UserCog,
   Smartphone,
+  GamepadDirectional,
 } from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
@@ -37,6 +38,7 @@ import api, { ApiClientError } from "@/lib/axios";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { ExportMenu } from "../export/ExportMenu";
+import PersonelDetayDialog from "./PersonelDetayDialog";
 
 type Personel = {
   SicilNo: string;
@@ -91,6 +93,10 @@ const Personel = () => {
   const [duzenlenecekId, setDuzenlenecekId] = useState<string | number | null>(
     null,
   );
+  const [secilenPersonel, setSecilenPersonel] = useState<{
+    id: string | number;
+    tip: "duzenle" | "detay";
+  } | null>(null);
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
   const [columnVisibility, setColumnVisibility] =
     useColumnVisibility("personel-kolonlar");
@@ -292,7 +298,14 @@ const Personel = () => {
           {
             label: "Düzenle",
             icon: Pencil,
-            onClick: (r) => setDuzenlenecekId(r.IDSubePersonel),
+            onClick: (r) =>
+              setSecilenPersonel({ id: r.IDSubePersonel, tip: "duzenle" }),
+          },
+          {
+            label: "Personel Detayı",
+            icon: GamepadDirectional,
+            onClick: (r) =>
+              setSecilenPersonel({ id: r.IDSubePersonel, tip: "detay" }),
           },
           {
             label: "Kullanıcı Ayarları",
@@ -473,45 +486,48 @@ const Personel = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Personel Yönetimi</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">Personel Yönetimi</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Input
-            startIcon={<Search className="h-4 w-4" />}
-            placeholder="Sicil No, TC Kimlik No veya Ad Soyad ara..."
-            className="w-48"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <PersonelFiltre onApply={setFilters} />
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setOpenPersonelEkle(true)}
-          >
-            <UserPlus className="size-4" />
-            Yeni Personel Ekle
-          </Button>
-          <ExportMenu
-            data={filteredPersonelListesi}
-            exportColumns={exportColumns}
-            title="Personel Listesi"
-            fileName="personel-listesi"
-            showImport
-            onImport={(rows) => {
-              // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
-              // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
-              console.log("İçe aktarılan personeller:", rows);
-            }}
-          />
-          <div className="shrink-0">
-            <CustomColumnVisibility
-              columns={columns}
-              value={columnVisibility}
-              onChange={setColumnVisibility}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="w-full sm:w-48 sm:shrink-0">
+            <Input
+              startIcon={<Search className="h-4 w-4" />}
+              placeholder="Sicil No, TC Kimlik No veya Ad Soyad ara..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
             />
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <PersonelFiltre onApply={setFilters} />
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setOpenPersonelEkle(true)}
+            >
+              <UserPlus className="size-4" />
+              Personel Ekle
+            </Button>
+            <ExportMenu
+              data={filteredPersonelListesi}
+              exportColumns={exportColumns}
+              title="Personel Listesi"
+              fileName="personel-listesi"
+              showImport
+              onImport={(rows) => {
+                // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+                // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+                console.log("İçe aktarılan personeller:", rows);
+              }}
+            />
+            <div className="shrink-0">
+              <CustomColumnVisibility
+                columns={columns}
+                value={columnVisibility}
+                onChange={setColumnVisibility}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -531,14 +547,24 @@ const Personel = () => {
       />
 
       <PersonelEkle
-        open={openPersonelEkle || duzenlenecekId !== null}
+        open={openPersonelEkle || secilenPersonel?.tip === "duzenle"}
         onOpenChange={(open) => {
           if (!open) {
             setOpenPersonelEkle(false);
-            setDuzenlenecekId(null);
+            setSecilenPersonel(null);
           }
         }}
-        id={duzenlenecekId}
+        id={secilenPersonel?.tip === "duzenle" ? secilenPersonel.id : null}
+      />
+
+      <PersonelDetayDialog
+        open={secilenPersonel?.tip === "detay"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSecilenPersonel(null);
+          }
+        }}
+        id={secilenPersonel?.tip === "detay" ? secilenPersonel.id : null}
       />
 
       <PersonelSettingsDialog

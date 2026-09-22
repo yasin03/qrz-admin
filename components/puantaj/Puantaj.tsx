@@ -14,7 +14,7 @@ const PuantajPage = () => {
   if (isPersonel) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold mb-0">Puantajım</h1>
+        <h1 className="mb-0 text-xl font-bold sm:text-2xl">Puantajım</h1>
         <PersonelPuantajTakvimi
           baseParams={{
             IDSube: savedContext?.IDSube || "0",
@@ -29,7 +29,7 @@ const PuantajPage = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold mb-0">
+      <h1 className="mb-0 text-xl font-bold sm:text-2xl">
         Puantaj Yönetimi{" "}
         <small className="text-gray-400 italic">
           - {savedContext?.AyAdi ?? ""}

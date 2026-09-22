@@ -81,14 +81,14 @@ const PdksPage = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold ">PDKS Yönetimi</h1>
+      <h1 className="text-xl font-bold sm:text-2xl">PDKS Yönetimi</h1>
 
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as TabValue)}
       >
-        <div className="flex items-center justify-between gap-2">
-          <TabsList>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="pdks">
               <Clock /> PDKS Kayıtları
             </TabsTrigger>
@@ -110,13 +110,13 @@ const PdksPage = () => {
           )}
 
           {activeTab === "bolum-vardiya" && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Select
                 value={selectedIDBolum}
                 onValueChange={setSelectedIDBolum}
                 disabled={isLoadingBolumler}
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="Bölüm seçiniz" />
                 </SelectTrigger>
                 <SelectContent>

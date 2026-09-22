@@ -11,6 +11,7 @@ import {
   Search,
   UserCog,
   QrCode,
+  Plus,
 } from "lucide-react";
 
 import { Input } from "../ui/input";
@@ -140,7 +141,7 @@ const Lokasyon = () => {
   const columns: ColumnDef<LokasyonType>[] = [
     {
       id: "actions",
-      size: 20,
+      size: 30,
       header: "",
       enableSorting: false,
       cell: ({ row }) => {
@@ -217,62 +218,67 @@ const Lokasyon = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Lokasyon Yönetimi</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">
+            Lokasyon Yönetimi
+          </h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Input
-            startIcon={<Search className="h-4 w-4" />}
-            placeholder="Ara..."
-            className="w-48"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <LokasyonFiltre
-            filters={{ IDBolum: filters.IDBolum, Aktif: filters.Aktif }}
-            bolumOptions={bolumOptions}
-            onChange={(next) =>
-              setFilters((prev) => ({
-                ...prev,
-                IDBolum: next.IDBolum,
-                Aktif: next.Aktif,
-              }))
-            }
-            onReset={() =>
-              setFilters((prev) => ({
-                ...prev,
-                IDBolum: "",
-                Aktif: null,
-              }))
-            }
-          />
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setOpenLokasyonEkle(true)}
-          >
-            <UserPlus className="size-4" />
-            Yeni Lokasyon Ekle
-          </Button>
-          <ExportMenu
-            data={filteredLokasyonListesi}
-            exportColumns={lokasyonExportColumns}
-            title="Lokasyon Listesi"
-            fileName="lokasyon-listesi"
-            showImport
-            onImport={(rows) => {
-              // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
-              // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
-              console.log("İçe aktarılan lokasyonlar:", rows);
-            }}
-          />
-          <div className="shrink-0">
-            <CustomColumnVisibility
-              columns={columns}
-              value={columnVisibility}
-              onChange={setColumnVisibility}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="w-full sm:w-48 sm:shrink-0">
+            <Input
+              startIcon={<Search className="h-4 w-4" />}
+              placeholder="Ara..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
             />
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <LokasyonFiltre
+              filters={{ IDBolum: filters.IDBolum, Aktif: filters.Aktif }}
+              bolumOptions={bolumOptions}
+              onChange={(next) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  IDBolum: next.IDBolum,
+                  Aktif: next.Aktif,
+                }))
+              }
+              onReset={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  IDBolum: "",
+                  Aktif: null,
+                }))
+              }
+            />
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setOpenLokasyonEkle(true)}
+            >
+              <Plus className="size-4" />
+               Lokasyon Ekle
+            </Button>
+            <ExportMenu
+              data={filteredLokasyonListesi}
+              exportColumns={lokasyonExportColumns}
+              title="Lokasyon Listesi"
+              fileName="lokasyon-listesi"
+              showImport
+              onImport={(rows) => {
+                // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+                // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+                console.log("İçe aktarılan lokasyonlar:", rows);
+              }}
+            />
+            <div className="shrink-0">
+              <CustomColumnVisibility
+                columns={columns}
+                value={columnVisibility}
+                onChange={setColumnVisibility}
+              />
+            </div>
           </div>
         </div>
       </div>

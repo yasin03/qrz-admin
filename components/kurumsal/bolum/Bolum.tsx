@@ -141,28 +141,19 @@ export default function Bolum({ idSube }: BolumProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold"></h1>
-        </div>
-
-        <div className="flex justify-end gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <div className="w-full sm:w-48 sm:shrink-0">
           <Input
             startIcon={<Search className="h-4 w-4" />}
             placeholder="Bölüm Ara..."
-            className="w-48"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setOpenBolumEkle(true)}
-          >
-            <Plus className="size-4" />
-            Yeni Bölüm Ekle
-          </Button>
         </div>
+        <Button type="button" size="sm" onClick={() => setOpenBolumEkle(true)}>
+          <Plus className="size-4" />
+          Yeni Bölüm Ekle
+        </Button>
       </div>
 
       <CustomDataTable

@@ -122,34 +122,35 @@ const PdksListesi = ({ enabled }: Props) => {
 
   return (
     <div className="min-w-0 space-y-3">
-      <div className="flex items-center justify-end gap-2">
-        <div className="w-48 shrink-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <div className="w-full sm:w-48 sm:shrink-0">
           <Input
             startIcon={<Search className="h-4 w-4" />}
             placeholder="Ara..."
-            className="w-full"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
-        <PdksFiltre onApply={setPdksFilters} />
-        <ExportMenu
-          data={pdksData}
-          exportColumns={exportColumns}
-          title="İzin Listesi"
-          fileName="izin-listesi"
-          showImport
-          onImport={(rows) => {
-            // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
-            // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
-            console.log("İçe aktarılan izin:", rows);
-          }}
-        />
-        <CustomColumnVisibility
-          columns={columns}
-          value={columnVisibility}
-          onChange={setColumnVisibility}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <PdksFiltre onApply={setPdksFilters} />
+          <ExportMenu
+            data={pdksData}
+            exportColumns={exportColumns}
+            title="İzin Listesi"
+            fileName="izin-listesi"
+            showImport
+            onImport={(rows) => {
+              // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+              // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+              console.log("İçe aktarılan izin:", rows);
+            }}
+          />
+          <CustomColumnVisibility
+            columns={columns}
+            value={columnVisibility}
+            onChange={setColumnVisibility}
+          />
+        </div>
       </div>
       <CustomDataTable
         data={pdksData}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Search, Trash2, UserPlus } from "lucide-react";
+import { Balloon, Search, SmilePlusIcon, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -183,54 +183,55 @@ const IzinListesi = ({ enabled }: Props) => {
 
   return (
     <div className="min-w-0 space-y-3">
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         {!isPersonel && (
-          <div className="w-48 shrink-0">
+          <div className="w-full sm:w-48 sm:shrink-0">
             <Input
               startIcon={<Search className="h-4 w-4" />}
               placeholder="Ara..."
-              className="w-48"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
           </div>
         )}
 
-        <IzinFiltre
-          filters={filters}
-          onChange={setFilters}
-          onReset={() => setFilters({ ...getDefaultDateRange(), Aciklama: "" })}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <IzinFiltre
+            filters={filters}
+            onChange={setFilters}
+            onReset={() =>
+              setFilters({ ...getDefaultDateRange(), Aciklama: "" })
+            }
+          />
 
-        {!isPersonel && (
-          <div>
+          {!isPersonel && (
             <Button
               type="button"
               size="sm"
               onClick={() => setOpenIzinEkle(true)}
             >
-              <UserPlus className="size-4" />
+              <SmilePlusIcon className="size-4" />
               Yeni İzin Ekle
             </Button>
-          </div>
-        )}
-        <ExportMenu
-          data={filteredData}
-          exportColumns={exportColumns}
-          title="İzin Listesi"
-          fileName="izin-listesi"
-          showImport
-          onImport={(rows) => {
-            // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
-            // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
-            console.log("İçe aktarılan izin:", rows);
-          }}
-        />
-        <CustomColumnVisibility
-          columns={columns}
-          value={columnVisibility}
-          onChange={setColumnVisibility}
-        />
+          )}
+          <ExportMenu
+            data={filteredData}
+            exportColumns={exportColumns}
+            title="İzin Listesi"
+            fileName="izin-listesi"
+            showImport
+            onImport={(rows) => {
+              // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+              // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+              console.log("İçe aktarılan izin:", rows);
+            }}
+          />
+          <CustomColumnVisibility
+            columns={columns}
+            value={columnVisibility}
+            onChange={setColumnVisibility}
+          />
+        </div>
       </div>
       <CustomDataTable
         data={filteredData}

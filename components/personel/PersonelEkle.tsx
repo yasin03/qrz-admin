@@ -48,6 +48,7 @@ export default function PersonelEkle({
     isLoading,
     isError,
   } = usePersonelDetay(open && isEditMode ? (id ?? undefined) : undefined);
+  console.log("personel", id);  
   const { data: context } = useCurrentContext();
   const form = useForm<PersonelForm>({
     defaultValues: PERSONEL_DEFAULT_VALUES,

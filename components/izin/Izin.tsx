@@ -17,7 +17,7 @@ const IzinPage = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">İzin Yönetimi</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">İzin Yönetimi</h1>
       </div>
 
       <Tabs

@@ -17,7 +17,7 @@ const AvansPage = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Avans Yönetimi</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Avans Yönetimi</h1>
       </div>
 
       <Tabs
