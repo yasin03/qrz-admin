@@ -1,6 +1,12 @@
 "use client";
 
-import { Trash2, ChevronDown, Sparkle, Sparkles, GalleryVerticalEnd } from "lucide-react";
+import {
+  ChevronDown,
+  Sparkle,
+  Sparkles,
+  GalleryVerticalEnd,
+  CalendarPlus,
+} from "lucide-react";
 
 import { Button } from "../ui/button";
 import {
@@ -13,12 +19,14 @@ import {
 
 type Props = {
   seciliSayisi: number;
+  onTopluGiris: () => void;
   onSeciliTemizle: () => void;
   onHepsiniTemizle: () => void;
 };
 
-export default function PuantajTopluSilMenu({
+export default function PuantajTopluIslemMenu({
   seciliSayisi,
+  onTopluGiris,
   onSeciliTemizle,
   onHepsiniTemizle,
 }: Props) {
@@ -37,6 +45,11 @@ export default function PuantajTopluSilMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem onSelect={onTopluGiris}>
+          <CalendarPlus className="size-4" />
+          Toplu Giriş
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={seciliSayisi === 0}
           onSelect={onSeciliTemizle}

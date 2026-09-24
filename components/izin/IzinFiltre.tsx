@@ -91,7 +91,7 @@ const IzinFiltre = ({ filters, onChange, onReset }: IzinFiltreProps) => {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent align="end" className="w-80 space-y-4">
+      <PopoverContent align="end" className="min-w-96 space-y-4">
         <p className="text-sm font-semibold text-foreground">İzin Filtrele</p>
 
         <div className="space-y-3">

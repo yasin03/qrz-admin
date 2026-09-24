@@ -6,8 +6,7 @@ import { toast } from "sonner";
 
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { ConfirmDialog } from "../customs/ConfirmDialog";
-import PuantajTopluSilMenu from "./PuantajTopluSilMenu";
-import type { AktifPuantajAraci } from "./PuantajToolbar";
+import { TEMIZLE_CODE, type AktifPuantajAraci } from "./PuantajToolbar";
 import {
   PuantajSelectRequestType,
   PuantajSelectResponseType,
@@ -28,6 +27,8 @@ import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { ExportColumn } from "../export/types";
 import { ExportMenu } from "../export/ExportMenu";
+import PuantajTopluIslemMenu from "./PuantajTopluIslemMenu";
+import PuantajTopluGirisModal from "./PuantajTopluGirisModal";
 
 type Props = {
   selectParams: PuantajSelectRequestType;
@@ -37,7 +38,6 @@ type Props = {
 const SELECT_WIDTH = 40;
 const ADSOYAD_WIDTH = 200;
 const TC_WIDTH = 130;
-const TEMIZLE_CODE = "temizle";
 const BOS_TUR = "BOŞ";
 
 type SilmeModu = { type: "selected"; ids: string[] } | { type: "all" } | null;
@@ -54,6 +54,7 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
   const { mutateAsync: deletePuantaj, isPending: isDeleting } =
     useDeletePuantaj();
   const [activeTool, setActiveTool] = useState<AktifPuantajAraci | null>(null);
+  const [topluGirisOpen, setTopluGirisOpen] = useState(false);
   const [columnVisibility, setColumnVisibility] = useColumnVisibility(
     "puantaj-kolonlar", // localStorage anahtarı, kalıcı olsun istiyorsanız
   );
@@ -109,6 +110,36 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
       console.error(error);
       toast.error("Puantaj güncellenirken hata oluştu.");
     });
+  };
+
+  const handleTopluGirisSubmit = async ({
+    ids,
+    gunler,
+    tool,
+  }: {
+    ids: string[];
+    gunler: number[];
+    tool: AktifPuantajAraci;
+  }) => {
+    const tur = tool.tur === TEMIZLE_CODE ? BOS_TUR : tool.tur;
+    const saat = tool.tur === TEMIZLE_CODE ? "0" : tool.saat;
+
+    try {
+      await updatePuantaj({
+        IDSubePersonel: ids.join("-"),
+        Yil: selectParams.Yil,
+        Ay: selectParams.Ay,
+        Gun: gunler.join("-"),
+        Saat: saat,
+        Tur: tur,
+      });
+      toast.success(
+        `${ids.length} personel için ${gunler.length} günlük toplu giriş yapıldı.`,
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Toplu giriş sırasında hata oluştu.");
+    }
   };
 
   const handleSeciliTemizle = () => {
@@ -281,8 +312,9 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <PuantajTopluSilMenu
+          <PuantajTopluIslemMenu
             seciliSayisi={selectedRows.length}
+            onTopluGiris={() => setTopluGirisOpen(true)}
             onSeciliTemizle={handleSeciliTemizle}
             onHepsiniTemizle={handleHepsiniTemizle}
           />
@@ -329,6 +361,17 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
             ? "Kayıtlar yüklenirken hata oluştu."
             : "Puantaj kaydı bulunamadı."
         }
+      />
+
+      <PuantajTopluGirisModal
+        open={topluGirisOpen}
+        onOpenChange={setTopluGirisOpen}
+        personelList={puantajData}
+        izinTipleri={izinTipleri ?? []}
+        yil={selectParams.Yil}
+        ay={selectParams.Ay}
+        isSubmitting={isUpdating}
+        onSubmit={handleTopluGirisSubmit}
       />
 
       <ConfirmDialog

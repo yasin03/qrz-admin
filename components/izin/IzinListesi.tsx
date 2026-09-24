@@ -144,11 +144,19 @@ const IzinListesi = ({ enabled }: Props) => {
     };
 
     const personelBilgiColumns: ColumnDef<IzinType>[] = [
-      { accessorKey: "SicilNo", header: "Sicil No" },
       {
         id: "adSoyad",
         header: "Ad Soyad",
-        cell: ({ row }) => `${row.original.Ad} ${row.original.Soyad}`,
+        cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground">
+            {row.original.Ad} {row.original.Soyad}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {row.original.SicilNo}
+          </span>
+        </div>
+      ),
       },
       { accessorKey: "BolumAdi", header: "Bölüm" },
     ];

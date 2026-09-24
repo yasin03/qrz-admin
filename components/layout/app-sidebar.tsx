@@ -110,14 +110,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="items-center py-5">
-        <div className="relative h-16 w-full max-w-60] transition-all duration-300 group-data-[collapsible=icon]:max-w-9">
+        <div className=" relative h-16 w-full max-w-60] transition-all duration-300 group-data-[collapsible=icon]:max-w-9">
           <Image
-            src={isCollapsed ? "/logos/logo-icon.png" : "/logos/logo-big.png"}
+            src={isCollapsed ? "/logos/icon-pri.png" : "/logos/logo-pri.png"}
             alt="QRZ"
             fill
             sizes="240px"
             priority
-            className="object-contain"
+            className={`${isCollapsed ? "" : "p-2"} object-contain`}
           />
         </div>
       </SidebarHeader>

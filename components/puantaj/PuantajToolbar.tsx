@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ChevronDown,
   ArrowLeft,
+  ListClock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -44,9 +45,9 @@ type Props = {
   onChange: (tool: AktifPuantajAraci | null) => void;
 };
 
-const IS_GUNU_CODE = "IS";
-const HAFTA_TATILI_CODE = "HT";
-const TEMIZLE_CODE = "temizle";
+export const IS_GUNU_CODE = "IS";
+export const HAFTA_TATILI_CODE = "HT";
+export const TEMIZLE_CODE = "temizle";
 const DEFAULT_SAAT = "7.5";
 
 const QUICK_OPTIONS = [
@@ -134,10 +135,16 @@ export default function PuantajToolbar({
                 : "secondary"
           }
           appearance="outline"
-          className="gap-1.5"
+          className=" min-w-42 justify-between"
         >
-          {ToolIcon && <ToolIcon className="size-4" />}
-          {triggerLabel}
+          <span className="flex items-center gap-2">
+            {ToolIcon ? (
+              <ToolIcon className="size-4" />
+            ) : (
+              <ListClock className="size-4" />
+            )}
+            {triggerLabel}
+          </span>
           <ChevronDown className="size-3.5" />
         </Button>
       </PopoverTrigger>

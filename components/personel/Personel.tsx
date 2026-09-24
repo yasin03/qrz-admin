@@ -13,6 +13,7 @@ import {
   UserCog,
   Smartphone,
   GamepadDirectional,
+  ListChevronsUpDown,
 } from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
@@ -303,7 +304,7 @@ const Personel = () => {
           },
           {
             label: "Personel Detayı",
-            icon: GamepadDirectional,
+            icon: ListChevronsUpDown,
             onClick: (r) =>
               setSecilenPersonel({ id: r.IDSubePersonel, tip: "detay" }),
           },

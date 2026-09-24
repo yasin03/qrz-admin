@@ -18,22 +18,12 @@ export function ThemeToggle() {
 
   return (
     <Button
-      type="button"
-      color="secondary"
       appearance="outline"
       size="icon"
       aria-label={isDark ? "Açık moda geç" : "Koyu moda geç"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
-      {mounted ? (
-        isDark ? (
-          <Sun className="size-5" />
-        ) : (
-          <Moon className="size-5" />
-        )
-      ) : (
-        <Moon className="size-5 opacity-0" />
-      )}
+      {mounted ? isDark ? <Sun /> : <Moon /> : <Moon className=" opacity-0" />}
     </Button>
   );
 }

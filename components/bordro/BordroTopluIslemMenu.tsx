@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   XCircle,
   ChevronDown,
+  GalleryVerticalEnd,
 } from "lucide-react";
 
 import { Button } from "../ui/button";
@@ -44,7 +45,13 @@ export default function BordroTopluIslemMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" color="secondary" appearance="outline" className="gap-1.5">
+        <Button
+          type="button"
+          color="secondary"
+          appearance="outline"
+          className="gap-1.5"
+        >
+          <GalleryVerticalEnd className="size-4" />
           Toplu İşlemler
           <ChevronDown className="size-3.5" />
         </Button>
@@ -66,7 +73,10 @@ export default function BordroTopluIslemMenu({
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem disabled={seciliSayisi === 0} onSelect={onSeciliHesapla}>
+        <DropdownMenuItem
+          disabled={seciliSayisi === 0}
+          onSelect={onSeciliHesapla}
+        >
           <CalculatorIcon className="size-4" />
           Seçilenleri Hesapla{seciliSayisi > 0 ? ` (${seciliSayisi})` : ""}
         </DropdownMenuItem>

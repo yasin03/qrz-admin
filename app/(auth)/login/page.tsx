@@ -100,7 +100,7 @@ const Page = () => {
             <div className="mb-6 flex justify-center sm:mb-8">
               <div className="relative h-24 w-full sm:h-28 lg:h-36">
                 <Image
-                  src="/logos/logo-big.png"
+                  src="/logos/logo-pri.png"
                   alt="Logo"
                   fill
                   sizes="(min-width: 1024px) 448px, 100vw"
@@ -130,9 +130,10 @@ const Page = () => {
                 name="username"
                 label="Kullanıcı Adı"
                 autoComplete="username"
+                inputClassName="h-12"
                 vertical={false}
                 startIcon={
-                  <Mail className="pointer-events-none size-4 text-muted-foreground" />
+                  <Mail className="pointer-events-none size-6 text-muted-foreground" />
                 }
               />
 
@@ -142,10 +143,10 @@ const Page = () => {
                 label="Şifre"
                 type="password"
                 vertical={false}
+                inputClassName="h-12"
                 autoComplete="current-password"
-                placeholder="••••••••"
                 startIcon={
-                  <Lock className="pointer-events-none size-4 text-muted-foreground" />
+                  <Lock className="pointer-events-none size-6 text-muted-foreground" />
                 }
               />
 

@@ -184,7 +184,7 @@ export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
             Personel bilgileri getirilemedi.
           </p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 -mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
             {/* ---- Özet ---- */}
             <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
