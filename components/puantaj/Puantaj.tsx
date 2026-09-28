@@ -8,7 +8,7 @@ import { useRole } from "@/stores/auth-store";
 const PuantajPage = () => {
   const { data: savedContext, isPending: isContextPending } =
     useCurrentContext();
-  const isPersonel = useRole();
+  const { isPersonel } = useRole();
 
   if (isPersonel) {
     return (

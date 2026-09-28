@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarRange,
   ContactRound,
+  FileText,
   Fingerprint,
   HandCoins,
   Loader2,
@@ -40,19 +41,24 @@ type MenuItem = {
   icon: typeof Users;
 };
 
-const adminMenuItems: MenuItem[] = [
-  { href: "/personel", label: "Personel", icon: Users },
+const personelMenuItems: MenuItem[] = [
   { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/avans", label: "Avans", icon: HandCoins },
   { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
   { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
   { href: "/bordro", label: "Bordro", icon: ContactRound },
+  { href: "/belgeler", label: "Belgeler", icon: FileText },
+];
+const adminMenuItems: MenuItem[] = [
+  { href: "/personel", label: "Personel", icon: Users },
+  ...personelMenuItems,
 ];
 
-const yoneticiMenuItems: MenuItem[] = [...adminMenuItems];
-
-const personelMenuItems: MenuItem[] = [...adminMenuItems];
+const yoneticiMenuItems: MenuItem[] = [
+  { href: "/personel", label: "Personel", icon: Users },
+  ...personelMenuItems,
+];
 
 /** IDKullaniciTip -> gösterilecek menü. Yeni bir rol eklenirse sadece buraya satır eklenir. */
 const MENU_BY_ROLE: Record<string, MenuItem[]> = {
