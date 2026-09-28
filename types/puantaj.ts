@@ -7,6 +7,12 @@ export type PuantajSelectRequestType = {
   TcKimlikNo: string;
 };
 
+export type PuantajSelectByIdRequestType = {
+  IDSubePersonel: string | number;
+  Yil: string;
+  Ay: string;
+};
+
 export type PuantajUpdateRequestType = {
   IDSubePersonel: string | number;
   Yil: string;

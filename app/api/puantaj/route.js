@@ -5,6 +5,8 @@ import { ExecuteQuery, ExecuteQueryDataset } from "@/lib/db";
 const queryTypes = {
   SELECT_PUANTAJ: (params) =>
     `[UcretCizelgesi_SELECTByIDSube] '${params.IDSube}','${params.IDBolum}','${params.Yil}','${params.Ay}','${params.Adi}','${params.TcKimlikNo}'`,
+  SELECT_PUANTAJ_BYID: (params) =>
+    `[UcretCizelgesi_SELECTByIDSubePersonel] '${params.IDSubePersonel}','${params.Yil}','${params.Ay}'`,
   UPDATE_PUANTAJ: (params) =>
     `[UcretCizelgesi_UPDATEByCell] '${params.IDSubePersonel}','${params.Yil}','${params.Ay}','${params.Gun}','${params.Saat}','${params.Tur}'`,
   DELETE_PUANTAJ: (params) =>

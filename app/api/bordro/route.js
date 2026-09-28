@@ -5,6 +5,9 @@ import { ExecuteQuery, ExecuteQueryDataset } from "@/lib/db";
 const queryTypes = {
   SELECT_BORDRO: (params) =>
     `[Bordro_SELECTByIDSube] '${params.IDSube}','${params.IDBolum}','${params.Yil}','${params.Ay}','${params.Adi}','${params.TcKimlikNo}'`,
+  SELECT_BORDRO_BYID: (params) =>
+    `[Bordro_SELECTByIDSubePersonelToplu] '${params.IDSubePersonel}','${params.Yil}','${params.Ay}'`,
+
   HESAPLA_BORDRO: (params) =>
     `[Bordro_Hesapla_V2] '${params.IDSube}','${params.IDSubePersonelList}','${params.Yil}','${params.Ay}'`,
   HESAP_SIL_BORDRO: (params) =>

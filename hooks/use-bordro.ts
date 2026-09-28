@@ -4,6 +4,7 @@ import {
   BordroHesaplaRequestType,
   BordroHesapSilRequestType,
   BordroOnayRequestType,
+  BordroSelectByIdRequestType,
 } from "@/types/bordro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -24,6 +25,23 @@ export function useBordroList(params: BordroSelectRequestType, enabled = true) {
     queryFn: async () => {
       const { data } = await api.post<any[]>(ENDPOINT, {
         type: "SELECT_BORDRO",
+        ...params,
+      });
+      return data;
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000, // 5 dakika
+  });
+}
+export function useBordroById(
+  params: BordroSelectByIdRequestType,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [QUERY_KEY, params.IDSubePersonel, params.Yil, params.Ay],
+    queryFn: async () => {
+      const { data } = await api.post<any[]>(ENDPOINT, {
+        type: "SELECT_BORDRO_BYID",
         ...params,
       });
       return data;

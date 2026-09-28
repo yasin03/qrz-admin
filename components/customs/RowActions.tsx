@@ -92,10 +92,10 @@ export function RowActions<TData>({
                   onSelect={() => action.onClick(row)}
                   className={cn(
                     "flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none select-none",
-                    "data-[highlighted]:bg-muted",
-                    "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                    "data-highlighted:bg-muted",
+                    "data-disabled:pointer-events-none data-disabled:opacity-50",
                     action.variant === "danger"
-                      ? "text-destructive data-[highlighted]:bg-destructive/10"
+                      ? "text-destructive data-highlighted:bg-destructive/10"
                       : "text-popover-foreground",
                   )}
                 >

@@ -70,3 +70,77 @@ export function getHaftaBilgisi(yil: number, ay: number, gunNo: number) {
     haftaNo,
   };
 }
+
+export type PuantajKodAciklama = {
+  kod: string;
+  label: string;
+  className: string; // getPuantajBadge ile aynı renkler
+};
+
+export const PUANTAJ_KOD_ACIKLAMALARI: PuantajKodAciklama[] = [
+  {
+    kod: "7.5",
+    label: "Normal Mesai (çalışılan saat)",
+    className: "bg-gray-50 text-gray-600 border border-gray-100",
+  },
+  {
+    kod: "HT",
+    label: "Hafta Tatili",
+    className: "bg-red-50 text-red-600 border border-red-100",
+  },
+  {
+    kod: "GT",
+    label: "Genel Resmi Tatil",
+    className: "bg-violet-50 text-violet-600 border border-violet-100",
+  },
+  {
+    kod: "YI",
+    label: "Yıllık İzin",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "MI",
+    label: "Mazeret İzni",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "SI",
+    label: "Saatlik İzin",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "EI",
+    label: "Evlilik İzni",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "DI",
+    label: "Doğum İzni",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "CI",
+    label: "Cenaze İzni",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "GI",
+    label: "Görev İzni",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "SÜ",
+    label: "Süt İzni",
+    className: "bg-blue-50 text-blue-600 border border-blue-100",
+  },
+  {
+    kod: "01",
+    label: "İstirahat",
+    className: "bg-orange-50 text-orange-600 border border-orange-100",
+  },
+  {
+    kod: "15",
+    label: "Devamsızlık",
+    className: "bg-rose-50 text-rose-600 border border-rose-100",
+  },
+];

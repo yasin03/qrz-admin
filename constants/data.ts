@@ -1,11 +1,62 @@
+import { useMemo } from "react";
+
 export const HAFTA_DATA = [
-  { value: "1", label: "Pazartesi", en: "Monday" , shortTr : "Pzt", shortEn: "Mon" , isWeekend: false},
-  { value: "2", label: "Salı", en: "Tuesday", shortTr : "Sal", shortEn: "Tue" , isWeekend: false},
-  { value: "3", label: "Çarşamba", en: "Wednesday", shortTr : "Çar", shortEn: "Wed" , isWeekend: false},
-  { value: "4", label: "Perşembe", en: "Thursday", shortTr : "Per", shortEn: "Thu" , isWeekend: false},
-  { value: "5", label: "Cuma", en: "Friday", shortTr : "Cum", shortEn: "Fri" , isWeekend: false},
-  { value: "6", label: "Cumartesi", en: "Saturday", shortTr : "Cmt", shortEn: "Sat" , isWeekend: false},
-  { value: "7", label: "Pazar", en: "Sunday", shortTr : "Paz", shortEn: "Sun" , isWeekend: true},
+  {
+    value: "1",
+    label: "Pazartesi",
+    en: "Monday",
+    shortTr: "Pzt",
+    shortEn: "Mon",
+    isWeekend: false,
+  },
+  {
+    value: "2",
+    label: "Salı",
+    en: "Tuesday",
+    shortTr: "Sal",
+    shortEn: "Tue",
+    isWeekend: false,
+  },
+  {
+    value: "3",
+    label: "Çarşamba",
+    en: "Wednesday",
+    shortTr: "Çar",
+    shortEn: "Wed",
+    isWeekend: false,
+  },
+  {
+    value: "4",
+    label: "Perşembe",
+    en: "Thursday",
+    shortTr: "Per",
+    shortEn: "Thu",
+    isWeekend: false,
+  },
+  {
+    value: "5",
+    label: "Cuma",
+    en: "Friday",
+    shortTr: "Cum",
+    shortEn: "Fri",
+    isWeekend: false,
+  },
+  {
+    value: "6",
+    label: "Cumartesi",
+    en: "Saturday",
+    shortTr: "Cmt",
+    shortEn: "Sat",
+    isWeekend: false,
+  },
+  {
+    value: "7",
+    label: "Pazar",
+    en: "Sunday",
+    shortTr: "Paz",
+    shortEn: "Sun",
+    isWeekend: true,
+  },
 ] as const;
 
 export const AY_DATA = [
@@ -22,3 +73,14 @@ export const AY_DATA = [
   { value: "11", label: "Kasım" },
   { value: "12", label: "Aralık" },
 ] as const;
+
+export function useYearOptions(length = 10, futureYears = 0) {
+  const currentYear = new Date().getFullYear();
+
+  return useMemo(() => {
+    const endYear = currentYear + futureYears;
+    const startYear = endYear - length + 1;
+
+    return Array.from({ length }, (_, index) => (startYear + index).toString());
+  }, [length, futureYears, currentYear]);
+}

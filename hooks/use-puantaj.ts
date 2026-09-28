@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import {
   PuantajDeleteRequestType,
+  PuantajSelectByIdRequestType,
   PuantajSelectRequestType,
   PuantajUpdateRequestType,
 } from "@/types/puantaj";
@@ -28,6 +29,25 @@ export function usePuantajList(
     queryFn: async () => {
       const { data } = await api.post<any[]>(ENDPOINT, {
         type: "SELECT_PUANTAJ",
+        ...params,
+      });
+
+      return data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 dakika
+    enabled,
+  });
+}
+
+export function usePuantajById(
+  params: PuantajSelectByIdRequestType,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [QUERY_KEY, params.Yil, params.Ay],
+    queryFn: async () => {
+      const { data } = await api.post<any[]>(ENDPOINT, {
+        type: "SELECT_PUANTAJ_BYID",
         ...params,
       });
 

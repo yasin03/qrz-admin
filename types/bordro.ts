@@ -7,6 +7,12 @@ export type BordroSelectRequestType = {
   TcKimlikNo: string;
 };
 
+export type BordroSelectByIdRequestType = {
+  IDSubePersonel: string | number;
+  Yil: string;
+  Ay: string;
+};
+
 export type BordroResponseType = {
   IDSube: string;
   IDSirket: string;

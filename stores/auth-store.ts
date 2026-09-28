@@ -1,4 +1,4 @@
-import { KullaniciTipi } from "@/lib/roles";
+import { KULLANICI_TIPI, KullaniciTipi } from "@/lib/roles";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -99,4 +99,29 @@ export function useHasRole(allowed: KullaniciTipi | KullaniciTipi[]) {
     const list = Array.isArray(allowed) ? allowed : [allowed];
     return list.includes(state.user.IDKullaniciTip as KullaniciTipi);
   });
+}
+
+/**
+ * Kullanıcının rolünü boolean bayraklar olarak döner.
+ *
+ *   const { isPersonel } = useRole();
+ *   const { isAdmin, isAdminYonetici } = useRole();
+ *
+ * Store'dan sadece IDKullaniciTip (string) seçiliyor; obje selector içinde
+ * oluşturulsaydı her render'da yeni referans döneceği için gereksiz
+ * re-render / sonsuz döngü riski olurdu.
+ */
+export function useRole() {
+  const tip = useAuthStore((state) => state.user?.IDKullaniciTip);
+
+  const isAdmin = tip === KULLANICI_TIPI.ADMIN;
+  const isYonetici = tip === KULLANICI_TIPI.YONETICI;
+  const isPersonel = tip === KULLANICI_TIPI.PERSONEL;
+
+  return {
+    isAdmin,
+    isYonetici,
+    isPersonel,
+    isAdminYonetici: isAdmin || isYonetici,
+  };
 }

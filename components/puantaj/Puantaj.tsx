@@ -1,25 +1,20 @@
 "use client";
 
 import { useCurrentContext } from "@/hooks/use-context";
-import { KULLANICI_TIPI } from "@/lib/roles";
 import PuantajListesi from "./PuantajListesi";
 import PersonelPuantajTakvimi from "./PersonelPuantajTakvimi";
-import { useHasRole } from "@/stores/auth-store";
+import { useRole } from "@/stores/auth-store";
 
 const PuantajPage = () => {
   const { data: savedContext, isPending: isContextPending } =
     useCurrentContext();
-  const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
+  const isPersonel = useRole();
 
   if (isPersonel) {
     return (
       <div className="space-y-4">
         <h1 className="mb-0 text-xl font-bold sm:text-2xl">Puantajım</h1>
         <PersonelPuantajTakvimi
-          baseParams={{
-            IDSube: savedContext?.IDSube || "0",
-            IDBolum: savedContext?.IDBolum || "0",
-          }}
           initialYil={savedContext?.Yil}
           initialAy={savedContext?.Ay}
         />
