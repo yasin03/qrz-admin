@@ -9,6 +9,7 @@ export type IlType = {
 
 export type IlceType = {
   IlAdi: string; // ilçenin kendi adı (API'de böyle geliyor, IlceAdi değil)
+  IlceAdi: string; // ilçenin kendi adı (API'de böyle geliyor, IlceAdi değil)
   IlKodu: string;
   IlceKodu: string;
 };

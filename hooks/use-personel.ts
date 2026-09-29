@@ -109,7 +109,7 @@ export function useAktifPersonelListesi() {
 
 // ---- Personel Detay ----------------------------------------------------
 
-export function usePersonelDetay(id: string | number | undefined) {
+export function usePersonelDetay(id?: string | number | undefined) {
   return useQuery({
     queryKey: personelKeys.detay(id),
     queryFn: () =>

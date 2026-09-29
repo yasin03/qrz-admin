@@ -7,14 +7,13 @@ import {
   CalendarRange,
   ContactRound,
   FileText,
+  FileUser,
   Fingerprint,
   HandCoins,
   Loader2,
   LogOut,
   MapPinned,
   Parasol,
-  QrCode,
-  ScanBarcode,
   Users,
 } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
@@ -42,6 +41,7 @@ type MenuItem = {
 };
 
 const personelMenuItems: MenuItem[] = [
+  { href: "/ozluk", label: "Özlük", icon: FileUser },
   { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/avans", label: "Avans", icon: HandCoins },
   { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ExecuteQuery } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
+import { KULLANICI_TIPI } from "@/lib/roles";
 
 // mobil (Bearer) istekleri sadece okuma yapabilir; personel CRUD'u web-only.
 const MOBILE_ALLOWED_TYPES = ["GET_PERSONEL_DETAY", "SELECT_PERSONEL_LIST"];
@@ -119,7 +120,7 @@ const queryTypes = {
   GET_AKTIF_PERSONEL: (params) =>
     `[SubePersonel_SELECTByIDSube3] '${params.IDSube}', '${params.TcKimlikNo}','${params.Adi}','${params.Yil}','${params.Ay}'`,
   GET_PERSONEL_DETAY: (params) =>
-    `[SubePersonel_SELECTByIDSubePersonel] '${params.IDSubePersonel}'`,
+    `[SubePersonel_SELECTByIDSubePersonel] ${sqlStr(params.IDSubePersonel)}`,
   DELETE_PERSONEL: (params) =>
     `[SubePersonel_DELETEByIDSubePersonel] '${params.IDSubePersonel}'`,
   INSERT_PERSONEL: (params) =>
@@ -143,20 +144,17 @@ export const POST = withSession(async (request, session) => {
       return fail(true, "Bu islem mobilde desteklenmiyor.", 403, "FORBIDDEN");
     }
 
-    if (!session.isMobile && !session.user.IDSirket) {
-      return fail(
-        false,
-        "Lütfen önce üstten şirket/şube seçimi yapın.",
-        400,
-      );
+    if (!session.isMobile && !session.user) {
+      return fail(false, "Lütfen önce üstten şirket/şube seçimi yapın.", 400);
     }
-
     // Onceki siralamada '...payload' en sonda oldugu icin client IDSube/Durum
     // gibi alanlari null gonderirse asagidaki fallback/default'lari sessizce
     // eziyordu - payload'i taban alip session/varsayilan degerleri onun
     // ustune yaziyoruz.
     const queryParams = {
-      ...payload,
+      IDSubePersonel: payload.IDSubePersonel
+        ? payload.IDSubePersonel
+        : session.user.IDSubePersonel,
       IDSirket: session.user.IDSirket,
       IDKullanici: session.user.IDKullanici,
       Yil: payload.Yil ? payload.Yil : session.user.Yil,
@@ -166,7 +164,14 @@ export const POST = withSession(async (request, session) => {
       Durum: payload.Durum ?? "",
       TcKimlikNo: payload.TcKimlikNo ?? "",
       Adi: payload.Adi ?? "",
+      ...payload,
     };
+
+    // Personel sadece kendi kaydına erişebilir; client'tan gelen
+    // IDSubePersonel yok sayılır, session'daki değer kullanılır.
+    if (session.user.IDKullaniciTip === KULLANICI_TIPI.PERSONEL) {
+      queryParams.IDSubePersonel = session.user.IDSubePersonel;
+    }
 
     const queryFunction = queryTypes[type];
 
