@@ -1,7 +1,7 @@
-import KullaniciYonetimi from "@/components/kurumsal/kullanici/KullaniciYonetimi";
+import KullaniciListesi from "@/components/kurumsal/kullanici/KullaniciListesi";
 
 const Page = () => {
-  return <KullaniciYonetimi />;
+  return <KullaniciListesi />;
 };
 
 export default Page;
