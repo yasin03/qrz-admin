@@ -96,7 +96,7 @@ const Belgeler = () => {
         <div>
           <h1 className="text-xl font-bold sm:text-2xl">Belge Yönetimi</h1>
           <p className="text-sm text-muted-foreground">
-            İhtiyacınız olan belge şablonlarını indirebilirsiniz.
+            İhtiyacınız olan belgeyi seçerek indirebilirsiniz.
           </p>
         </div>
         <div className="w-full sm:w-72">

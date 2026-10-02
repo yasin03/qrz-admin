@@ -36,6 +36,11 @@ export interface ExportMenuProps<T> {
   showImport?: boolean;
   /** İçe aktarılan dosyadan okunan satırlar buradan parent'a döner */
   onImport?: (rows: Record<string, unknown>[]) => void;
+  /**
+   * Verilirse "İçe aktar" dosya seçiciyi açmak yerine bunu çağırır;
+   * sayfa kendi import dialog'unu yönetir (onImport kullanılmaz).
+   */
+  onImportClick?: () => void;
 }
 
 /** Bir satırdan export değerini okuyup görüntülenecek string'e çevirir */

@@ -164,11 +164,13 @@ const KullaniciListesi = () => {
     },
     {
       accessorKey: "Ad",
-      header: "Ad Soyad / E-posta",
+      header: `Ad Soyad\nE-posta`,
       cell: ({ row }) => (
         <span className="flex flex-col gap-0.5">
           <span>{row.original.Ad || "-"}</span>
-          <span className="text-sm text-gray-400 ">{row.original.Email || "-"}</span>
+          <span className="text-sm text-gray-400 ">
+            {row.original.Email || "-"}
+          </span>
         </span>
       ),
     },

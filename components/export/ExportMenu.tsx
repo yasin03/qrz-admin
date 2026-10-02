@@ -39,6 +39,7 @@ export function ExportMenu<T>({
   defaultOrientation,
   showImport = false,
   onImport,
+  onImportClick,
 }: ExportMenuProps<T>) {
   const [isExporting, setIsExporting] = useState(false);
   const [orientation, setOrientation] = useState<ExportOrientation>(
@@ -142,7 +143,12 @@ export function ExportMenu<T>({
           {showImport && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={() => fileInputRef.current?.click()}>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() =>
+                  onImportClick ? onImportClick() : fileInputRef.current?.click()
+                }
+              >
                 <Upload className="size-4" />
                 İçe aktar
               </DropdownMenuItem>
@@ -151,7 +157,7 @@ export function ExportMenu<T>({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {showImport && (
+      {showImport && !onImportClick && (
         <input
           ref={fileInputRef}
           type="file"

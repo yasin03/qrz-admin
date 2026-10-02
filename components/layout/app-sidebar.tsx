@@ -123,7 +123,15 @@ export function AppSidebar() {
             fill
             sizes="240px"
             priority
-            className={`${isCollapsed ? "" : "p-2"} object-contain`}
+            className={`${isCollapsed ? "" : "p-2"} object-contain dark:hidden`}
+          />
+          <Image
+            src={isCollapsed ? "/logos/icon-sec.png" : "/logos/logo-sec.png"}
+            alt="QRZ"
+            fill
+            sizes="240px"
+            priority
+            className={`${isCollapsed ? "" : "p-2"} hidden object-contain dark:block`}
           />
         </div>
       </SidebarHeader>

@@ -40,6 +40,7 @@ import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { ExportMenu } from "../export/ExportMenu";
 import PersonelDetayDialog from "./PersonelDetayDialog";
+import PersonelImportDialog from "./PersonelImportDialog";
 
 type Personel = {
   SicilNo: string;
@@ -91,6 +92,7 @@ const Personel = () => {
   const deletePersonel = useDeletePersonel();
   const sgkIslem = usePersonelSgkIslem();
   const [openPersonelEkle, setOpenPersonelEkle] = useState(false);
+  const [openImport, setOpenImport] = useState(false);
   const [duzenlenecekId, setDuzenlenecekId] = useState<string | number | null>(
     null,
   );
@@ -516,11 +518,7 @@ const Personel = () => {
               title="Personel Listesi"
               fileName="personel-listesi"
               showImport
-              onImport={(rows) => {
-                // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
-                // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
-                console.log("İçe aktarılan personeller:", rows);
-              }}
+              onImportClick={() => setOpenImport(true)}
             />
             <div className="shrink-0">
               <CustomColumnVisibility
@@ -567,6 +565,8 @@ const Personel = () => {
         }}
         id={secilenPersonel?.tip === "detay" ? secilenPersonel.id : null}
       />
+
+      <PersonelImportDialog open={openImport} onOpenChange={setOpenImport} />
 
       <PersonelSettingsDialog
         open={settingsOpen}

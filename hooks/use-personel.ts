@@ -222,3 +222,89 @@ export function usePersonelSgkIslem() {
     },
   });
 }
+
+// ---- Excel İçe Aktarma --------------------------------------------------
+// Her satır API'ye tek tek gönderilir; SP sonucu test:1 başarılı, test:0
+// başarısız sayılır. Bir satırın hata alması diğerlerini durdurmaz.
+
+export type PersonelImportRow = Record<
+  string,
+  string | number | boolean | null
+>;
+
+export type PersonelImportFailure = {
+  row: PersonelImportRow;
+  message: string;
+};
+
+export type PersonelImportSummary = {
+  total: number;
+  success: number;
+  failed: number;
+  failures: PersonelImportFailure[];
+};
+
+type PersonelImportVariables = {
+  rows: PersonelImportRow[];
+  onProgress?: (done: number, total: number) => void;
+};
+
+async function importPersonelRow(row: PersonelImportRow) {
+  // Şirket/kullanıcı bilgisi session'dan gelir, Excel'deki değerler gönderilmez.
+  const personel = { ...row };
+  delete personel.IDKullanici;
+  delete personel.IDSirket;
+
+  const response = await fetch("/api/personel/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "IMPORT_EXCEL", ...personel }),
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(data?.message || "İstek başarısız oldu.");
+  }
+
+  const result = Array.isArray(data) ? data[0] : data;
+  if (Number(result?.test) !== 1) {
+    throw new Error(result?.sonuc || "Kayıt eklenemedi.");
+  }
+}
+
+export function useImportPersonel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      rows,
+      onProgress,
+    }: PersonelImportVariables): Promise<PersonelImportSummary> => {
+      const failures: PersonelImportFailure[] = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        try {
+          await importPersonelRow(rows[i]);
+        } catch (error) {
+          failures.push({
+            row: rows[i],
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+        onProgress?.(i + 1, rows.length);
+      }
+
+      return {
+        total: rows.length,
+        success: rows.length - failures.length,
+        failed: failures.length,
+        failures,
+      };
+    },
+    onSuccess: (summary) => {
+      if (summary.success > 0) {
+        queryClient.invalidateQueries({ queryKey: personelKeys.all });
+      }
+    },
+  });
+}
