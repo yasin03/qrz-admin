@@ -57,3 +57,52 @@ export type EklentiFilters = {
   OdemeTipi: string;
   Net: "ALL" | "NET" | "BRUT";
 };
+
+/** =========================== KESİNTİ =================== */
+export type KesintiSelectRequestType = {
+  IDSube: string | number;
+  IDSubePersonel: string | number;
+  Tarih1: string;
+  Tarih2: string;
+};
+
+export type KesintiResponseType = {
+  IDSubePersonelOzelKesinti: string | number;
+  IDSube: string | number;
+  IDSubePersonel: string | number;
+
+  AdSoyad: string;
+  KesintiTarihi: string;
+  BordroKesintiTutari: number;
+  KesintiTipi: string;
+  KesintiTipi2: string;
+  BolumAdi: string;
+};
+
+export type KesintiInsertRequestType = {
+  IDSube: string | number;
+  IDSubePersonel: string | number;
+  BordroKesintiTutari: number;
+  KesintiTarihi: string;
+  KesintiTipi: string;
+};
+
+export type KesintiInsertResponseType = {
+  test: number;
+  sayi: number;
+};
+
+export type KesintiUpdateRequestType = {
+  IDSubePersonelOzelKesinti: string | number;
+  BordroKesintiTutari: number;
+  KesintiTarihi: string;
+  KesintiTipi: string;
+};
+
+export type KesintiUpdateResponseType = {
+  test: number;
+};
+
+export type KesintiDeleteRequestType = {
+  IDSubePersonelOzelKesinti: number;
+};

@@ -9,7 +9,7 @@ const queryTypes = {
     `[VergiDairesi_SELECTByIlKodu] '${params.IlKodu}',''`,
 
   GET_IZIN_TIPLERI: (params) => `[PersonelEksikGunNedeni_SELECTAll]`,
-  GET_EKLENTI_TIPLERI: (params) => `[TahakkukSaha_SELECTByIslem] '${params.Tip}'`,
+  GET_TAHAKKUK_TIPLERI: (params) => `[TahakkukSaha_SELECTByIslem] '${params.Tip}'`,
   GET_SABIT_TANIMLAR: (params) => `[SabitTanimMadde_SELECTAll]`,
   GET_PERSONEL_SABIT_TANIMLAR: (params) =>
     `[PersonelSgkBelgeTuru_SELECTAllTypes]`,

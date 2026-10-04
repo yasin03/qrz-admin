@@ -47,9 +47,9 @@ const getPersonelSabitTanimlar = () =>
 const getIzinTipleri = () =>
   postGenel({ type: "GET_IZIN_TIPLERI" }, "Personel izin tipleri alınamadı.");
 
-const getEklentiTipleri = () =>
+const getTahakkukTipleri = (tip: string) =>
   postGenel(
-    { type: "GET_EKLENTI_TIPLERI", Tip: "Yardım" },
+    { type: "GET_TAHAKKUK_TIPLERI", Tip: tip },
     "Eklenti tipleri alınamadı.",
   );
 
@@ -111,7 +111,7 @@ const toIzinTipleriOptions = (value: unknown) =>
     label: item.Kod,
   }));
 
-const toEklentiTipleriOptions = (value: unknown) =>
+const toTahakkukTipleriOptions = (value: unknown) =>
   mapOptions<EklentiTipi>(value, (item) => ({
     kod: item.SahaKodu,
     value: String(item.SahaAciklama2),
@@ -160,7 +160,8 @@ export function useSabitTanimlar() {
 export const personelSabitTanimlarKeys = {
   all: ["personel-sabit-tanimlar"] as const,
   izinTipleri: ["izin-tipleri"] as const,
-  eklentiTipleri: ["eklenti-tipleri", "Yardım"] as const,
+  eklentiTipleri: ["tahakkuk-tipleri", "Yardım"] as const,
+  kesintiTipleri: ["tahakkuk-tipleri", "Kesinti"] as const,
 };
 
 export function usePersonelSabitTanimlar() {
@@ -178,7 +179,13 @@ export function usePersonelSabitTanimlar() {
 
   const eklentiQuery = useQuery({
     queryKey: personelSabitTanimlarKeys.eklentiTipleri,
-    queryFn: getEklentiTipleri,
+    queryFn: () => getTahakkukTipleri("Yardım"),
+    staleTime: STALE_TIME,
+  });
+
+  const kesintiQuery = useQuery({
+    queryKey: personelSabitTanimlarKeys.kesintiTipleri,
+    queryFn: () => getTahakkukTipleri("Kesinti"),
     staleTime: STALE_TIME,
   });
 
@@ -192,6 +199,7 @@ export function usePersonelSabitTanimlar() {
     sgkKanunNolar: toSgkKanunNoOptions(data[2]),
     gorevKodlari: toGorevKoduOptions(data[3]),
     izinTipleri: toIzinTipleriOptions(izinQuery.data),
-    eklentiTipleri: toEklentiTipleriOptions(eklentiQuery.data),
+    eklentiTipleri: toTahakkukTipleriOptions(eklentiQuery.data),
+    kesintiTipleri: toTahakkukTipleriOptions(kesintiQuery.data),
   };
 }
