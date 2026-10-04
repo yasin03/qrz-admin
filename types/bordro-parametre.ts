@@ -106,3 +106,10 @@ export type KesintiUpdateResponseType = {
 export type KesintiDeleteRequestType = {
   IDSubePersonelOzelKesinti: number;
 };
+
+/** Sayfadaki filtre state'i. KesintiTipi "ALL" ise "tümü" anlamına gelir. */
+export type KesintiFilters = {
+  Tarih1: string; // "yyyy-MM-dd"
+  Tarih2: string; // "yyyy-MM-dd"
+  KesintiTipi: string;
+};

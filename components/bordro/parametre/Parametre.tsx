@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import TalepListesi from "@/components/avans/TalepListesi";
 import { useUser } from "@/stores/auth-store";
 import { KULLANICI_TIPI } from "@/lib/roles";
 import EklentiListesi from "./EklentiListesi";
+import KesintiListesi from "./KesintiListesi";
 
 type TabValue = "eklenti" | "kesinti";
 
@@ -42,7 +42,9 @@ const ParametrePage = () => {
         </TabsContent>
 
         <TabsContent value="kesinti">
-          {/* <TalepListesi enabled={Boolean(user) && activeTab === "talep"} /> */}
+          <KesintiListesi
+            enabled={Boolean(user) && activeTab === "kesinti"}
+          />
         </TabsContent>
       </Tabs>
     </div>
