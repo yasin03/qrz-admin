@@ -1,9 +1,35 @@
-import { Document, Page, View, Text, Image, StyleSheet, pdf } from "@react-pdf/renderer";
-import { COMPANY_INFO, getLogoDataUri } from "@/lib/company";
-import { ExportColumn, ExportMeta, downloadBlob, getExportValue } from "../types";
+import { Document, Font, Page, View, Text, Image, StyleSheet, pdf } from "@react-pdf/renderer";
+import { CompanyInfo, getCompanyInfo, getLogoDataUri } from "@/lib/company";
+import {
+  ExportColumn,
+  ExportMeta,
+  downloadBlob,
+  getExportValue,
+  getRecordCountLabel,
+} from "../types";
+
+// react-pdf'in gömülü Helvetica fontu Türkçe karakterleri (Ş, ğ, ı, İ...) ve ₺
+// simgesini içermiyor; bu yüzden public/fonts altındaki Roboto kaydediliyor.
+export const PDF_FONT_FAMILY = "Roboto";
+let isFontRegistered = false;
+
+export function registerPdfFont() {
+  if (isFontRegistered) return;
+  const origin = window.location.origin;
+  Font.register({
+    family: PDF_FONT_FAMILY,
+    fonts: [
+      { src: `${origin}/fonts/Roboto-Regular.ttf`, fontWeight: 400 },
+      { src: `${origin}/fonts/Roboto-Bold.ttf`, fontWeight: 700 },
+    ],
+  });
+  // Uzun kelimelerin tire ile bölünmesini engelle
+  Font.registerHyphenationCallback((word) => [word]);
+  isFontRegistered = true;
+}
 
 const styles = StyleSheet.create({
-  page: { padding: 32, fontSize: 9, fontFamily: "Helvetica" },
+  page: { padding: 32, fontSize: 9, fontFamily: PDF_FONT_FAMILY },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -23,6 +49,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#333333",
   },
+  recordCount: { fontSize: 8, color: "#555555", marginBottom: 6 },
   table: { width: "100%" },
   tableHeaderRow: {
     flexDirection: "row",
@@ -52,12 +79,14 @@ function ExportPdfDocument<T>({
   data,
   columns,
   title,
+  company,
   logoDataUri,
   orientation,
 }: {
   data: T[];
   columns: ExportColumn<T>[];
   title: string;
+  company: CompanyInfo;
   logoDataUri?: string;
   orientation: "portrait" | "landscape";
 }) {
@@ -66,16 +95,21 @@ function ExportPdfDocument<T>({
       <Page size="A4" orientation={orientation} style={styles.page}>
         <View style={styles.headerRow}>
           <View style={styles.companyBlock}>
-            <Text style={styles.companyName}>{COMPANY_INFO.name}</Text>
-            <Text style={styles.companyLine}>{COMPANY_INFO.address}</Text>
-            {COMPANY_INFO.phone ? (
-              <Text style={styles.companyLine}>{COMPANY_INFO.phone}</Text>
+            {company.name ? (
+              <Text style={styles.companyName}>{company.name}</Text>
+            ) : null}
+            {company.address ? (
+              <Text style={styles.companyLine}>{company.address}</Text>
+            ) : null}
+            {company.phone ? (
+              <Text style={styles.companyLine}>{company.phone}</Text>
             ) : null}
           </View>
           {logoDataUri ? <Image src={logoDataUri} style={styles.logo} /> : null}
         </View>
 
         <Text style={styles.title}>{title}</Text>
+        <Text style={styles.recordCount}>{getRecordCountLabel(data.length)}</Text>
 
         <View style={styles.table}>
           <View style={styles.tableHeaderRow} fixed>
@@ -111,8 +145,11 @@ export async function exportToPdf<T>(
   columns: ExportColumn<T>[],
   meta: ExportMeta
 ) {
+  registerPdfFont();
+
+  const company = await getCompanyInfo();
   // Logo yüklenemezse export'u engelleme, logosuz devam et
-  const logoDataUri = await getLogoDataUri().catch(() => undefined);
+  const logoDataUri = await getLogoDataUri(company.logoPath).catch(() => undefined);
   const orientation = meta.orientation ?? (columns.length > 6 ? "landscape" : "portrait");
 
   const blob = await pdf(
@@ -120,6 +157,7 @@ export async function exportToPdf<T>(
       data={data}
       columns={columns}
       title={meta.title ?? "Rapor"}
+      company={company}
       logoDataUri={logoDataUri}
       orientation={orientation}
     />

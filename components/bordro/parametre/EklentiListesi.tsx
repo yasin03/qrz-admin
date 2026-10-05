@@ -142,7 +142,7 @@ const EklentiListesi = ({ enabled }: Props) => {
       accessorKey: (row) => format(new Date(row.OdemeTarihi), "dd.MM.yyyy"),
     },
     { header: "Eklenti Tipi", accessorKey: getEklentiTipiLabel },
-    { header: "Tutar", accessorKey: "BordroOdemeTutari" },
+    { header: "Tutar", accessorKey: "BordroOdemeTutari", format: "money" },
     {
       header: "Net / Brüt",
       accessorKey: (row) => (row.Net ? "Net" : "Brüt"),

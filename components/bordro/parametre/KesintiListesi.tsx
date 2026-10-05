@@ -137,7 +137,7 @@ const KesintiListesi = ({ enabled }: Props) => {
       accessorKey: (row) => format(new Date(row.KesintiTarihi), "dd.MM.yyyy"),
     },
     { header: "Kesinti Tipi", accessorKey: getKesintiTipiLabel },
-    { header: "Tutar", accessorKey: "BordroKesintiTutari" },
+    { header: "Tutar", accessorKey: "BordroKesintiTutari", format: "money" },
   ];
 
   const columns: ColumnDef<KesintiResponseType>[] = useMemo(() => {

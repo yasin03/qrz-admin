@@ -31,10 +31,13 @@ import { formatDate, formatMoney } from "@/lib/format";
 import { cn, formatIban, formatPhone, text } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Spinner } from "../ui/spinner";
 import { Switch } from "../ui/switch";
+import { SectionExportMenu } from "../export/SectionExportMenu";
+import type { SectionExportDocument } from "../export/section-types";
 
 type Props = {
   idSubePersonel: string | number;
@@ -125,6 +128,12 @@ const FieldValueView = ({ value }: { value: FieldValue }) => {
   return <>{value ?? "-"}</>;
 };
 
+// Boolean alanlar "Hayır" ise de boş sayılır; sadece "Evet" olanlar öne çıksın.
+const getVisibleFields = (fields: Field[], showEmpty: boolean) =>
+  showEmpty
+    ? fields
+    : fields.filter((f) => f.value !== null && f.value !== false);
+
 const InfoSection = ({
   title,
   icon: Icon,
@@ -136,10 +145,7 @@ const InfoSection = ({
   fields: Field[];
   showEmpty: boolean;
 }) => {
-  // Boolean alanlar "Hayır" ise de boş sayılır; sadece "Evet" olanlar öne çıksın.
-  const visibleFields = showEmpty
-    ? fields
-    : fields.filter((f) => f.value !== null && f.value !== false);
+  const visibleFields = getVisibleFields(fields, showEmpty);
 
   if (visibleFields.length === 0) return null;
 
@@ -173,9 +179,21 @@ const InfoSection = ({
 
 const OzlukBilgileri = ({ idSubePersonel, isAdminView = false }: Props) => {
   const [showEmpty, setShowEmpty] = useState(false);
+  // Filtreden gizlenen bölümler; ekran ve export aynı filtreyi kullanır.
+  const [hiddenGroups, setHiddenGroups] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const toggleGroup = (key: string, visible: boolean) =>
+    setHiddenGroups((prev) => {
+      const next = new Set(prev);
+      if (visible) next.delete(key);
+      else next.add(key);
+      return next;
+    });
 
   const { data: p, isLoading, isError } = usePersonelDetay(idSubePersonel);
-console.log("p:", p);
+
   const {
     sgkDurumlari,
     istihdamDurumlari,
@@ -195,7 +213,7 @@ console.log("p:", p);
   const ilKodu = code(p?.IlKodu) ?? undefined;
   const { data: iller = [] } = useIller();
   const { data: ilceler = [] } = useIlceler(ilKodu);
-console.log("ilceler:", ilceler);
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
@@ -462,6 +480,40 @@ console.log("ilceler:", ilceler);
     });
   }
 
+  // Filtre uygulanmış haliyle ekranda görünen bölümler
+  const visibleGroups = groups
+    .filter((group) => !hiddenGroups.has(group.key))
+    .map((group) => ({
+      ...group,
+      fields: getVisibleFields(group.fields, showEmpty),
+    }))
+    .filter((group) => group.fields.length > 0);
+
+  const durumLabel = p.Durum && !cikisTarihi ? "Aktif" : "Pasif";
+
+  const buildExportDocument = (): SectionExportDocument => ({
+    title: "Personel Özlük Bilgileri",
+    heading: adSoyad,
+    subheading: unvan,
+    tags: [
+      durumLabel,
+      cinsiyet,
+      num(p.Yas) ? `${p.Yas} yaş` : null,
+      cikisTarihi ? `Çıkış: ${cikisTarihi}` : null,
+    ].filter((tag): tag is string => Boolean(tag)),
+    summary: summary.map(({ label, value }) => ({ label, value })),
+    sections: visibleGroups.map((group) => ({
+      title: group.title,
+      fields: group.fields,
+    })),
+  });
+
+  const exportFileName = `ozluk-${[p.Ad, p.Soyad]
+    .filter(Boolean)
+    .join("-")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/\s+/g, "-")}`;
+
   return (
     <div className="space-y-4">
       {/* Profil kartı */}
@@ -515,7 +567,7 @@ console.log("ilceler:", ilceler);
                 <span className="hidden sm:inline">Filtre</span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-64 gap-3 p-3">
+            <PopoverContent align="end" className="w-72 gap-3 p-3">
               <div className="text-sm font-semibold">Görünüm</div>
               <div className="flex items-center justify-between gap-3">
                 <Label htmlFor="ozluk-bos">Boş alanları göster</Label>
@@ -525,8 +577,50 @@ console.log("ilceler:", ilceler);
                   onCheckedChange={setShowEmpty}
                 />
               </div>
+
+              <div className="space-y-2 border-t border-border pt-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">Bölümler</span>
+                  {hiddenGroups.size > 0 && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => setHiddenGroups(new Set())}
+                    >
+                      Tümünü göster
+                    </button>
+                  )}
+                </div>
+                {groups.map((group) => {
+                  const id = `ozluk-bolum-${group.key}`;
+                  return (
+                    <div key={group.key} className="flex items-center gap-2">
+                      <Checkbox
+                        id={id}
+                        checked={!hiddenGroups.has(group.key)}
+                        onCheckedChange={(checked) =>
+                          toggleGroup(group.key, checked === true)
+                        }
+                      />
+                      <Label htmlFor={id} className="font-normal">
+                        {group.title}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Aktarım bu filtreye göre yapılır.
+              </p>
             </PopoverContent>
           </Popover>
+
+          <SectionExportMenu
+            getDocument={buildExportDocument}
+            fileName={exportFileName}
+            description={`${visibleGroups.length} bölüm aktarılacak`}
+          />
         </div>
       </div>
 
@@ -549,15 +643,21 @@ console.log("ilceler:", ilceler);
       </div>
 
       {/* Gruplar */}
-      {groups.map((group) => (
+      {visibleGroups.map((group) => (
         <InfoSection
           key={group.key}
           title={group.title}
           icon={group.icon}
           fields={group.fields}
-          showEmpty={showEmpty}
+          showEmpty
         />
       ))}
+
+      {visibleGroups.length === 0 && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
+          Filtreye uygun bilgi bulunamadı.
+        </div>
+      )}
     </div>
   );
 };

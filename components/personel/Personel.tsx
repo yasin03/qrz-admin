@@ -281,7 +281,7 @@ const Personel = () => {
     { header: "Durum", accessorKey: "Durum2" },
     { header: "Ödeme Şekli", accessorKey: "OdemeSekli" },
     { header: "Ücret Tipi", accessorKey: "UcretTipi" },
-    { header: "Ücret", accessorKey: "Ucret" },
+    { header: "Ücret", accessorKey: "Ucret", format: "money" as const },
     { header: "Sendika Durumu", accessorKey: "SendikaDurumu" },
     { header: "Özürlülük Derecesi", accessorKey: "OzurlulukDerecesi" },
     { header: "Telefon", accessorKey: "Telefon" },

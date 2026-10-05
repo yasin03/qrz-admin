@@ -8,9 +8,12 @@ export type WorkingContext = {
   IDBolum?: string | number | null;
   Yil: string;
   Ay?: string | null;
+  GurupAdi?: string | null;
+  SirketAdi?: string | null;
+  SubeAdi?: string | null;
 };
 
-async function fetchContext(): Promise<WorkingContext | null> {
+export async function fetchContext(): Promise<WorkingContext | null> {
   const response = await fetch("/api/context");
   if (!response.ok) return null;
   const data = await response.json();

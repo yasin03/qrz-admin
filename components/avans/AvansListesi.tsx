@@ -119,7 +119,7 @@ const AvansListesi = ({ enabled }: Props) => {
     { header: "Ad Soyad", accessorKey: "AdSoyad" },
     { header: "Şube", accessorKey: "SubeAdi" },
     { header: "Ödeme Başlangıç Tarihi", accessorKey: "OdemeBaslangicTarihi" },
-    { header: "Tutar", accessorKey: "Tutar" },
+    { header: "Tutar", accessorKey: "Tutar", format: "money" },
     { header: "Taksit Sayısı", accessorKey: "TaksitSayisi" },
     {
       header: "Durum",
