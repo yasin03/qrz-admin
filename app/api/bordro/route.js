@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { joseDecrypt } from "@/lib/token";
-import { ExecuteQuery, ExecuteQueryDataset } from "@/lib/db";
+import { ExecuteQuery } from "@/lib/db";
+import { ok, fail, withSession } from "@/lib/api-session";
 
 const queryTypes = {
   SELECT_BORDRO: (params) =>
@@ -16,25 +16,13 @@ const queryTypes = {
     `[BordroOnay_UpdateByIDSube] '${params.IDSube}','','${params.Yil}','${params.Ay}','${params.IDSubePersonelList}','${params.OnayDurum}'`,
 };
 
-export async function POST(request) {
+export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
     const { type } = payload;
 
-    const user_token = request.cookies.get("sid")?.value;
-    const user = await joseDecrypt(user_token);
-    const grsisudo_token = request.cookies.get("grsisudo")?.value;
-    const grsisudo = await joseDecrypt(grsisudo_token);
-
-    if (!user) {
-      return NextResponse.json(
-        { message: "Kullanıcı Bilgisi Bulunamadı." },
-        { status: 401 },
-      );
-    }
-
     const queryParams = {
-      IDSirket: grsisudo.IDSirket,
+      IDSirket: session.user.IDSirket,
       IDSube: payload.IDSube,
       IDBolum: payload.IDBolum,
       IDSubePersonelList: payload.IDSubePersonel,
@@ -44,22 +32,28 @@ export async function POST(request) {
       TcKimlikNo: payload.TcKimlikNo,
       OnayDurum: payload.OnayDurum,
     };
-
     const queryFunction = queryTypes[type];
 
     if (!queryFunction) {
-      return NextResponse.json(
-        { message: "Geçersiz sorgu tipi" },
-        { status: 400 },
-      );
+      return fail(session.isMobile, "Geçersiz sorgu tipi", 400);
     }
 
     const query = queryFunction(queryParams);
     const result = await ExecuteQuery(query);
 
-    return NextResponse.json(result);
+    return ok(session.isMobile, result);
   } catch (err) {
     console.error("API Error:", err);
+
+    if (session.isMobile) {
+      return fail(
+        true,
+        "Bir hata oluştu. Lütfen tekrar deneyiniz",
+        500,
+        "SERVER_ERROR",
+      );
+    }
+
     return NextResponse.json(
       {
         message: "Bir hata oluştu. Lütfen tekrar deneyiniz",
@@ -68,4 +62,5 @@ export async function POST(request) {
       { status: 500 },
     );
   }
-}
+});
+
