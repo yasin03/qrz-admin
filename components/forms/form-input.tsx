@@ -86,7 +86,19 @@ function formatTel(raw: string): string {
   return groups.join(" ");
 }
 
-/** Ham input değerini, seçilen format'a göre filtreler/biçimlendirir. */
+/** Form değerini ekranda gösterilecek hale getirir. "tel" formatında değer
+ *  boşluksuz tutuluyor ("2122121212"), ekranda ise gruplanmış gösteriliyor
+ *  ("212 212 12 12"). Diğer formatlarda değer olduğu gibi gösteriliyor. */
+function toDisplayValue(
+  value: string | number | undefined | null,
+  format?: InputFormat,
+): string {
+  if (value === undefined || value === null) return "";
+  return format === "tel" ? formatTel(String(value)) : String(value);
+}
+
+/** Ham input değerini, seçilen format'a göre filtreler/biçimlendirir.
+ *  Dönen değer forma yazılan değerdir ("tel" için boşluksuz rakamlar). */
 function applyFormat(raw: string, format?: InputFormat): string {
   switch (format) {
     case "tcno":
@@ -112,7 +124,7 @@ function applyFormat(raw: string, format?: InputFormat): string {
     case "text":
       return raw.replace(/[0-9]/g, "");
     case "tel":
-      return formatTel(raw);
+      return formatTel(raw).replace(/\s/g, "");
     default:
       return raw;
   }
@@ -337,7 +349,7 @@ function ControlledFormInput<T extends FieldValues>({
                 name={field.name}
                 ref={field.ref}
                 onBlur={field.onBlur}
-                value={field.value ?? ""}
+                value={toDisplayValue(field.value, format)}
                 onChange={(event) => {
                   let nextValue = format
                     ? applyFormat(event.target.value, format)
@@ -512,8 +524,12 @@ function UncontrolledFormInput(props: UncontrolledFormInputProps) {
 
         <Input
           id={inputId}
-          value={value}
-          defaultValue={defaultValue}
+          value={value === undefined ? undefined : toDisplayValue(value, format)}
+          defaultValue={
+            defaultValue === undefined
+              ? undefined
+              : toDisplayValue(defaultValue, format)
+          }
           onChange={(event) => {
             const nextValue = format
               ? applyFormat(event.target.value, format)

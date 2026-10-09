@@ -59,7 +59,7 @@ const queryTypes = {
   ADD_SIRKET: (params) => `[Sirket_Insert] ${buildSirketParams(params)}`,
 
   UPDATE_SIRKET: (params) =>
-    `[Sirket_UpdateByIDSirket] @IDSirket=${sqlNum(params.IDSirket)},${buildSirketParams(params)}`,
+    `[Sirket_UpdateByIDSirket] ${sqlNum(params.IDSirket)},${buildSirketParams(params)}`,
 
   DELETE_SIRKET: (params) => `[Sirket_DELETEByIDSirket] '${params.IDSirket}'`,
 };
@@ -96,6 +96,7 @@ export async function POST(request) {
     };
 
     const query = queryFunction(queryParams);
+    console.log("Executing query sirket : ", query);
     const result = await ExecuteQuery(query);
 
     return NextResponse.json(result);

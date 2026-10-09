@@ -63,6 +63,11 @@ export function FormSelect<T extends FieldValues>({
             : String(field.value);
 
         const handleValueChange = (value: string) => {
+          // Radix Select, mevcut değer henüz options'ta yokken (örn. liste
+          // API'den gelmeden önce form.reset ile değer set edildiğinde)
+          // onValueChange("") tetikleyip değeri siliyor. Hiçbir option'ın
+          // değeri "" olamayacağı için bunu yok sayıyoruz.
+          if (value === "") return;
           if (valueType === "boolean") {
             field.onChange(value === "true");
             return;

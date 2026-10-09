@@ -108,11 +108,12 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     fields.some((field) => Boolean(errors[field]));
 
   // İl değişince, önceki ile ait seçili ilçe geçersiz kalabileceği için
-  // temizliyoruz. İlk render'da (henüz hiç il seçilmemişken) tetiklenmesin
-  // diye ref ile "gerçekten değişti mi" kontrolü yapıyoruz.
+  // temizliyoruz. Önceki il boşken (ilk render ya da düzenleme modunda
+  // form.reset ile verinin ilk dolması) temizlemiyoruz — yoksa kayıtlı
+  // ilçe, form dolar dolmaz siliniyordu.
   const previousIlKodu = useRef(selectedIlKodu);
   useEffect(() => {
-    if (previousIlKodu.current !== selectedIlKodu) {
+    if (previousIlKodu.current && previousIlKodu.current !== selectedIlKodu) {
       setValue("IlceKodu", "", { shouldValidate: false });
     }
     previousIlKodu.current = selectedIlKodu;

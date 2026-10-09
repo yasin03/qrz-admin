@@ -56,6 +56,7 @@ export interface SirketType {
   CreatedDate: string;
 
   IDKullanici: string;
+  SubeSayisi: number;
 }
 
 export interface CreateSirketRequest {

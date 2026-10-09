@@ -28,6 +28,7 @@ export default function Sirket({ idGurup }: SirketProps) {
     isLoading: isLoadingSirketler,
     isError: isErrorSirketler,
   } = useSirketler(idGurup);
+
   const router = useRouter();
   const deleteSirket = useDeleteSirket();
   const [silinecekSirket, setSilinecekSirket] = useState<SirketType | null>(
@@ -131,7 +132,7 @@ export default function Sirket({ idGurup }: SirketProps) {
         cell: ({ row }) => {
           const status = row.original.Durum;
           return (
-            <Badge variant={status ? "success" : "secondary"} className="w-20">
+            <Badge variant={status ? "success" : "secondary"}>
               {status ? "Aktif" : "Pasif"}
             </Badge>
           );
@@ -145,6 +146,11 @@ export default function Sirket({ idGurup }: SirketProps) {
             {formatDate(row.original.CreatedDate)}
           </span>
         ),
+      },
+      {
+        accessorKey: "SubeSayisi",
+        header: "Şube Sayısı",
+        cell: ({ row }) => <Badge>{row.original.SubeSayisi}</Badge>,
       },
     ],
     [],
@@ -177,11 +183,7 @@ export default function Sirket({ idGurup }: SirketProps) {
             onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => setOpenSirketEkle(true)}
-        >
+        <Button type="button" size="sm" onClick={() => setOpenSirketEkle(true)}>
           <Plus className="size-4" />
           Yeni Şirket Ekle
         </Button>

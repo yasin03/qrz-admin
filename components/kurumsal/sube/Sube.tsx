@@ -138,7 +138,6 @@ export default function Sube({ idSirket }: SubeProps) {
           return (
             <Badge
               variant={status ? "success" : "secondary"}
-              className="w-20"
             >
               {status ? "Aktif" : "Pasif"}
             </Badge>

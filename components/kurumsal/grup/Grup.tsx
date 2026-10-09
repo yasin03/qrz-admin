@@ -152,10 +152,7 @@ export default function Grup() {
         cell: ({ row }) => {
           const status = row.original.Durum;
           return (
-            <Badge
-              variant={status ? "success" : "danger"}
-              className="w-20"
-            >
+            <Badge variant={status ? "success" : "danger"}>
               {status ? "Aktif" : "Pasif"}
             </Badge>
           );
@@ -192,9 +189,7 @@ export default function Grup() {
       <div className="space-y-2">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-bold sm:text-2xl">
-              Kurumsal Yönetim
-            </h1>
+            <h1 className="text-xl font-bold sm:text-2xl">Kurumsal Yönetim</h1>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="w-full sm:w-48 sm:shrink-0">

@@ -25,12 +25,13 @@ import { useEffect, useRef } from "react";
 import { FormLabel } from "@/components/forms/form-label";
 
 const SIRKET_TIP_OPTIONS = [
-  { label: "Şahıs", value: "ŞAHIS" },
-  { label: "Şirket", value: "ŞİRKET" },
+  // DB bu alanı Türkçe karakter olmadan tutuyor ("SAHIS"), değerler de öyle.
+  { label: "Şahıs", value: "SAHIS" },
+  { label: "Şirket", value: "SIRKET" },
 ];
 const MULKIYET_OPTIONS = [
-  { label: "Kendi Mülkü", value: "Kendi Mülkü" },
-  { label: "Kiralık", value: "Kiralık" },
+  { label: "Kendi Mülkü", value: "1" },
+  { label: "Kiralık", value: "2" },
 ];
 
 // Her akordiyon bölümünün hangi form alanlarını kapsadığı — başlıkta hata
@@ -100,11 +101,12 @@ export function SirketFormFields({ control, setValue }: Props) {
     useVergiDaireleri(selectedIlKodu);
 
   // İl değişince, önceki ile ait seçili ilçe geçersiz kalabileceği için
-  // temizliyoruz. İlk render'da (henüz hiç il seçilmemişken) tetiklenmesin
-  // diye ref ile "gerçekten değişti mi" kontrolü yapıyoruz.
+  // temizliyoruz. Önceki il boşken (ilk render ya da düzenleme modunda
+  // form.reset ile verinin ilk dolması) temizlemiyoruz — yoksa kayıtlı
+  // ilçe, form dolar dolmaz siliniyordu.
   const previousIlKodu = useRef(selectedIlKodu);
   useEffect(() => {
-    if (previousIlKodu.current !== selectedIlKodu) {
+    if (previousIlKodu.current && previousIlKodu.current !== selectedIlKodu) {
       setValue("IlceKodu", "", { shouldValidate: false });
     }
     previousIlKodu.current = selectedIlKodu;
@@ -245,7 +247,13 @@ export function SirketFormFields({ control, setValue }: Props) {
             placeholder="5xx xxx xx xx"
             format="tel"
           />
-          <FormInput control={control} name="Fax" label="Faks" />
+          <FormInput
+            control={control}
+            name="Fax"
+            label="Faks"
+            placeholder="2xx xxx xx xx"
+            format="tel"
+          />
           <FormInput
             control={control}
             name="EpostaAdresi"

@@ -103,7 +103,7 @@ const queryTypes = {
   ADD_SUBE: (params) => `[Sube_Insert] ${buildSubeParams(params)}`,
 
   UPDATE_SUBE: (params) =>
-    `[Sube_UPDATEByIDSube] @IDSube=${sqlNum(params.IDSube)},${buildSubeParams(params)}`,
+    `[Sube_UPDATEByIDSube] ${sqlNum(params.IDSube)},${buildSubeParams(params)}`,
 
   // DÜZELTME: eskiden yanlışlıkla params.IDGurup kullanılıyordu (Grup
   // route'undan kopyalanmış), silinmesi gereken IDSube olmalı.
