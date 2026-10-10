@@ -18,6 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   Sidebar,
@@ -75,6 +76,8 @@ export function AppSidebar() {
   const { state, setOpenMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
   const user = useAuthStore((state) => state.user);
+  const clearUser = useAuthStore((state) => state.clearUser);
+  const queryClient = useQueryClient();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Optimistic navigation state
@@ -97,6 +100,10 @@ export function AppSidebar() {
     try {
       await logout();
     } finally {
+      // Önceki kullanıcının cache'lenmiş verileri (gruplar, şirketler vb.)
+      // sonraki girişte görünmesin diye React Query cache'ini boşaltıyoruz.
+      queryClient.clear();
+      clearUser();
       setIsLoggingOut(false);
       router.push("/login");
       router.refresh();

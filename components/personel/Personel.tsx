@@ -93,9 +93,6 @@ const Personel = () => {
   const sgkIslem = usePersonelSgkIslem();
   const [openPersonelEkle, setOpenPersonelEkle] = useState(false);
   const [openImport, setOpenImport] = useState(false);
-  const [duzenlenecekId, setDuzenlenecekId] = useState<string | number | null>(
-    null,
-  );
   const [secilenPersonel, setSecilenPersonel] = useState<{
     id: string | number;
     tip: "duzenle" | "detay";

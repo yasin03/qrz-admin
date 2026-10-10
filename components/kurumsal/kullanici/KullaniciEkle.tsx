@@ -213,7 +213,10 @@ const KullaniciEkle = ({ open, onOpenChange, kullanici, onSuccess }: Props) => {
         </DialogHeader>
 
         {/* Kullanıcı bilgileri — footer'daki Kaydet bu forma "form" id'si ile bağlı */}
-        <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
+        {/* relative: Radix Select'in gizli (position: absolute) native
+            <select>'leri bu scroll alanının içinde kalsın — yoksa dialog'u
+            taşırıp footer'ın altında boşluk oluşturuyorlar. */}
+        <div className="relative -mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
           <Card className="shadow-lg p-0 my-3">
             <CardHeader className="bg-gray-100 dark:bg-gray-700 p-2 px-4">
               <UserShield />

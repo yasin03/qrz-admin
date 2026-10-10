@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 import { Pencil, Power, Trash2, Loader2, Plus, Search } from "lucide-react";
 
-import { useDeleteSirket, useSirketler } from "@/hooks/use-kurumsal-data";
+import {
+  useAktifPasifSirket,
+  useDeleteSirket,
+  useSirketler,
+} from "@/hooks/use-kurumsal-data";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { RowAction, RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
@@ -31,6 +35,7 @@ export default function Sirket({ idGurup }: SirketProps) {
 
   const router = useRouter();
   const deleteSirket = useDeleteSirket();
+  const aktifPasifSirket = useAktifPasifSirket();
   const [silinecekSirket, setSilinecekSirket] = useState<SirketType | null>(
     null,
   );
@@ -61,9 +66,29 @@ export default function Sirket({ idGurup }: SirketProps) {
           toast.success("Şirket silindi");
           setSilinecekSirket(null);
         },
-        onError: () => {
+        onError: (err) => {
           toast.error("Şirket silinemedi", {
-            description: "Lütfen daha sonra tekrar deneyiniz.",
+            description: err.message || "Lütfen daha sonra tekrar deneyiniz.",
+          });
+        },
+      },
+    );
+  };
+
+  const handleToggleDurum = (sirket: SirketType) => {
+    const yeniDurum = sirket.Durum ? 0 : 1;
+
+    aktifPasifSirket.mutate(
+      { IDSirket: sirket.IDSirket, IDGurup: idGurup, Durum: yeniDurum },
+      {
+        onSuccess: () => {
+          toast.success(
+            yeniDurum ? "Şirket aktif yapıldı" : "Şirket pasif yapıldı",
+          );
+        },
+        onError: (err) => {
+          toast.error("Şirket durumu değiştirilemedi", {
+            description: err.message || "Lütfen daha sonra tekrar deneyiniz.",
           });
         },
       },
@@ -87,9 +112,9 @@ export default function Sirket({ idGurup }: SirketProps) {
               onClick: (r) => router.push(`/kurumsal/sirketler/${r.IDSirket}`),
             },
             {
-              label: sirket.Durum === 1 ? "Pasif Yap" : "Aktif Yap",
+              label: sirket.Durum ? "Pasif Yap" : "Aktif Yap",
               icon: Power,
-              onClick: (r) => console.log("durum değiştir", r.IDSirket),
+              onClick: (r) => handleToggleDurum(r),
             },
             {
               label: "Sil",
@@ -132,7 +157,7 @@ export default function Sirket({ idGurup }: SirketProps) {
         cell: ({ row }) => {
           const status = row.original.Durum;
           return (
-            <Badge variant={status ? "success" : "secondary"}>
+            <Badge variant={status ? "success" : "danger"}>
               {status ? "Aktif" : "Pasif"}
             </Badge>
           );

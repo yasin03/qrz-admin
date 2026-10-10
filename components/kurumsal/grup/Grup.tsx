@@ -16,7 +16,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { cn, normalize } from "@/lib/utils";
-import { useDeleteGrup, useKurumsalData } from "@/hooks/use-kurumsal-data";
+import {
+  useAktifPasifGrup,
+  useDeleteGrup,
+  useKurumsalData,
+} from "@/hooks/use-kurumsal-data";
 import GrupEkle from "./GrupEkle";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { RowAction, RowActions } from "@/components/customs/RowActions";
@@ -33,6 +37,7 @@ import Sirket from "../sirket/Sirket";
 export default function Grup() {
   const { gruplar, isLoadingGruplar, createGrup } = useKurumsalData();
   const deleteGrup = useDeleteGrup();
+  const aktifPasifGrup = useAktifPasifGrup();
 
   const [openGrup, setOpenGrup] = useState(false);
   const [openSirketEkle, setOpenSirketEkle] = useState(false);
@@ -79,7 +84,28 @@ export default function Grup() {
         onError: (err) => {
           console.error("Grup silinemedi", err);
           toast.error("Grup silinemedi", {
-            description: "Lütfen daha sonra tekrar deneyiniz.",
+            description: err.message || "Lütfen daha sonra tekrar deneyiniz.",
+          });
+        },
+      },
+    );
+  };
+
+  const handleToggleDurum = (grup: GrupType) => {
+    const yeniDurum = grup.Durum ? 0 : 1;
+
+    aktifPasifGrup.mutate(
+      { IDGurup: grup.IDGurup, Durum: yeniDurum },
+      {
+        onSuccess: () => {
+          toast.success(
+            yeniDurum ? "Grup aktif yapıldı" : "Grup pasif yapıldı",
+          );
+        },
+        onError: (err) => {
+          console.error("Grup durumu değiştirilemedi", err);
+          toast.error("Grup durumu değiştirilemedi", {
+            description: err.message || "Lütfen daha sonra tekrar deneyiniz.",
           });
         },
       },
@@ -110,7 +136,7 @@ export default function Grup() {
             {
               label: grup.Durum ? "Pasif Yap" : "Aktif Yap",
               icon: Power,
-              onClick: (r) => console.log("durum değiştir", r.IDGurup),
+              onClick: (r) => handleToggleDurum(r),
             },
             {
               label: "Sil",

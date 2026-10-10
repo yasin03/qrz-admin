@@ -108,6 +108,8 @@ const queryTypes = {
   // DÜZELTME: eskiden yanlışlıkla params.IDGurup kullanılıyordu (Grup
   // route'undan kopyalanmış), silinmesi gereken IDSube olmalı.
   DELETE_SUBE: (params) => `[Sube_DELETEByIDSube] '${params.IDSube}'`,
+  AKTIFPASIF_SUBE: (params) =>
+    `[Sube_AktifPasifYap] '${params.IDSube}','${params.Durum}'`,
 };
 
 export async function POST(request) {

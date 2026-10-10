@@ -4,7 +4,11 @@ import { useMemo, useState } from "react";
 import { Pencil, Power, Trash2, Loader2, Search, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { useSubeler, useDeleteSube } from "@/hooks/use-kurumsal-data";
+import {
+  useSubeler,
+  useDeleteSube,
+  useAktifPasifSube,
+} from "@/hooks/use-kurumsal-data";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { RowAction, RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
@@ -34,6 +38,7 @@ export default function Sube({ idSirket }: SubeProps) {
   } = useSubeler(idSirket);
   const router = useRouter();
   const deleteSube = useDeleteSube();
+  const aktifPasifSube = useAktifPasifSube();
   const [silinecekSube, setSilinecekSube] = useState<SubeType | null>(null);
   const [openSubeEkle, setOpenSubeEkle] = useState(false);
   const [duzenlenecekSube, setDuzenlenecekSube] = useState<SubeType | null>(
@@ -63,9 +68,29 @@ export default function Sube({ idSirket }: SubeProps) {
           toast.success("Şube silindi");
           setSilinecekSube(null);
         },
-        onError: () => {
+        onError: (err) => {
           toast.error("Şube silinemedi", {
-            description: "Lütfen daha sonra tekrar deneyiniz.",
+            description: err.message || "Lütfen daha sonra tekrar deneyiniz.",
+          });
+        },
+      },
+    );
+  };
+
+  const handleToggleDurum = (sube: SubeType) => {
+    const yeniDurum = sube.Durum ? 0 : 1;
+
+    aktifPasifSube.mutate(
+      { IDSube: sube.IDSube, IDSirket: idSirket, Durum: yeniDurum },
+      {
+        onSuccess: () => {
+          toast.success(
+            yeniDurum ? "Şube aktif yapıldı" : "Şube pasif yapıldı",
+          );
+        },
+        onError: (err) => {
+          toast.error("Şube durumu değiştirilemedi", {
+            description: err.message || "Lütfen daha sonra tekrar deneyiniz.",
           });
         },
       },
@@ -89,9 +114,9 @@ export default function Sube({ idSirket }: SubeProps) {
               onClick: (r) => router.push(`/kurumsal/subeler/${r.IDSube}`),
             },
             {
-              label: sube.Durum === 1 ? "Pasif Yap" : "Aktif Yap",
+              label: sube.Durum ? "Pasif Yap" : "Aktif Yap",
               icon: Power,
-              onClick: (r) => console.log("durum değiştir", r.IDSube),
+              onClick: (r) => handleToggleDurum(r),
             },
             {
               label: "Sil",
@@ -137,7 +162,7 @@ export default function Sube({ idSirket }: SubeProps) {
           const status = row.original.Durum;
           return (
             <Badge
-              variant={status ? "success" : "secondary"}
+              variant={status ? "success" : "danger"}
             >
               {status ? "Aktif" : "Pasif"}
             </Badge>

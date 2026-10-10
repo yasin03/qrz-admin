@@ -10,10 +10,11 @@ import {
 import {
   FormInput,
   FormLabel,
+  FormSearchSelect,
   FormSelect,
   FormSwitch,
 } from "@/components/forms";
-import { cn } from "@/lib/utils";
+import { cn, normalize } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,
@@ -24,6 +25,9 @@ import { useIlceler, useIller } from "@/hooks/use-il-ilce-vergi-data";
 import { useEffect, useMemo, useRef } from "react";
 import { PersonelForm } from "./PersonelFormType";
 import {
+  MESLEK_KODU_MIN_SEARCH,
+  useAsgariUcret,
+  useMeslekKodlari,
   usePersonelSabitTanimlar,
   useSabitTanimlar,
 } from "@/hooks/use-sabit-tanimlar";
@@ -38,6 +42,14 @@ const MEZUNIYET_YILI_OPTIONS = Array.from({ length: 41 }, (_, i) => {
   const year = String(currentYear - i);
   return { label: year, value: year };
 });
+
+// Günlük/saatlik ücret hesabı: ay 30 gün, gün 7,5 saat (ayda 225 saat)
+const AYLIK_GUN = 30;
+const GUNLUK_SAAT = 7.5;
+
+/** Sayıyı money formatındaki form değerine çevirir: 28075.5 -> "28075.50" */
+const toMoneyValue = (value: number) =>
+  (Math.round(value * 100) / 100).toFixed(2);
 
 type Props = {
   control: Control<PersonelForm>;
@@ -118,6 +130,7 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     }
     previousIlKodu.current = selectedIlKodu;
   }, [selectedIlKodu, setValue]);
+
   const {
     sgkDurumlari,
     istihdamDurumlari,
@@ -136,6 +149,60 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     gorevKodlari,
     isLoading,
   } = usePersonelSabitTanimlar();
+
+  // ---- Ücret hesaplama ----------------------------------------------------
+  // Asgari ücretli ise aylık ücret API'deki güncel asgari ücretten geliyor
+  // ve elle değiştirilemiyor:
+  //   - SGK durumu Emekli ise -> EmekliNet (emeklide net/brüt ayrımı yok)
+  //   - Ücret tipi Brüt ise   -> Brut
+  //   - Aksi halde (Net)      -> Net
+  // Değilse kullanıcı aylık ücreti kendisi giriyor. Her iki durumda da günlük
+  // ve saatlik ücret aylıktan türetiliyor (30 gün, günde 7,5 saat).
+  //
+  // Emekli / Brüt kontrolü ID ile değil seçilen maddenin ADI ile yapılıyor
+  // (sabit tanım ID'leri ortamdan ortama değişebilir).
+  const asgariUcretli = useWatch({ control, name: "AsgeriUcretli" });
+  const ozurluDurumu = useWatch({ control, name: "OzurluDurumu" });
+  const sgkDurumu = useWatch({ control, name: "SgkDurumu" });
+  const ucretTipi = useWatch({ control, name: "UcretTipi" });
+  const aylikUcret = useWatch({ control, name: "Ucret" });
+
+  const { data: asgariUcret, isLoading: isLoadingAsgariUcret } =
+    useAsgariUcret();
+
+  const isEmekli = normalize(
+    sgkDurumlari.find((item) => item.value === String(sgkDurumu))?.label,
+  ).includes("emekli");
+
+  const isBrut = normalize(
+    ucretTipleri.find((item) => item.value === String(ucretTipi))?.label,
+  ).includes("brut");
+
+  useEffect(() => {
+    if (!asgariUcretli || !asgariUcret) return;
+
+    const tutar = isEmekli
+      ? asgariUcret.EmekliNet
+      : isBrut
+        ? asgariUcret.Brut
+        : asgariUcret.Net;
+
+    setValue("Ucret", toMoneyValue(tutar), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [asgariUcretli, isEmekli, isBrut, asgariUcret, setValue]);
+
+  useEffect(() => {
+    const aylik = Number(aylikUcret);
+    const hasUcret = Boolean(aylikUcret) && Number.isFinite(aylik);
+
+    setValue("GunlukUcret", hasUcret ? toMoneyValue(aylik / AYLIK_GUN) : "");
+    setValue(
+      "SaatlikUcret",
+      hasUcret ? toMoneyValue(aylik / (AYLIK_GUN * GUNLUK_SAAT)) : "",
+    );
+  }, [aylikUcret, setValue]);
 
   return (
     <Accordion type="single" defaultValue="personel" className="w-full">
@@ -246,11 +313,14 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               label="* SGK Belge Türü"
               options={sgkBelgeTurleri}
             />
-            <FormSelect
+            <FormSearchSelect
               control={control}
               name="PersonelMeslekKodu"
               label="* Meslek Kodu"
-              options={sgkDurumlari}
+              placeholder="Meslek seçin"
+              searchPlaceholder="Meslek adı yazın (örn. muhasebe)"
+              useOptions={useMeslekKodlari}
+              minSearchLength={MESLEK_KODU_MIN_SEARCH}
             />
             <FormSelect
               control={control}
@@ -300,18 +370,19 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               name="VardiyaliCalismaDurumu"
               label="Vardiyalı Çalışma Durumu"
             />
-            <FormSwitch
-              control={control}
-              name="AzCalismaDurumu"
-              label="Az Çalışma Durumu"
-            />
-            <FormInput
-              control={control}
-              name="AzCalismaDurumuGunSayisi"
-              label="Az Çalışma Gün Sayısı"
-              format="number"
-              disabled={!useWatch({ control, name: "AzCalismaDurumu" })}
-            />
+            <FormLabel label="Az Çalışma Durumu ve Gün">
+              <FormSwitch
+                control={control}
+                name="AzCalismaDurumu"
+                className="w-auto flex-none! self-center p-0"
+              />
+              <FormInput
+                control={control}
+                name="AzCalismaDurumuGunSayisi"
+                format="number"
+                disabled={!useWatch({ control, name: "AzCalismaDurumu" })}
+              />
+            </FormLabel>
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -353,23 +424,38 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               control={control}
               name="AsgeriUcretli"
               label="* Asgari Ücretli Mi?"
+              onCheckedChange={(checked) => {
+                // Asgari ücretliden çıkınca asgari ücret tutarı kalmasın,
+                // kullanıcı ücreti baştan girsin. (Açılınca tutarı yukarıdaki
+                // effect API'den set ediyor.)
+                if (!checked) {
+                  setValue("Ucret", toMoneyValue(0), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              }}
             />
             <FormSwitch
               control={control}
               name="EskiHukumluDurumu"
               label="Eski Hükümlü Mü?"
             />
-            <FormSwitch
-              control={control}
-              name="OzurluDurumu"
-              label="Sakatlık İndirimi Uygula"
-            />
-            <FormSelect
-              control={control}
-              name="OzurlulukDerecesi"
-              label="Özürlülük Derecesi"
-              options={ozurlulukDurumlari}
-            />
+            <FormLabel label="Sakatlık İndirimi Uygula">
+              {/* FormLabel çocuklarına flex-1 veriyor; switch içeriği kadar
+                  yer kaplasın, kalan genişliği select alsın. */}
+              <FormSwitch
+                control={control}
+                name="OzurluDurumu"
+                className="w-auto flex-none! self-center p-0"
+              />
+              <FormSelect
+                control={control}
+                name="OzurlulukDerecesi"
+                options={ozurlulukDurumlari}
+                hidden={!ozurluDurumu}
+              />
+            </FormLabel>
             <FormSelect
               control={control}
               name="MaasParaBirimi"
@@ -377,9 +463,29 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               options={maasParaBirimleri}
             />
             <FormLabel label="* Ücret (Aylık/Günlük/Saatlik)">
-              <FormInput control={control} name="Ucret" format="money" />
-              <FormInput control={control} name="GunlukUcret" format="money" />
-              <FormInput control={control} name="SaatlikUcret" format="money" />
+              <FormInput
+                control={control}
+                name="Ucret"
+                format="money"
+                readOnly={asgariUcretli}
+                placeholder={
+                  asgariUcretli && isLoadingAsgariUcret
+                    ? "Yükleniyor..."
+                    : undefined
+                }
+              />
+              <FormInput
+                control={control}
+                name="GunlukUcret"
+                format="money"
+                readOnly
+              />
+              <FormInput
+                control={control}
+                name="SaatlikUcret"
+                format="money"
+                readOnly
+              />
             </FormLabel>
           </div>
         </AccordionContent>

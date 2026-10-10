@@ -169,16 +169,26 @@ const HeaderCompany = () => {
   // oluşmaz; diğer sayfalar (personel, lokasyon, ...) IDSirket'i bu
   // cookie'den okuduğu için null hataları alır. Bu yüzden kaydedilmiş bir
   // context yoksa, otomatik seçilen varsayılanları arka planda kaydediyoruz.
+  // Kayıtlı context var ama şubesi boşsa da (ör. yetkili kullanıcının
+  // KullaniciSonIslem kaydı şubesiz) kaydediyoruz — yoksa header'da ilk şube
+  // seçili görünse de cookie'de IDSube olmadığı için personel gibi şubeye
+  // bağlı sayfalar hiç istek atmıyordu.
   useEffect(() => {
+    const isContextComplete = Boolean(savedContext?.IDSube);
+
     if (
       hasAutoSaved.current ||
       isLoadingContext ||
-      savedContext ||
+      isContextComplete ||
       saveContext.isPending ||
       !selectedSirket
     ) {
       return;
     }
+
+    // Şubesiz kayıtlı context'i, yine şubesiz olarak tekrar kaydetmenin
+    // anlamı yok — şube listesi gelip bir şube seçilene kadar bekle.
+    if (savedContext && !selectedSube) return;
 
     hasAutoSaved.current = true;
     saveContext.mutate({

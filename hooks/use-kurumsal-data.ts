@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
+  AktifPasifGrupRequest,
   CreateGrupRequest,
   DeleteGrupRequest,
   GrupType,
@@ -52,6 +53,31 @@ async function callKurumsalApi<T>(
   }
 
   return response.json();
+}
+
+/**
+ * Ekle/güncelle/sil gibi işlemler için. Stored procedure'ler iş kuralı
+ * hatalarında HTTP 200 ile `{ test: 0, sonuc: "<hata mesajı>" }` dönüyor
+ * (örn. "Aynı Vergi numarası ile daha önce oluşturulmuş..").
+ * Bunu hata olarak fırlatıyoruz ki mutation onError'a düşsün, onSuccess
+ * (ve "başarılı" toast'ı) çalışmasın. `test` alanı dönmeyen
+ * procedure'ler için davranış değişmiyor.
+ */
+async function callKurumsalMutation<T>(
+  url: string,
+  payload: Record<string, unknown>,
+): Promise<T> {
+  const data = await callKurumsalApi<T>(url, payload);
+
+  const result = (Array.isArray(data) ? data[0] : data) as
+    | { test?: unknown; sonuc?: string }
+    | undefined;
+
+  if (result && typeof result === "object" && Number(result.test) === 0) {
+    throw new Error(result.sonuc || "İşlem başarısız oldu.");
+  }
+
+  return data;
 }
 
 function normalizeListResponse<T>(data: ApiListResponse<T>): T[] {
@@ -113,7 +139,7 @@ export function useCreateGrup() {
 
   return useMutation({
     mutationFn: (payload: CreateGrupRequest) =>
-      callKurumsalApi("/api/kurumsal/grup", {
+      callKurumsalMutation("/api/kurumsal/grup", {
         type: "ADD_GRUP",
         ...payload,
       }),
@@ -130,7 +156,7 @@ export function useUpdateGrup() {
 
   return useMutation({
     mutationFn: (payload: CreateGrupRequest) =>
-      callKurumsalApi("/api/kurumsal/grup", {
+      callKurumsalMutation("/api/kurumsal/grup", {
         type: "UPDATE_GRUP",
         ...payload,
       }),
@@ -147,13 +173,34 @@ export function useDeleteGrup() {
 
   return useMutation({
     mutationFn: (payload: DeleteGrupRequest) =>
-      callKurumsalApi("/api/kurumsal/grup", {
+      callKurumsalMutation("/api/kurumsal/grup", {
         type: "DELETE_GRUP",
         IDGurup: payload.IDGurup,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: kurumsalKeys.gruplar(),
+      });
+    },
+  });
+}
+
+export function useAktifPasifGrup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: AktifPasifGrupRequest) =>
+      callKurumsalMutation("/api/kurumsal/grup", {
+        type: "AKTIFPASIF_GRUP",
+        IDGurup: payload.IDGurup,
+        Durum: payload.Durum,
+      }),
+    onSuccess: () => {
+      // API grubu pasife alınca altındaki şirket/şube/bölümleri de pasife
+      // alıyor — bu yüzden sadece grup listesini değil, tüm kurumsal
+      // cache'i geçersiz kılıyoruz (açık olan tüm gridler yeniden çekilir).
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.all,
       });
     },
   });
@@ -203,7 +250,7 @@ export function useCreateSirket() {
         "IDSirket" | "IDFirma" | "IDKullanici"
       >,
     ) =>
-      callKurumsalApi("/api/kurumsal/sirket", {
+      callKurumsalMutation("/api/kurumsal/sirket", {
         type: "ADD_SIRKET",
         ...payload,
       }),
@@ -222,7 +269,7 @@ export function useUpdateSirket() {
     mutationFn: (
       payload: Omit<UpdateSirketRequest, "IDFirma" | "IDKullanici">,
     ) =>
-      callKurumsalApi("/api/kurumsal/sirket", {
+      callKurumsalMutation("/api/kurumsal/sirket", {
         type: "UPDATE_SIRKET",
         ...payload,
       }),
@@ -239,7 +286,7 @@ export function useDeleteSirket() {
 
   return useMutation({
     mutationFn: (payload: { IDSirket: number; IDGurup: number }) =>
-      callKurumsalApi("/api/kurumsal/sirket", {
+      callKurumsalMutation("/api/kurumsal/sirket", {
         type: "DELETE_SIRKET",
         IDSirket: payload.IDSirket,
       }),
@@ -247,6 +294,42 @@ export function useDeleteSirket() {
       // Sadece bu şirketin ait olduğu grubun şirket listesini geçersiz kıl
       queryClient.invalidateQueries({
         queryKey: kurumsalKeys.sirketler(variables.IDGurup),
+      });
+    },
+  });
+}
+
+export function useAktifPasifSirket() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    /** Durum: şirketin YENİ durumu (1 = aktif, 0 = pasif) */
+    mutationFn: (payload: { IDSirket: number; IDGurup: number; Durum: 0 | 1 }) =>
+      callKurumsalMutation("/api/kurumsal/sirket", {
+        type: "AKTIFPASIF_SIRKET",
+        IDSirket: payload.IDSirket,
+        Durum: payload.Durum,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.sirketler(variables.IDGurup),
+      });
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.sirketDetay(variables.IDSirket),
+      });
+      // API şirketi pasife alınca altındaki şubeleri (ve onların
+      // bölümlerini) de pasife alıyor — o gridler de yeniden çekilsin.
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.subeler(variables.IDSirket),
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...kurumsalKeys.all, "subeDetay"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...kurumsalKeys.all, "bolumler"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...kurumsalKeys.all, "bolumDetay"],
       });
     },
   });
@@ -291,7 +374,7 @@ export function useCreateSube() {
 
   return useMutation({
     mutationFn: (payload: Omit<CreateSubeRequest, "IDKullanici">) =>
-      callKurumsalApi("/api/kurumsal/sube", {
+      callKurumsalMutation("/api/kurumsal/sube", {
         type: "ADD_SUBE",
         ...payload,
       }),
@@ -308,7 +391,7 @@ export function useUpdateSube() {
 
   return useMutation({
     mutationFn: (payload: Omit<UpdateSubeRequest, "IDKullanici">) =>
-      callKurumsalApi("/api/kurumsal/sube", {
+      callKurumsalMutation("/api/kurumsal/sube", {
         type: "UPDATE_SUBE",
         ...payload,
       }),
@@ -325,13 +408,35 @@ export function useDeleteSube() {
 
   return useMutation({
     mutationFn: (payload: { IDSube: number; IDSirket: number }) =>
-      callKurumsalApi("/api/kurumsal/sube", {
+      callKurumsalMutation("/api/kurumsal/sube", {
         type: "DELETE_SUBE",
         IDSube: payload.IDSube,
       }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: kurumsalKeys.subeler(variables.IDSirket),
+      });
+    },
+  });
+}
+
+export function useAktifPasifSube() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    /** Durum: şubenin YENİ durumu (1 = aktif, 0 = pasif) */
+    mutationFn: (payload: { IDSube: number; IDSirket: number; Durum: 0 | 1 }) =>
+      callKurumsalMutation("/api/kurumsal/sube", {
+        type: "AKTIFPASIF_SUBE",
+        IDSube: payload.IDSube,
+        Durum: payload.Durum,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.subeler(variables.IDSirket),
+      });
+      queryClient.invalidateQueries({
+        queryKey: kurumsalKeys.subeDetay(variables.IDSube),
       });
     },
   });
@@ -362,7 +467,7 @@ export function useCreateBolum() {
 
   return useMutation({
     mutationFn: (payload: CreateBolumRequest) =>
-      callKurumsalApi("/api/kurumsal/bolum", {
+      callKurumsalMutation("/api/kurumsal/bolum", {
         type: "ADD_BOLUM",
         ...payload,
       }),
@@ -379,7 +484,7 @@ export function useUpdateBolum() {
 
   return useMutation({
     mutationFn: (payload: UpdateBolumRequest) =>
-      callKurumsalApi("/api/kurumsal/bolum", {
+      callKurumsalMutation("/api/kurumsal/bolum", {
         type: "UPDATE_BOLUM",
         ...payload,
       }),
@@ -396,7 +501,7 @@ export function useDeleteBolum() {
 
   return useMutation({
     mutationFn: (payload: DeleteBolumRequest) =>
-      callKurumsalApi("/api/kurumsal/bolum", {
+      callKurumsalMutation("/api/kurumsal/bolum", {
         type: "DELETE_BOLUM",
         IDBolum: payload.IDBolum,
       }),

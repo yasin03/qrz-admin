@@ -65,22 +65,22 @@ const Page = () => {
 
   return (
     <div className="grid min-h-screen">
-      <div className="relative flex min-h-screen flex-col justify-between overflow-hidden bg-sidebar-accent">
+      <div className="relative flex min-h-screen flex-col justify-between overflow-hidden bg-sidebar-accent dark:bg-background">
         {/* Dekoratif ışık lekeleri */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-info/25 blur-3xl lg:size-96"
+          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-info/25 blur-3xl lg:size-96 dark:bg-info/20"
         />
 
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 left-0 size-64 rounded-full bg-info/10 blur-3xl lg:size-80"
+          className="pointer-events-none absolute bottom-0 left-0 size-64 rounded-full bg-info/10 blur-3xl lg:size-80 dark:bg-info/5"
         />
 
         {/* İnce nokta deseni */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.15]"
+          className="pointer-events-none absolute inset-0 opacity-[0.15] dark:opacity-[0.04]"
           style={{
             backgroundImage:
               "radial-gradient(currentColor 3px, transparent 1px)",
@@ -96,15 +96,24 @@ const Page = () => {
 
         {/* Form */}
         <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-6 sm:px-6">
-          <Card className="w-full max-w-sm p-6 shadow-lg sm:p-8 lg:max-w-md lg:p-10">
+          <Card className="w-full max-w-sm p-6 shadow-lg sm:p-8 lg:max-w-md lg:p-10 dark:shadow-2xl dark:shadow-black/40 dark:ring-white/10">
             <div className="mb-6 flex justify-center sm:mb-8">
+              {/* Sidebar'daki gibi: açık temada logo-pri, koyu temada logo-sec */}
               <div className="relative h-24 w-full sm:h-28 lg:h-36">
                 <Image
                   src="/logos/logo-pri.png"
                   alt="Logo"
                   fill
                   sizes="(min-width: 1024px) 448px, 100vw"
-                  className="object-contain"
+                  className="object-contain dark:hidden"
+                  priority
+                />
+                <Image
+                  src="/logos/logo-sec.png"
+                  alt="Logo"
+                  fill
+                  sizes="(min-width: 1024px) 448px, 100vw"
+                  className="hidden object-contain dark:block"
                   priority
                 />
               </div>

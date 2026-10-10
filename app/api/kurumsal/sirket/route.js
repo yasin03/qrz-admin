@@ -62,6 +62,8 @@ const queryTypes = {
     `[Sirket_UpdateByIDSirket] ${sqlNum(params.IDSirket)},${buildSirketParams(params)}`,
 
   DELETE_SIRKET: (params) => `[Sirket_DELETEByIDSirket] '${params.IDSirket}'`,
+  AKTIFPASIF_SIRKET: (params) =>
+    `[Sirket_AktifPasifYap] '${params.IDSirket}','${params.Durum}'`,
 };
 
 export async function POST(request) {

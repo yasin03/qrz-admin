@@ -100,7 +100,9 @@ export function FormMultiSelect<T extends FieldValues>({
         const hiddenCount = selectedValues.length - visibleChips.length;
 
         const trigger = (
-          <Popover open={open} onOpenChange={setOpen}>
+          // modal: Dialog içinde listenin tekerlekle scroll olabilmesi için
+          // (bkz. FormSearchSelect).
+          <Popover modal open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
                 type="button"

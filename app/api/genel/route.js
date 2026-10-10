@@ -9,10 +9,16 @@ const queryTypes = {
     `[VergiDairesi_SELECTByIlKodu] '${params.IlKodu}',''`,
 
   GET_IZIN_TIPLERI: (params) => `[PersonelEksikGunNedeni_SELECTAll]`,
-  GET_TAHAKKUK_TIPLERI: (params) => `[TahakkukSaha_SELECTByIslem] '${params.Tip}'`,
+  GET_TAHAKKUK_TIPLERI: (params) =>
+    `[TahakkukSaha_SELECTByIslem] '${params.Tip}'`,
   GET_SABIT_TANIMLAR: (params) => `[SabitTanimMadde_SELECTAll]`,
   GET_PERSONEL_SABIT_TANIMLAR: (params) =>
     `[PersonelSgkBelgeTuru_SELECTAllTypes]`,
+  // Adi kullanıcının arama kutusuna yazdığı serbest metin — tek tırnağı
+  // kaçırıyoruz ki sorgu bozulmasın / SQL injection'a açık olmasın.
+  GET_PERSONEL_MESLEKKODU: (params) =>
+    `[PersonelMeslekKodu_SELECT] '${String(params.Adi ?? "").replace(/'/g, "''")}'`,
+  GET_ASGARI_UCRET: (params) => `[Gosterge_SELECTByYil] '',''`,
 };
 
 export const POST = withSession(async (request, session) => {
@@ -25,7 +31,8 @@ export const POST = withSession(async (request, session) => {
       IDKullanici: session.user.IDKullanici,
       IDUlke: payload.IDUlke,
       IlKodu: payload.IlKodu,
-      Tip : payload.Tip
+      Tip: payload.Tip,
+      Adi: payload.Adi,
     };
 
     const queryFunction = queryTypes[type];

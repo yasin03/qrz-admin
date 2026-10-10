@@ -139,7 +139,7 @@ export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
     const { type } = payload;
-
+console.log("POST /api/personel payload:", payload);
     if (session.isMobile && !MOBILE_ALLOWED_TYPES.includes(type)) {
       return fail(true, "Bu islem mobilde desteklenmiyor.", 403, "FORBIDDEN");
     }
@@ -180,6 +180,7 @@ export const POST = withSession(async (request, session) => {
     }
 
     const query = queryFunction(queryParams);
+    console.log("Executing query personel : ", query);
     const result = await ExecuteQuery(query);
 
     return ok(session.isMobile, result);

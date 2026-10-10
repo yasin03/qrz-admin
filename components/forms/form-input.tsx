@@ -19,12 +19,11 @@ import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
+  PopoverAnchor,
   PopoverContent,
-  PopoverTrigger,
 } from "@/components/ui/popover";
 
 // ---- Format tipleri ve dönüştürücüleri -----------------------------------
@@ -602,10 +601,47 @@ function UncontrolledFormInput(props: UncontrolledFormInputProps) {
   );
 }
 
-// ---- type="date" için Calendar + Popover tabanlı seçici ------------------
+// ---- type="date" için elle yazılabilir tarih alanı + takvim ---------------
 // Form değeri hâlâ "yyyy-MM-dd" string olarak tutuluyor (mevcut zod
-// şemaların, API'ye gönderimin beklediği format) — sadece görsel seçim
-// deneyimi değişiyor, dışarıya döndürülen veri tipi aynı kalıyor.
+// şemaların, API'ye gönderimin beklediği format). Ekranda "gg.aa.yyyy"
+// gösteriliyor; kullanıcı ister yazıyor (24.03.2026, 24-03-2026,
+// 24/03/2026, 24032026), ister sağdaki ikondan takvimle seçiyor.
+
+const DISPLAY_DATE_FORMAT = "dd.MM.yyyy";
+const VALUE_DATE_FORMAT = "yyyy-MM-dd";
+
+/** "yyyy-MM-dd" form değerini ekran formatına çevirir; geçersizse "". */
+function toDisplayDate(value: unknown): string {
+  if (!value || typeof value !== "string") return "";
+  const date = parseISO(value);
+  return isValid(date) ? formatDate(date, DISPLAY_DATE_FORMAT) : "";
+}
+
+/**
+ * Kullanıcının yazdığı metni tarihe çevirir. Kabul edilenler:
+ * 24.03.2026 / 24-03-2026 / 24/03/2026 (gün ve ay tek hane de olabilir)
+ * ve ayraçsız 24032026. 31.02.2026 gibi takvimde olmayan tarihler geçersiz.
+ */
+function parseDisplayDate(text: string): Date | null {
+  const trimmed = text.trim();
+  const match =
+    trimmed.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/) ??
+    trimmed.match(/^(\d{2})(\d{2})(\d{4})$/);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  if (year < 1900 || year > 2100) return null;
+
+  const date = new Date(year, month - 1, day);
+  const isSameDate =
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day;
+
+  return isSameDate ? date : null;
+}
 
 type DateFieldProps = {
   id: string;
@@ -623,42 +659,143 @@ function DateField({
   className,
 }: DateFieldProps) {
   const [open, setOpen] = useState(false);
+  const [text, setText] = useState(() => toDisplayDate(field.value));
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  // Takvimde gösterilen ay (seçili tarihten bağımsız gezinilebiliyor).
+  const [month, setMonth] = useState<Date | undefined>(() =>
+    field.value && isValid(parseISO(field.value))
+      ? parseISO(field.value)
+      : undefined,
+  );
+  // field.value'nun EN SON kendi onChange'imizle mi değiştiğini, yoksa
+  // dışarıdan mı (form.reset gibi) değiştiğini ayırt etmek için
+  // (MoneyField ile aynı yaklaşım).
+  const lastEmitted = useRef(field.value);
+
+  useEffect(() => {
+    if (field.value !== lastEmitted.current) {
+      setText(toDisplayDate(field.value));
+      lastEmitted.current = field.value;
+      if (field.value && isValid(parseISO(field.value))) {
+        setMonth(parseISO(field.value));
+      }
+    }
+  }, [field.value]);
+
+  const emit = (value: string) => {
+    lastEmitted.current = value;
+    field.onChange(value);
+  };
 
   const selectedDate =
     field.value && isValid(parseISO(field.value))
       ? parseISO(field.value)
       : undefined;
 
+  // Yazarken: metin geçerli bir tarih olur olmaz form değerini güncelle;
+  // tamamen silinirse değeri temizle. Yarım metinde form değerine dokunma.
+  const handleChange = (nextText: string) => {
+    const cleaned = nextText.replace(/[^\d./-]/g, "").slice(0, 10);
+    setText(cleaned);
+
+    if (!cleaned) {
+      emit("");
+      return;
+    }
+
+    const parsed = parseDisplayDate(cleaned);
+    if (parsed) {
+      emit(formatDate(parsed, VALUE_DATE_FORMAT));
+      setMonth(parsed);
+    }
+  };
+
+  // Alan bırakılınca: geçerliyse "gg.aa.yyyy" şeklinde düzelt (24-3-2026 ->
+  // 24.03.2026), geçersizse son geçerli tarihe geri dön.
+  const commit = () => {
+    const parsed = parseDisplayDate(text);
+    if (parsed) {
+      setText(formatDate(parsed, DISPLAY_DATE_FORMAT));
+    } else if (text.trim()) {
+      setText(toDisplayDate(field.value));
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          id={id}
-          type="button"
-          color="secondary"
-          appearance="outline"
-          disabled={disabled}
-          className={cn(
-            "w-full justify-start gap-2 font-normal",
-            !selectedDate && "text-muted-foreground",
-            className,
-          )}
-        >
-          <CalendarIcon className="size-4 shrink-0" />
-          {selectedDate ? (
-            formatDate(selectedDate, "d MMMM yyyy", { locale: tr })
-          ) : (
-            <span>{placeholder || "Tarih seçin"}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
+      {/* Input Popover'ın tetikleyicisi değil çıpası: tıklayınca takvim
+          açılıyor ama odak input'ta kalıyor, kullanıcı yazmaya devam
+          edebiliyor. */}
+      <PopoverAnchor asChild>
+        <div ref={wrapperRef} className="relative">
+          <Input
+            id={id}
+            name={field.name}
+            ref={field.ref}
+            value={text}
+            onChange={(event) => {
+              handleChange(event.target.value);
+              setOpen(true);
+            }}
+            onClick={() => setOpen(true)}
+            onBlur={() => {
+              commit();
+              field.onBlur();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                commit();
+                setOpen(false);
+              } else if (event.key === "Escape" || event.key === "Tab") {
+                setOpen(false);
+              } else if (event.key === "ArrowDown") {
+                setOpen(true);
+              }
+            }}
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder={placeholder || "gg.aa.yyyy"}
+            disabled={disabled}
+            className={cn("pr-9", className)}
+          />
 
-      <PopoverContent className="w-auto p-0" align="start">
+          <button
+            type="button"
+            tabIndex={-1}
+            disabled={disabled}
+            aria-label="Takvimden tarih seç"
+            onClick={() => setOpen((prev) => !prev)}
+            className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+          >
+            <CalendarIcon className="size-4" />
+          </button>
+        </div>
+      </PopoverAnchor>
+
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        // Açılınca odağı takvime taşıma — kullanıcı input'ta yazmaya devam etsin.
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        // Input'a / ikona tıklamak "dışarı tıklama" sayılıp takvimi
+        // kapatmasın (onları kendi handler'ları yönetiyor).
+        onInteractOutside={(event) => {
+          if (wrapperRef.current?.contains(event.target as Node)) {
+            event.preventDefault();
+          }
+        }}
+      >
         <Calendar
           mode="single"
           selected={selectedDate}
+          // Kontrollü ay: yazılan tarih geçerli olunca takvim o aya geçiyor.
+          month={month}
+          onMonthChange={setMonth}
           onSelect={(date) => {
-            field.onChange(date ? formatDate(date, "yyyy-MM-dd") : "");
+            const value = date ? formatDate(date, VALUE_DATE_FORMAT) : "";
+            emit(value);
+            setText(toDisplayDate(value));
             setOpen(false);
           }}
           locale={tr}

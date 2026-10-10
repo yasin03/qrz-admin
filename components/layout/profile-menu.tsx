@@ -11,6 +11,7 @@ import {
   UserCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,7 @@ const ProfileMenu = () => {
   const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -40,6 +42,9 @@ const ProfileMenu = () => {
     try {
       await logout();
     } finally {
+      // Önceki kullanıcının cache'lenmiş verileri (gruplar, şirketler vb.)
+      // sonraki girişte görünmesin diye React Query cache'ini boşaltıyoruz.
+      queryClient.clear();
       clearUser();
       setIsLoggingOut(false);
       router.push("/login");

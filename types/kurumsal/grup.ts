@@ -38,6 +38,12 @@ export interface DeleteGrupRequest {
   IDGurup: number;
 }
 
+export interface AktifPasifGrupRequest {
+  IDGurup: number;
+  /** Grubun YENİ durumu: 1 = aktif, 0 = pasif */
+  Durum: 0 | 1;
+}
+
 export interface GrupKullanici {
   IDKullanici: number;
   AdSoyad: string;

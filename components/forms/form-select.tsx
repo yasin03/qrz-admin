@@ -34,6 +34,12 @@ type FormSelectProps<T extends FieldValues> = {
    */
   vertical?: boolean;
   className?: string;
+  /**
+   * true verilirse hiçbir şey render edilmez. Alan forma kayıtlı kalır,
+   * değeri korunur — sadece görünmez (örn. başka bir alana bağlı koşullu
+   * gösterim: hidden={!ozurluDurumu}).
+   */
+  hidden?: boolean;
 };
 
 export function FormSelect<T extends FieldValues>({
@@ -49,12 +55,15 @@ export function FormSelect<T extends FieldValues>({
   labelKey = "label",
   vertical = true,
   className,
+  hidden,
 }: FormSelectProps<T>) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => {
+        if (hidden) return <></>;
+
         const hasLabel = Boolean(label);
 
         const selectValue =

@@ -11,6 +11,8 @@ const queryTypes = {
   UPDATE_GRUP: (params) =>
     `[Gurup_UPDATEByIDGurup] '${params.IDGurup}','${params.GurupAdi}', '${params.YetkiliKisi}', '${params.IsTel}', '${params.Tel}', '${params.IDKullanici}', '${params.Durum}'`,
   DELETE_GRUP: (params) => `[Gurup_DELETEByIDGurup] '${params.IDGurup}'`,
+  AKTIFPASIF_GRUP: (params) =>
+    `[Gurup_AktifPasifYap] '${params.IDGurup}','${params.Durum}'`,
 };
 
 export async function POST(request) {
@@ -22,7 +24,7 @@ export async function POST(request) {
     const user = await joseDecrypt(user_token);
     const grsisudo_token = request.cookies.get("grsisudo")?.value;
     const grsisudo = await joseDecrypt(grsisudo_token);
-    
+
     if (!user) {
       return NextResponse.json(
         { message: "Kullanıcı Bilgisi Bulunamadı." },

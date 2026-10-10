@@ -1,10 +1,12 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { SelectOption } from "@/types/form";
 import type {
+  AsgariUcret,
   EklentiTipi,
   GorevKodu,
   IzinTipleri,
+  MeslekKodu,
   SabitTanimlarResponse,
   SabitTanimMadde,
   SgkBelgeTuru,
@@ -51,6 +53,12 @@ const getTahakkukTipleri = (tip: string) =>
   postGenel(
     { type: "GET_TAHAKKUK_TIPLERI", Tip: tip },
     "Eklenti tipleri alınamadı.",
+  );
+
+const getMeslekKodlari = (search: string) =>
+  postGenel(
+    { type: "GET_PERSONEL_MESLEKKODU", Adi: search },
+    "Meslek kodları alınamadı.",
   );
 
 // ---- Mappers ----------------------------------------------------------
@@ -105,7 +113,14 @@ const toGorevKoduOptions = (value: unknown) =>
     label: item.Aciklama,
   }));
 
-const toIzinTipleriOptions = (value: unknown) =>
+// Personel kaydında meslek kodu ID değil, kodun kendisi ("0210.00") tutuluyor.
+const toMeslekKoduOptions = (value: unknown) =>
+  mapOptions<MeslekKodu>(value, (item) => ({
+    value: String(item.Kod),
+    label: String(item.Kod2),
+  }));
+
+const toIzinTipleriOptions =(value: unknown) =>
   mapOptions<IzinTipleri>(value, (item) => ({
     value: String(item.KisaKod),
     label: item.Kod,
@@ -202,4 +217,73 @@ export function usePersonelSabitTanimlar() {
     eklentiTipleri: toTahakkukTipleriOptions(eklentiQuery.data),
     kesintiTipleri: toTahakkukTipleriOptions(kesintiQuery.data),
   };
+}
+
+// ---- GET_PERSONEL_MESLEKKODU (arama ile) ------------------------------
+// Meslek kodu listesi çok büyük olduğu için tamamı hiç çekilmiyor; sadece
+// kullanıcının yazdığı metni içeren kayıtlar API'den isteniyor ("muh" ->
+// muhasebeci, muhasebe uzmanı, ...). FormSearchSelect'e `useOptions` olarak
+// verilmek üzere tasarlandı — debounce'u component yapıyor.
+
+export const MESLEK_KODU_MIN_SEARCH = 2;
+
+export const meslekKodlariKeys = {
+  all: ["personel-meslek-kodlari"] as const,
+  search: (search: string) => [...meslekKodlariKeys.all, search] as const,
+};
+
+export function useMeslekKodlari(search: string) {
+  const term = search.trim();
+
+  const query = useQuery({
+    queryKey: meslekKodlariKeys.search(term),
+    queryFn: () => getMeslekKodlari(term),
+    enabled: term.length >= MESLEK_KODU_MIN_SEARCH,
+    select: toMeslekKoduOptions,
+    staleTime: STALE_TIME,
+    // Yeni arama sonucu gelene kadar önceki sonuçlar listede kalsın
+    // (her tuşta liste boşalıp dolmasın).
+    placeholderData: keepPreviousData,
+  });
+
+  return {
+    ...query,
+    options: query.data ?? [],
+    isLoading: query.isFetching,
+  };
+}
+
+// ---- GET_ASGARI_UCRET -------------------------------------------------
+// Güncel asgari ücret (Brut / Net / EmekliNet). Yılda 1-2 kez değiştiği
+// için uzun süre cache'te tutuluyor; sayfa yenilenince zaten tekrar çekilir.
+
+const ASGARI_UCRET_STALE_TIME = 1000 * 60 * 60 * 24; // 24 saat
+
+export const asgariUcretKeys = {
+  all: ["asgari-ucret"] as const,
+};
+
+const getAsgariUcret = () =>
+  postGenel({ type: "GET_ASGARI_UCRET" }, "Asgari ücret bilgisi alınamadı.");
+
+function toAsgariUcret(value: unknown): AsgariUcret | null {
+  const row = Array.isArray(value) ? value[0] : value;
+  if (!row || typeof row !== "object") return null;
+
+  const { Brut, Net, EmekliNet } = row as Record<string, unknown>;
+  return {
+    Brut: Number(Brut) || 0,
+    Net: Number(Net) || 0,
+    EmekliNet: Number(EmekliNet) || 0,
+  };
+}
+
+export function useAsgariUcret() {
+  return useQuery({
+    queryKey: asgariUcretKeys.all,
+    queryFn: getAsgariUcret,
+    select: toAsgariUcret,
+    staleTime: ASGARI_UCRET_STALE_TIME,
+    gcTime: ASGARI_UCRET_STALE_TIME,
+  });
 }

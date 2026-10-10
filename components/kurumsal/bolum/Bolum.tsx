@@ -57,9 +57,9 @@ export default function Bolum({ idSube }: BolumProps) {
           toast.success("Bölüm silindi");
           setSilinecekBolum(null);
         },
-        onError: () => {
+        onError: (err) => {
           toast.error("Bölüm silinemedi", {
-            description: "Lütfen daha sonra tekrar deneyiniz.",
+            description: err.message || "Lütfen daha sonra tekrar deneyiniz.",
           });
         },
       },

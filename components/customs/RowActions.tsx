@@ -73,6 +73,10 @@ export function RowActions<TData>({
         <DropdownMenu.Content
           align={align}
           sideOffset={6}
+          // Portal DOM'da body'ye taşınsa da React event'leri React ağacı
+          // üzerinden satıra kadar kabarıyor — menüdeki bir tıklama satırın
+          // onRowClick'ini (detay sayfasına gitme) tetiklemesin.
+          onClick={(event) => event.stopPropagation()}
           className="z-50 min-w-44 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
           {actions.map((action, index) => {

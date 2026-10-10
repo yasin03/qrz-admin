@@ -21,6 +21,12 @@ type FormSwitchProps<T extends FieldValues> = {
    */
   vertical?: boolean;
   className?: string;
+  /**
+   * Sadece KULLANICI switch'i değiştirdiğinde çağrılır (form.reset /
+   * setValue ile gelen değişikliklerde çağrılmaz). Başka alanları buna
+   * göre güncellemek için.
+   */
+  onCheckedChange?: (checked: boolean) => void;
 };
 
 export function FormSwitch<T extends FieldValues>({
@@ -30,6 +36,7 @@ export function FormSwitch<T extends FieldValues>({
   disabled,
   vertical = true,
   className,
+  onCheckedChange,
 }: FormSwitchProps<T>) {
   return (
     <Controller
@@ -41,7 +48,10 @@ export function FormSwitch<T extends FieldValues>({
         const switchNode = (
           <Switch
             checked={field.value}
-            onCheckedChange={field.onChange}
+            onCheckedChange={(checked) => {
+              field.onChange(checked);
+              onCheckedChange?.(checked);
+            }}
             disabled={disabled}
           />
         );
