@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Search, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Pencil, Search, Trash2 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { CustomDataTable } from "../customs/CustomDataTable";
@@ -8,8 +8,10 @@ import { RowAction, RowActions } from "../customs/RowActions";
 import { usePdksList } from "@/hooks/use-pdks";
 import { PDKSSelectRequestType, PDKSSelectResponseType } from "@/types/pdks";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { normalize } from "@/lib/utils";
 import PdksFiltre from "./PdksFiltre";
+import PdksDetay from "./PdksDetay";
 import { ExportMenu } from "../export/ExportMenu";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { ExportColumn } from "../export/types";
@@ -23,8 +25,7 @@ const PdksListesi = ({ enabled }: Props) => {
   const [pdksFilters, setPdksFilters] = useState<PDKSSelectRequestType>({
     IDSube: "0",
     IDBolum: "0",
-    Tarih1: "",
-    Tarih2: "",
+    Tarih: "",
   });
   const {
     data: pdksData = [],
@@ -32,9 +33,24 @@ const PdksListesi = ({ enabled }: Props) => {
     isError: isPdksError,
   } = usePdksList(
     pdksFilters,
-    enabled && Boolean(pdksFilters.Tarih1 && pdksFilters.Tarih2),
+    enabled && Boolean(pdksFilters.Tarih),
   );
   const [searchText, setSearchText] = useState("");
+
+  const filteredPdksData = useMemo(() => {
+    if (!searchText.trim()) return pdksData;
+
+    const search = normalize(searchText);
+
+    return pdksData.filter((kayit) =>
+      [
+        kayit.AdSoyad,
+        kayit.Tarih,
+        kayit.Giris,
+        kayit.Cikis,
+      ].some((value) => value && normalize(String(value)).includes(search)),
+    );
+  }, [pdksData, searchText]);
   const [columnVisibility, setColumnVisibility] =
     useColumnVisibility("pdks-kolonlar");
     
@@ -47,7 +63,6 @@ const PdksListesi = ({ enabled }: Props) => {
     { header: "MesaiSure", accessorKey: "MesaiSure" },
     { header: "IzinSure", accessorKey: "IzinSure" },
     { header: "ToplamSure", accessorKey: "ToplamSure" },
-    { header: "Aciklama", accessorKey: "Aciklama" },
   ];
 
   const columns: ColumnDef<PDKSSelectResponseType>[] = [
@@ -56,10 +71,23 @@ const PdksListesi = ({ enabled }: Props) => {
       size: 50,
       header: "",
       enableSorting: false,
-      cell: ({ row }) => {
+      cell: ({ row, table }) => {
         const kayit = row.original;
+        // CustomDataTable expand state'ine meta üzerinden erişiliyor
+        const meta = table.options.meta as
+          | {
+              expandedRows?: Record<string, boolean>;
+              toggleRowExpanded?: (id: string) => void;
+            }
+          | undefined;
+        const isExpanded = Boolean(meta?.expandedRows?.[row.id]);
 
         const actions: RowAction<PDKSSelectResponseType>[] = [
+          {
+            label: isExpanded ? "Detayı Gizle" : "Detay Göster",
+            icon: isExpanded ? EyeOff : Eye,
+            onClick: () => meta?.toggleRowExpanded?.(row.id),
+          },
           {
             label: "Düzenle",
             icon: Pencil,
@@ -113,11 +141,6 @@ const PdksListesi = ({ enabled }: Props) => {
       header: "ToplamSure",
       cell: ({ row }) => row.original.ToplamSure ?? "-",
     },
-    {
-      accessorKey: "Aciklama",
-      header: "Aciklama",
-      cell: ({ row }) => row.original.Aciklama ?? "-",
-    },
   ];
 
   return (
@@ -153,10 +176,18 @@ const PdksListesi = ({ enabled }: Props) => {
         </div>
       </div>
       <CustomDataTable
-        data={pdksData}
+        data={filteredPdksData}
         columns={columns}
+        getRowId={(row) => String(row.IDSubePersonelSaat)}
+        columnVisibilityValue={columnVisibility}
+        onColumnVisibilityValueChange={setColumnVisibility}
         loading={isPdksLoading}
         pagination
+        expandable
+        expandOnRowClick
+        expandedRowContent={(row) => (
+          <PdksDetay idSubePersonelSaat={row.original.IDSubePersonelSaat} />
+        )}
         emptyMessage={
           isPdksError
             ? "Kayıtlar yüklenirken hata oluştu."

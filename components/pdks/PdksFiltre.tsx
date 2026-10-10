@@ -14,8 +14,7 @@ import { PDKSSelectRequestType } from "@/types/pdks";
 type FormValues = {
   IDSube: string;
   IDBolum: string;
-  Tarih1: string;
-  Tarih2: string;
+  Tarih: string;
 };
 
 type Props = {
@@ -31,8 +30,7 @@ export default function PdksFiltre({ onApply }: Props) {
     defaultValues: {
       IDSube: "",
       IDBolum: "0",
-      Tarih1: BUGUN,
-      Tarih2: BUGUN,
+      Tarih: BUGUN,
     },
   });
 
@@ -51,13 +49,6 @@ export default function PdksFiltre({ onApply }: Props) {
     [bolumlerData],
   );
 
-  // Context yüklendiğinde IDSube'u forma set et (kullanıcı bunu göremez/değiştiremez)
-  useEffect(() => {
-    if (context?.IDSube && !form.getValues("IDSube")) {
-      form.setValue("IDSube", String(context.IDSube));
-    }
-  }, [context, form]);
-
   const buildFilters = useCallback(
     (values: FormValues): PDKSSelectRequestType => {
       const bolumSeciliMi = Boolean(values.IDBolum) && values.IDBolum !== "0";
@@ -65,12 +56,21 @@ export default function PdksFiltre({ onApply }: Props) {
       return {
         IDSube: bolumSeciliMi ? "0" : values.IDSube || "0",
         IDBolum: bolumSeciliMi ? values.IDBolum : "0",
-        Tarih1: values.Tarih1,
-        Tarih2: values.Tarih2,
+        Tarih: values.Tarih
       };
     },
     [],
   );
+
+  // Context yüklendiğinde IDSube'u forma set et (kullanıcı bunu göremez/değiştiremez)
+  // ve ilk filtreyi doğrudan uygula. Context cache'den hazır geldiğinde bu efekt
+  // watch aboneliğinden önce çalıştığı için değişiklik watch'a hiç ulaşmıyor.
+  useEffect(() => {
+    if (context?.IDSube && !form.getValues("IDSube")) {
+      form.setValue("IDSube", String(context.IDSube));
+      onApply(buildFilters(form.getValues()));
+    }
+  }, [context, form, onApply, buildFilters]);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -95,8 +95,7 @@ export default function PdksFiltre({ onApply }: Props) {
     form.reset({
       IDSube: context?.IDSube ? String(context.IDSube) : "",
       IDBolum: "0",
-      Tarih1: BUGUN,
-      Tarih2: BUGUN,
+      Tarih: BUGUN,
     });
   };
 
@@ -126,14 +125,8 @@ export default function PdksFiltre({ onApply }: Props) {
 
           <FormInput
             control={form.control}
-            name="Tarih1"
-            label="Başlangıç Tarihi"
-            type="date"
-          />
-          <FormInput
-            control={form.control}
-            name="Tarih2"
-            label="Bitiş Tarihi"
+            name="Tarih"
+            label="Tarih"
             type="date"
           />
         </div>

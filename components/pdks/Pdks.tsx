@@ -141,7 +141,12 @@ const PdksPage = () => {
           )}
         </div>
 
-        <TabsContent value="pdks">
+        {/* forceMount: sekme değişince unmount olmasın, filtre ve açık detaylar korunsun */}
+        <TabsContent
+          value="pdks"
+          forceMount
+          className="data-[state=inactive]:hidden"
+        >
           <PdksListesi enabled={Boolean(activeTab === "pdks")} />
         </TabsContent>
 

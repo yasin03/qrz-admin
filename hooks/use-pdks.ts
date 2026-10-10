@@ -6,6 +6,7 @@ import {
   BolumVardiyaInsertInput,
   BolumVardiyaSaat,
   BolumVardiyaUpdateInput,
+  PDKSDetaySelectResponseType,
   PDKSSelectRequestType,
   PDKSSelectResponseType,
   SubeVardiyaInsertInput,
@@ -16,6 +17,7 @@ import {
 const ENDPOINT = "/api/pdks";
 const SUBE_QUERY_KEY = "sube-vardiya-saat";
 const BOLUM_QUERY_KEY = "bolum-vardiya-saat";
+const DETAY_QUERY_KEY = "pdks-detay";
 
 export function usePdksList(params: PDKSSelectRequestType, enabled = true) {
   return useQuery({
@@ -23,8 +25,7 @@ export function usePdksList(params: PDKSSelectRequestType, enabled = true) {
       SUBE_QUERY_KEY,
       params.IDSube,
       params.IDBolum,
-      params.Tarih1,
-      params.Tarih2,
+      params.Tarih,
     ],
     queryFn: async () => {
       const { data } = await api.post<PDKSSelectResponseType[]>(ENDPOINT, {
@@ -35,6 +36,25 @@ export function usePdksList(params: PDKSSelectRequestType, enabled = true) {
       return data;
     },
     enabled,
+    staleTime: 5 * 60 * 1000, // 5 dakika
+  });
+}
+
+export function usePdksDetay(
+  idSubePersonelSaat: string | number | null,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [DETAY_QUERY_KEY, idSubePersonelSaat],
+    queryFn: async () => {
+      const { data } = await api.post<PDKSDetaySelectResponseType[]>(ENDPOINT, {
+        type: "SELECT_PDKS_DETAY",
+        IDSubePersonelSaat: idSubePersonelSaat,
+      });
+
+      return data;
+    },
+    enabled: enabled && idSubePersonelSaat !== null,
     staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }

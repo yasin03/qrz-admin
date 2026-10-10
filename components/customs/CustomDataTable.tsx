@@ -86,6 +86,8 @@ export type CustomDataTableProps<TData> = {
   expandableSingle?: boolean;
   /** Called whenever the expanded row set changes. */
   onExpandedRowsChange?: (expandedRowIds: string[]) => void;
+  /** If true, clicking a row toggles its expanded content (in addition to `onRowClick`). */
+  expandOnRowClick?: boolean;
 
   // ---- search ----
   searchable?: boolean;
@@ -145,6 +147,7 @@ export function CustomDataTable<TData>({
   expandedRowContent,
   expandableSingle = false,
   onExpandedRowsChange,
+  expandOnRowClick = false,
 
   searchable = false,
   searchPlaceholder = "Ara...",
@@ -596,21 +599,28 @@ export function CustomDataTable<TData>({
             {rows.length ? (
               rows.map((row, index) => {
                 const isExpanded = expandable && Boolean(expandedRows[row.id]);
+                const handleRowClick =
+                  onRowClick || (expandable && expandOnRowClick)
+                    ? () => {
+                        if (expandable && expandOnRowClick) {
+                          toggleRowExpanded(row.id);
+                        }
+                        onRowClick?.(row.original);
+                      }
+                    : undefined;
 
                 return (
                   <Fragment key={row.id}>
                     <tr
                       data-state={row.getIsSelected() ? "selected" : undefined}
-                      onClick={
-                        onRowClick ? () => onRowClick(row.original) : undefined
-                      }
-                      tabIndex={onRowClick ? 0 : undefined}
+                      onClick={handleRowClick}
+                      tabIndex={handleRowClick ? 0 : undefined}
                       onKeyDown={
-                        onRowClick
+                        handleRowClick
                           ? (event) => {
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
-                                onRowClick(row.original);
+                                handleRowClick();
                               }
                             }
                           : undefined
@@ -619,7 +629,7 @@ export function CustomDataTable<TData>({
                         "transition-colors data-[state=selected]:bg-accent",
                         striped && index % 2 === 1 && "bg-muted/30",
                         highlightOnHover && "hover:bg-muted/40",
-                        onRowClick && "cursor-pointer",
+                        handleRowClick && "cursor-pointer",
                         isExpanded && "border-b-0",
                       )}
                     >

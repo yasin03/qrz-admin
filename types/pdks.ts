@@ -1,14 +1,12 @@
 export interface PDKSSelectParams {
   IDSube: string; // "0" | context'teki IDSube
   IDBolum: string; // "0" | seçilen bölüm
-  Tarih1: string; // "yyyy-MM-dd"
-  Tarih2: string; // "yyyy-MM-dd"
+  Tarih: string; // "yyyy-MM-dd"
 }
 export type PDKSSelectRequestType = {
   IDSube: string | number;
   IDBolum: string | number;
-  Tarih1: string;
-  Tarih2: string;
+  Tarih: string;
 };
 
 export type PDKSSelectResponseType = {
@@ -22,7 +20,24 @@ export type PDKSSelectResponseType = {
   MesaiSure: string | null;
   IzinSure: string | null;
   ToplamSure: string | null;
-  Aciklama: string | null;
+  GirisNotu: string | null;
+  CikisNotu: string | null;
+  MesaiNotu: string | null;
+  Cinsiyet: string | null;
+  IDKullanici: string | number;
+};
+
+export type PDKSDetaySelectRequestType = {
+  IDSubePersonelSaat: string | number;
+};
+
+export type PDKSDetaySelectResponseType = {
+  IDBolumLokasyon: string | number;
+  LokasyonAdi: string;
+  Enlem: string;
+  Boylam: string;
+  Yon: string;
+  Tarih: string;
 };
 
 export interface SubeVardiyaSaat {

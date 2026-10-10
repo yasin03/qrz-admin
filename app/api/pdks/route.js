@@ -4,7 +4,9 @@ import { ok, fail, withSession } from "@/lib/api-session";
 
 const queryTypes = {
   SELECT_PDKS: (params) =>
-    `[SubePersonelSaat_SelectByIDSubeBolum] '${params.IDSube}','${params.IDBolum}','${params.Tarih1}','${params.Tarih2}'`,
+    `[SubePersonelSaat_SelectByIDSubeBolum] '${params.IDSube}','${params.IDBolum}','${params.Tarih}'`,
+  SELECT_PDKS_DETAY: (params) =>
+    `[SubePersonelSaatDetay_Select] '${params.IDSubePersonelSaat}'`,
 
   SELECT_PDKS_SUBE: (params) => `[SubeVardiyaSaat_SELECT] '${params.IDSube}'`,
   INSERT_PDKS_SUBE: (params) =>
@@ -47,6 +49,7 @@ export const POST = withSession(async (request, session) => {
       IDSirket: session.user.IDSirket,
       IDSube: session.user.IDSube,
       IDBolum: payload.IDBolum,
+      IDSubePersonelSaat: payload.IDSubePersonelSaat,
       IDSubeVardiyaSaat: payload.IDSubeVardiyaSaat,
       IDBolumVardiyaSaat: payload.IDBolumVardiyaSaat,
       VardiyaAdi: payload.VardiyaAdi,
@@ -55,6 +58,7 @@ export const POST = withSession(async (request, session) => {
       Gece: payload.Gece,
       HT: payload.HT,
       HTGun: payload.HTGun,
+      Tarih: payload.Tarih,
       Tarih1: payload.Tarih1,
       Tarih2: payload.Tarih2,
       // Kendi kaydi tipleri icin IDSubePersonel her zaman token'dan -
@@ -72,7 +76,6 @@ export const POST = withSession(async (request, session) => {
     }
 
     const query = queryFunction(queryParams);
-    console.log("query", query);
     const result = await ExecuteQuery(query);
 
     return ok(session.isMobile, result);
