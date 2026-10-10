@@ -14,7 +14,8 @@ const queryTypes = {
   DELETE_PDKS_SUBE: (params) =>
     `[SubeVardiyaSaat_DELETEByIDSubeVardiyaSaat] '${params.IDSubeVardiyaSaat}'`,
 
-  SELECT_PDKS_BOLUM: (params) => `[BolumVardiyaSaat_SELECT] '${params.IDBolum}'`,
+  SELECT_PDKS_BOLUM: (params) =>
+    `[BolumVardiyaSaat_SELECT] '${params.IDBolum}'`,
   INSERT_PDKS_BOLUM: (params) =>
     `[BolumVardiyaSaat_INSERT] '${params.IDBolum}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HT}','${params.HTGun}'`,
   UPDATE_PDKS_BOLUM: (params) =>
@@ -28,7 +29,7 @@ const queryTypes = {
   SELECT_PDKS_KENDI: (params) =>
     `[SubePersonelSaat_SelectByIDSubePersonel] '${params.IDSubePersonel}','${params.Tarih1}','${params.Tarih2}'`,
   INSERT_PDKS_KENDI: (params) =>
-    `[SubePersonelSaat_InsertMobil] '${params.IDSubePersonel}','${params.JsonData}'`,
+    `[SubePersonelSaat_InsertMobil] '${params.IDSubePersonel}','${params.Yon}','${params.JsonData}'`,
 };
 
 const MOBILE_ALLOWED_TYPES = ["SELECT_PDKS_KENDI", "INSERT_PDKS_KENDI"];
@@ -60,6 +61,7 @@ export const POST = withSession(async (request, session) => {
       // client'in body'de baska bir personel ID'si gondererek baskasinin
       // kaydini okuyup/yazmasini engeller.
       IDSubePersonel: session.user.IDSubePersonel,
+      Yon: payload.Yon,
       JsonData: payload.JsonData,
     };
 
@@ -70,11 +72,11 @@ export const POST = withSession(async (request, session) => {
     }
 
     const query = queryFunction(queryParams);
+    console.log("query", query);
     const result = await ExecuteQuery(query);
 
     return ok(session.isMobile, result);
   } catch (err) {
-
     if (session.isMobile) {
       return fail(
         true,
