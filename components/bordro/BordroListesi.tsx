@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { BordroResponseType } from "@/types/bordro";
-import { RowAction, RowActions } from "../customs/RowActions";
+import { RowActions } from "../customs/RowActions";
 import { formatMoney } from "@/lib/format";
 import {
   useHesaplaBordro,
@@ -299,32 +299,31 @@ const BordroListesi = () => {
         const kayit = row.original;
         const onayli = kayit.OnayTarihi != null;
 
-        const actions: RowAction<BordroResponseType>[] = [
-          {
-            label: "Hesapla",
-            icon: CalculatorIcon,
-            onClick: () => handleTekilHesapla(kayit),
-          },
-          {
-            label: "Hesabı Temizle",
-            icon: BrushCleaning,
-            variant: "danger",
-            separatorBefore: true,
-            onClick: () => handleTekilHesapSil(kayit),
-          },
-          {
-            label: onayli ? "Onayı Kaldır" : "Onayla",
-            icon: onayli ? XCircle : CheckCircle2,
-            separatorBefore: true,
-            variant: onayli ? "danger" : undefined,
-            onClick: () => handleTekilOnay(kayit),
-          },
-        ];
-
         return (
-          <div className="flex justify-end">
-            <RowActions row={kayit} actions={actions} />
-          </div>
+          <RowActions
+            row={kayit}
+            actions={[
+              {
+                label: "Hesapla",
+                icon: CalculatorIcon,
+                onClick: () => handleTekilHesapla(kayit),
+              },
+              { divider: true },
+              {
+                label: "Hesabı Temizle",
+                icon: BrushCleaning,
+                variant: "danger",
+                onClick: () => handleTekilHesapSil(kayit),
+              },
+              { divider: true },
+              {
+                label: onayli ? "Onayı Kaldır" : "Onayla",
+                icon: onayli ? XCircle : CheckCircle2,
+                variant: onayli ? "danger" : undefined,
+                onClick: () => handleTekilOnay(kayit),
+              },
+            ]}
+          />
         );
       },
     },

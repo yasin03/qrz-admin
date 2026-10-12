@@ -9,7 +9,7 @@ import {
   useSirketler,
 } from "@/hooks/use-kurumsal-data";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
-import { RowAction, RowActions } from "@/components/customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
@@ -105,30 +105,29 @@ export default function Sirket({ idGurup }: SirketProps) {
         cell: ({ row }) => {
           const sirket = row.original;
 
-          const actions: RowAction<SirketType>[] = [
-            {
-              label: "Düzenle",
-              icon: Pencil,
-              onClick: (r) => router.push(`/kurumsal/sirketler/${r.IDSirket}`),
-            },
-            {
-              label: sirket.Durum ? "Pasif Yap" : "Aktif Yap",
-              icon: Power,
-              onClick: (r) => handleToggleDurum(r),
-            },
-            {
-              label: "Sil",
-              icon: Trash2,
-              variant: "danger",
-              separatorBefore: true,
-              onClick: (r) => setSilinecekSirket(r),
-            },
-          ];
-
           return (
-            <div className="flex justify-end">
-              <RowActions row={sirket} actions={actions} />
-            </div>
+            <RowActions
+              row={sirket}
+              actions={[
+                {
+                  label: "Düzenle",
+                  icon: Pencil,
+                  onClick: (r) => router.push(`/kurumsal/sirketler/${r.IDSirket}`),
+                },
+                {
+                  label: sirket.Durum ? "Pasif Yap" : "Aktif Yap",
+                  icon: Power,
+                  onClick: (r) => handleToggleDurum(r),
+                },
+                { divider: true },
+                {
+                  label: "Sil",
+                  icon: Trash2,
+                  variant: "danger",
+                  onClick: (r) => setSilinecekSirket(r),
+                },
+              ]}
+            />
           );
         },
       },

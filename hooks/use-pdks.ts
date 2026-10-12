@@ -7,6 +7,12 @@ import {
   BolumVardiyaSaat,
   BolumVardiyaUpdateInput,
   PDKSDetaySelectResponseType,
+  PDKSKendiSelectRequestType,
+  PDKSKendiSelectResponseType,
+  PDKSUpdateInput,
+  PDKSUpdateResponseType,
+  PDKSDeleteInput,
+  PDKSDeleteResponseType,
   PDKSSelectRequestType,
   PDKSSelectResponseType,
   SubeVardiyaInsertInput,
@@ -18,11 +24,13 @@ const ENDPOINT = "/api/pdks";
 const SUBE_QUERY_KEY = "sube-vardiya-saat";
 const BOLUM_QUERY_KEY = "bolum-vardiya-saat";
 const DETAY_QUERY_KEY = "pdks-detay";
+const PDKS_LIST_QUERY_KEY = "pdks-list";
+const PDKS_KENDI_QUERY_KEY = "pdks-kendi";
 
 export function usePdksList(params: PDKSSelectRequestType, enabled = true) {
   return useQuery({
     queryKey: [
-      SUBE_QUERY_KEY,
+      PDKS_LIST_QUERY_KEY,
       params.IDSube,
       params.IDBolum,
       params.Tarih,
@@ -36,6 +44,29 @@ export function usePdksList(params: PDKSSelectRequestType, enabled = true) {
       return data;
     },
     enabled,
+    staleTime: 5 * 60 * 1000, // 5 dakika
+  });
+}
+
+// Personelin kendi aylık kayıtları - IDSubePersonel route'ta session'dan alınır
+export function usePdksKendi(
+  params: PDKSKendiSelectRequestType,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [PDKS_KENDI_QUERY_KEY, params.Yil, params.Ay],
+    queryFn: async () => {
+      const { data } = await api.post<PDKSKendiSelectResponseType[]>(
+        ENDPOINT,
+        {
+          type: "SELECT_PDKS_KENDI",
+          ...params,
+        },
+      );
+
+      return data;
+    },
+    enabled: enabled && Boolean(params.Yil) && Boolean(params.Ay),
     staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
@@ -56,6 +87,64 @@ export function usePdksDetay(
     },
     enabled: enabled && idSubePersonelSaat !== null,
     staleTime: 5 * 60 * 1000, // 5 dakika
+  });
+}
+
+// Giriş/Çıkış saati güncelleme - tek hücre veya seçili satırlar için toplu.
+// Başarılıysa prosedür { test: 1 } döner.
+export function useUpdatePdksSaat() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: PDKSUpdateInput) => {
+      const { data } = await api.post<
+        PDKSUpdateResponseType | PDKSUpdateResponseType[]
+      >(ENDPOINT, {
+        type: "UPDATE_PDKS",
+        ...payload,
+      });
+
+      // Prosedür sonucu tek satırlık dizi olarak gelebilir
+      const result = Array.isArray(data) ? data[0] : data;
+
+      if (Number(result?.test) !== 1) {
+        throw new Error("Saat güncellenemedi.");
+      }
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [PDKS_LIST_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DETAY_QUERY_KEY] });
+    },
+  });
+}
+
+// Personelin o güne ait tüm giriş/çıkış verilerini temizler - tek kayıt veya toplu.
+// Başarılıysa prosedür { test: 1 }, başarısızsa { test: 0 } döner.
+export function useDeletePdks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: PDKSDeleteInput) => {
+      const { data } = await api.post<
+        PDKSDeleteResponseType | PDKSDeleteResponseType[]
+      >(ENDPOINT, {
+        type: "DELETE_PDKS",
+        ...payload,
+      });
+
+      // Prosedür sonucu tek satırlık dizi olarak gelebilir
+      const result = Array.isArray(data) ? data[0] : data;
+
+      if (Number(result?.test) !== 1) {
+        throw new Error("Kayıtlar temizlenemedi.");
+      }
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [PDKS_LIST_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DETAY_QUERY_KEY] });
+    },
   });
 }
 

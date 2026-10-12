@@ -7,6 +7,10 @@ const queryTypes = {
     `[SubePersonelSaat_SelectByIDSubeBolum] '${params.IDSube}','${params.IDBolum}','${params.Tarih}'`,
   SELECT_PDKS_DETAY: (params) =>
     `[SubePersonelSaatDetay_Select] '${params.IDSubePersonelSaat}'`,
+  UPDATE_PDKS: (params) =>
+    `[SubePersonelSaat_UPDATEByCell] '${params.IDSubePersonelSaat}', '${params.Yon}','${params.Saat}','${params.IDKullanici}'`,
+  DELETE_PDKS: (params) =>
+    `[SubePersonelSaat_DELETE] '${params.IDSubePersonelSaat}', '${params.IDKullanici}'`,
 
   SELECT_PDKS_SUBE: (params) => `[SubeVardiyaSaat_SELECT] '${params.IDSube}'`,
   INSERT_PDKS_SUBE: (params) =>
@@ -29,21 +33,15 @@ const queryTypes = {
   // admin'in SELECT_PDKS/INSERT_PDKS'iyle degil, mobile-api'nin kendi
   // personel giris-cikis kaydiyla (SubePersonelSaat_*Mobil) eslesiyor.
   SELECT_PDKS_KENDI: (params) =>
-    `[SubePersonelSaat_SelectByIDSubePersonel] '${params.IDSubePersonel}','${params.Tarih1}','${params.Tarih2}'`,
+    `[SubePersonelSaat_SelectByIDSubePersonel] '${params.IDSubePersonel}','${params.Yil}','${params.Ay}'`,
   INSERT_PDKS_KENDI: (params) =>
     `[SubePersonelSaat_InsertMobil] '${params.IDSubePersonel}','${params.Yon}','${params.JsonData}'`,
 };
-
-const MOBILE_ALLOWED_TYPES = ["SELECT_PDKS_KENDI", "INSERT_PDKS_KENDI"];
 
 export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
     const { type } = payload;
-
-    if (session.isMobile && !MOBILE_ALLOWED_TYPES.includes(type)) {
-      return fail(true, "Bu islem mobilde desteklenmiyor.", 403, "FORBIDDEN");
-    }
 
     const queryParams = {
       IDSirket: session.user.IDSirket,
@@ -61,11 +59,16 @@ export const POST = withSession(async (request, session) => {
       Tarih: payload.Tarih,
       Tarih1: payload.Tarih1,
       Tarih2: payload.Tarih2,
+      Yil: payload.Yil,
+      Ay: payload.Ay,
+      
       // Kendi kaydi tipleri icin IDSubePersonel her zaman token'dan -
       // client'in body'de baska bir personel ID'si gondererek baskasinin
       // kaydini okuyup/yazmasini engeller.
       IDSubePersonel: session.user.IDSubePersonel,
+      IDKullanici: session.user.IDKullanici,
       Yon: payload.Yon,
+      Saat: payload.Saat,
       JsonData: payload.JsonData,
     };
 

@@ -12,7 +12,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { CustomDataTable } from "../customs/CustomDataTable";
-import { RowAction, RowActions } from "../customs/RowActions";
+import { RowActions } from "../customs/RowActions";
 import TalepDetayDialog from "./TalepDetayDialog";
 import { formatDate, formatMoney } from "@/lib/format";
 import { useHasRole, useUser } from "@/stores/auth-store";
@@ -139,17 +139,17 @@ const TalepListesi = ({ enabled }: Props) => {
       header: "",
       enableSorting: false,
       cell: ({ row }) => {
-        const actions: RowAction<AvansTalepType>[] = [
-          {
-            label: "Talep Detayları",
-            icon: FileSearch,
-            onClick: (r) => setDetayTalep(r),
-          },
-        ];
         return (
-          <div className="flex justify-end">
-            <RowActions row={row.original} actions={actions} />
-          </div>
+          <RowActions
+            row={row.original}
+            actions={[
+              {
+                label: "Talep Detayları",
+                icon: FileSearch,
+                onClick: (r) => setDetayTalep(r),
+              },
+            ]}
+          />
         );
       },
     };

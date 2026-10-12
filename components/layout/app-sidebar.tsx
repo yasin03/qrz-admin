@@ -46,8 +46,11 @@ const personelMenuItems: MenuItem[] = [
   { href: "/ozluk", label: "Özlük", icon: FileUser },
   { href: "/izin", label: "İzin", icon: Parasol },
   { href: "/avans", label: "Avans", icon: HandCoins },
-  { href: "/bordro/parametre", label: "Eklenti & Kesinti", icon: GitMergeConflict },
-  { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
+  {
+    href: "/bordro/parametre",
+    label: "Eklenti & Kesinti",
+    icon: GitMergeConflict,
+  },
   { href: "/pdks", label: "PDKS", icon: Fingerprint },
   { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
   { href: "/bordro", label: "Bordro", icon: ContactRound },
@@ -55,11 +58,13 @@ const personelMenuItems: MenuItem[] = [
 ];
 const adminMenuItems: MenuItem[] = [
   { href: "/personel", label: "Personel", icon: Users },
+  { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
   ...personelMenuItems,
 ];
 
 const yoneticiMenuItems: MenuItem[] = [
   { href: "/personel", label: "Personel", icon: Users },
+  { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
   ...personelMenuItems,
 ];
 

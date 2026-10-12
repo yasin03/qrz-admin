@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clock, Plus, Settings } from "lucide-react";
+import { Clock, Loader2, Plus, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,10 +13,10 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-import SubeVardiyaEkle from "@/components/pdks/SubeVardiyaEkle";
-import SubeVardiyaListesi from "@/components/pdks/SubeVardiyaListesi";
-import BolumVardiyaEkle from "@/components/pdks/BolumVardiyaEkle";
-import BolumVardiyaListesi from "@/components/pdks/BolumVardiyaListesi";
+import SubeVardiyaEkle from "@/components/pdks/vardiya-ayar/SubeVardiyaEkle";
+import SubeVardiyaListesi from "@/components/pdks/vardiya-ayar/SubeVardiyaListesi";
+import BolumVardiyaEkle from "@/components/pdks/vardiya-ayar/BolumVardiyaEkle";
+import BolumVardiyaListesi from "@/components/pdks/vardiya-ayar/BolumVardiyaListesi";
 import PdksFiltre from "@/components/pdks/PdksFiltre";
 import PdksListesi from "@/components/pdks/PdksListesi";
 import {
@@ -26,10 +26,40 @@ import {
 } from "@/types/pdks";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext } from "@/hooks/use-context";
+import { useRole } from "@/stores/auth-store";
+import PersonelPdksListesi from "@/components/pdks/PersonelPdksListesi";
 
 type TabValue = "pdks" | "sube-vardiya" | "bolum-vardiya";
 
+// Personel kendi aylık kayıtlarını, diğer roller PDKS yönetim ekranını görür
 const PdksPage = () => {
+  const { data: savedContext, isPending: isContextPending } =
+    useCurrentContext();
+  const { isPersonel } = useRole();
+
+  if (isPersonel) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-xl font-bold sm:text-2xl">PDKS Kayıtlarım</h1>
+        {/* Yil/Ay ilk değer olarak alındığı için context gelmeden mount etme */}
+        {isContextPending ? (
+          <div className="flex h-32 items-center justify-center text-muted-foreground">
+            <Loader2 className="size-5 animate-spin" />
+          </div>
+        ) : (
+          <PersonelPdksListesi
+            initialYil={savedContext?.Yil}
+            initialAy={savedContext?.Ay}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return <PdksYonetimi />;
+};
+
+const PdksYonetimi = () => {
   const [activeTab, setActiveTab] = useState<TabValue>("pdks");
   const { data: savedContext } = useCurrentContext();
   const idSube = savedContext?.IDSube ? Number(savedContext.IDSube) : 0;

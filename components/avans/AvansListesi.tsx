@@ -8,7 +8,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { CustomDataTable } from "../customs/CustomDataTable";
-import { RowAction, RowActions } from "../customs/RowActions";
+import { RowActions } from "../customs/RowActions";
 import { ConfirmDialog } from "../customs/ConfirmDialog";
 import { useAvansList, useDeleteAvans } from "@/hooks/use-avans";
 import { AvansFilters, AvansSelectParams, AvansType } from "@/types/avans";
@@ -138,18 +138,18 @@ const AvansListesi = ({ enabled }: Props) => {
         // Personel kendi onaylanmış avanslarını sadece görüntüler, silemez.
         if (isPersonel) return null;
 
-        const actions: RowAction<AvansType>[] = [
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            onClick: (r) => setSilinecekId(r.IDIzinGenel),
-          },
-        ];
         return (
-          <div className="flex justify-end">
-            <RowActions row={row.original} actions={actions} />
-          </div>
+          <RowActions
+            row={row.original}
+            actions={[
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                onClick: (r) => setSilinecekId(r.IDIzinGenel),
+              },
+            ]}
+          />
         );
       },
     };

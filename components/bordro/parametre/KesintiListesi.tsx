@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { CustomDataTable } from "../../customs/CustomDataTable";
-import { RowAction, RowActions } from "../../customs/RowActions";
+import { RowActions } from "../../customs/RowActions";
 import { ConfirmDialog } from "../../customs/ConfirmDialog";
 import { CustomColumnVisibility } from "../../customs/CustomColumnVisibility";
 import { Input } from "../../ui/input";
@@ -150,24 +150,24 @@ const KesintiListesi = ({ enabled }: Props) => {
         // Personel kendi kesintilerini sadece görüntüler, düzenleyemez/silemez.
         if (isPersonel) return null;
 
-        const actions: RowAction<KesintiResponseType>[] = [
-          {
-            label: "Düzenle",
-            icon: Pencil,
-            onClick: (r) => setDuzenlenecekKesinti(r),
-          },
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            onClick: (r) =>
-              setSilinecekId(String(r.IDSubePersonelOzelKesinti)),
-          },
-        ];
         return (
-          <div className="flex justify-end">
-            <RowActions row={row.original} actions={actions} />
-          </div>
+          <RowActions
+            row={row.original}
+            actions={[
+              {
+                label: "Düzenle",
+                icon: Pencil,
+                onClick: (r) => setDuzenlenecekKesinti(r),
+              },
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                onClick: (r) =>
+                  setSilinecekId(String(r.IDSubePersonelOzelKesinti)),
+              },
+            ]}
+          />
         );
       },
     };

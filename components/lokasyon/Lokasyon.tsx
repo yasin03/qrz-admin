@@ -3,7 +3,7 @@ import { CustomDataTable } from "../customs/CustomDataTable";
 import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { RowAction, RowActions } from "../customs/RowActions";
+import { RowActions } from "../customs/RowActions";
 import {
   UserPlus,
   Pencil,
@@ -147,34 +147,33 @@ const Lokasyon = () => {
       cell: ({ row }) => {
         const rowdata = row.original;
 
-        const actions: RowAction<LokasyonType>[] = [
-          {
-            label: "Düzenle",
-            icon: Pencil,
-            onClick: (r) => setDuzenlenecekId(r.IDBolumLokasyon),
-          },
-          {
-            label: "QR Kod Oluştur",
-            icon: QrCode,
-            disabled: !rowdata.Aktif,
-            onClick: (r: LokasyonQrData) => {
-              setSelectedRow(r);
-              setQrDialogOpen(true);
-            },
-          },
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            separatorBefore: true,
-            onClick: (r) => setSilinecekId(r.IDBolumLokasyon),
-          },
-        ];
-
         return (
-          <div className="flex justify-end">
-            <RowActions row={rowdata} actions={actions} />
-          </div>
+          <RowActions
+            row={rowdata}
+            actions={[
+              {
+                label: "Düzenle",
+                icon: Pencil,
+                onClick: (r) => setDuzenlenecekId(r.IDBolumLokasyon),
+              },
+              {
+                label: "QR Kod Oluştur",
+                icon: QrCode,
+                disabled: !rowdata.Aktif,
+                onClick: (r: LokasyonQrData) => {
+                  setSelectedRow(r);
+                  setQrDialogOpen(true);
+                },
+              },
+              { divider: true },
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                onClick: (r) => setSilinecekId(r.IDBolumLokasyon),
+              },
+            ]}
+          />
         );
       },
     },

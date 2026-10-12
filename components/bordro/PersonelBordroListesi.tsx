@@ -10,8 +10,6 @@ import { Spinner } from "../ui/spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Briefcase,
-  ChevronLeft,
-  ChevronRight,
   CircleCheck,
   CircleMinus,
   Clock,
@@ -23,14 +21,8 @@ import {
   User,
   Wallet,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { AY_DATA, useYearOptions } from "@/constants/data";
+import { AY_DATA } from "@/constants/data";
+import { CustomDateNavigator } from "../customs/CustomDateNavigator";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -431,7 +423,6 @@ const SummaryTotals = ({ values }: { values: BordroValues }) => (
 
 const PersonelBordroListesi = ({ initialYil, initialAy }: Props) => {
   const user = useUser();
-  const yilSecenekleri = useYearOptions(5, 1);
   const [yil, setYil] = useState(
     initialYil || new Date().getFullYear().toString(),
   );
@@ -459,26 +450,6 @@ const PersonelBordroListesi = ({ initialYil, initialAy }: Props) => {
   const ayAdi = AY_DATA.find((a) => a.value === ay)?.label ?? "";
   const donem = `${ayAdi} ${yil}`;
 
-  const handlePrevMonth = () => {
-    const a = Number(ay);
-    if (a === 1) {
-      setAy("12");
-      setYil((y) => (Number(y) - 1).toString());
-    } else {
-      setAy((a - 1).toString().padStart(2, "0"));
-    }
-  };
-
-  const handleNextMonth = () => {
-    const a = Number(ay);
-    if (a === 12) {
-      setAy("01");
-      setYil((y) => (Number(y) + 1).toString());
-    } else {
-      setAy((a + 1).toString().padStart(2, "0"));
-    }
-  };
-
   return (
     <div className="space-y-4">
       {/* Başlık + filtre */}
@@ -494,53 +465,15 @@ const PersonelBordroListesi = ({ initialYil, initialAy }: Props) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            size="icon"
-            appearance="outline"
-            variant="secondary"
-            onClick={handlePrevMonth}
-            aria-label="Önceki ay"
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-
-          <Select value={ay} onValueChange={setAy}>
-            <SelectTrigger className="min-w-0 flex-1 sm:w-32 sm:flex-none">
-              <SelectValue placeholder="Ay" />
-            </SelectTrigger>
-            <SelectContent>
-              {AY_DATA.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={yil} onValueChange={setYil}>
-            <SelectTrigger className="w-24">
-              <SelectValue placeholder="Yıl" />
-            </SelectTrigger>
-            <SelectContent>
-              {yilSecenekleri.map((y) => (
-                <SelectItem key={y} value={y}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            type="button"
-            size="icon"
-            appearance="outline"
-            variant="secondary"
-            onClick={handleNextMonth}
-            aria-label="Sonraki ay"
-          >
-            <ChevronRight className="size-4" />
-          </Button>
+          <CustomDateNavigator
+            mode="month"
+            value={`${yil}-${ay}`}
+            onChange={(value) => {
+              const [y, a] = value.split("-");
+              setYil(y);
+              setAy(a);
+            }}
+          />
 
           <Popover>
             <PopoverTrigger asChild>

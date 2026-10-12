@@ -23,7 +23,7 @@ import {
 } from "@/hooks/use-kurumsal-data";
 import GrupEkle from "./GrupEkle";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
-import { RowAction, RowActions } from "@/components/customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
 import { GrupType } from "@/types/kurumsal/grup";
 import { Badge } from "@/components/ui/badge";
@@ -122,35 +122,34 @@ export default function Grup() {
         cell: ({ row }) => {
           const grup = row.original;
 
-          const actions: RowAction<GrupType>[] = [
-            {
-              label: "Düzenle",
-              icon: Pencil,
-              onClick: (r) => handleEdit(r),
-            },
-            {
-              label: "Şirket Ekle",
-              icon: PlusCircleIcon,
-              onClick: (r) => handleEkleSirket(r),
-            },
-            {
-              label: grup.Durum ? "Pasif Yap" : "Aktif Yap",
-              icon: Power,
-              onClick: (r) => handleToggleDurum(r),
-            },
-            {
-              label: "Sil",
-              icon: Trash2,
-              variant: "danger",
-              separatorBefore: true,
-              onClick: (r) => setSilinecekGrup(r),
-            },
-          ];
-
           return (
-            <div className="flex justify-end">
-              <RowActions row={grup} actions={actions} />
-            </div>
+            <RowActions
+              row={grup}
+              actions={[
+                {
+                  label: "Düzenle",
+                  icon: Pencil,
+                  onClick: (r) => handleEdit(r),
+                },
+                {
+                  label: "Şirket Ekle",
+                  icon: PlusCircleIcon,
+                  onClick: (r) => handleEkleSirket(r),
+                },
+                {
+                  label: grup.Durum ? "Pasif Yap" : "Aktif Yap",
+                  icon: Power,
+                  onClick: (r) => handleToggleDurum(r),
+                },
+                { divider: true },
+                {
+                  label: "Sil",
+                  icon: Trash2,
+                  variant: "danger",
+                  onClick: (r) => setSilinecekGrup(r),
+                },
+              ]}
+            />
           );
         },
       },

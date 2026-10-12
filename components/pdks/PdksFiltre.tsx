@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { format } from "date-fns";
+import { useForm, useWatch } from "react-hook-form";
 import { Filter } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
-import { FormSelect, FormInput } from "../forms";
+import { FormSelect, FormSwitch } from "../forms";
 import { useCurrentContext } from "@/hooks/use-context";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { PDKSSelectRequestType } from "@/types/pdks";
@@ -14,14 +13,23 @@ import { PDKSSelectRequestType } from "@/types/pdks";
 type FormValues = {
   IDSube: string;
   IDBolum: string;
-  Tarih: string;
+  GirisYok: boolean;
+  CikisYok: boolean;
+};
+
+// Tarih filtre dışında (CustomDateNavigator) yönetiliyor.
+// GirisYok/CikisYok API'ye gitmez, gelen liste client tarafında süzülür.
+export type PdksFiltreValues = Pick<
+  PDKSSelectRequestType,
+  "IDSube" | "IDBolum"
+> & {
+  GirisYok: boolean;
+  CikisYok: boolean;
 };
 
 type Props = {
-  onApply: (filters: PDKSSelectRequestType) => void;
+  onApply: (filters: PdksFiltreValues) => void;
 };
-
-const BUGUN = format(new Date(), "yyyy-MM-dd");
 
 export default function PdksFiltre({ onApply }: Props) {
   const { data: context } = useCurrentContext();
@@ -30,13 +38,12 @@ export default function PdksFiltre({ onApply }: Props) {
     defaultValues: {
       IDSube: "",
       IDBolum: "0",
-      Tarih: BUGUN,
+      GirisYok: false,
+      CikisYok: false,
     },
   });
 
-  const { data: bolumlerData = [] } = useBolumler(
-    Number(context?.IDSube) || 0,
-  );
+  const { data: bolumlerData = [] } = useBolumler(Number(context?.IDSube) || 0);
 
   const bolumler = useMemo(
     () => [
@@ -49,18 +56,16 @@ export default function PdksFiltre({ onApply }: Props) {
     [bolumlerData],
   );
 
-  const buildFilters = useCallback(
-    (values: FormValues): PDKSSelectRequestType => {
-      const bolumSeciliMi = Boolean(values.IDBolum) && values.IDBolum !== "0";
+  const buildFilters = useCallback((values: FormValues): PdksFiltreValues => {
+    const bolumSeciliMi = Boolean(values.IDBolum) && values.IDBolum !== "0";
 
-      return {
-        IDSube: bolumSeciliMi ? "0" : values.IDSube || "0",
-        IDBolum: bolumSeciliMi ? values.IDBolum : "0",
-        Tarih: values.Tarih
-      };
-    },
-    [],
-  );
+    return {
+      IDSube: bolumSeciliMi ? "0" : values.IDSube || "0",
+      IDBolum: bolumSeciliMi ? values.IDBolum : "0",
+      GirisYok: Boolean(values.GirisYok),
+      CikisYok: Boolean(values.CikisYok),
+    };
+  }, []);
 
   // Context yüklendiğinde IDSube'u forma set et (kullanıcı bunu göremez/değiştiremez)
   // ve ilk filtreyi doğrudan uygula. Context cache'den hazır geldiğinde bu efekt
@@ -95,9 +100,20 @@ export default function PdksFiltre({ onApply }: Props) {
     form.reset({
       IDSube: context?.IDSube ? String(context.IDSube) : "",
       IDBolum: "0",
-      Tarih: BUGUN,
+      GirisYok: false,
+      CikisYok: false,
     });
   };
+
+  // Popover kapalıyken de aktif filtre sayısı butonda görünsün
+  const [idBolum, girisYok, cikisYok] = useWatch({
+    control: form.control,
+    name: ["IDBolum", "GirisYok", "CikisYok"],
+  });
+  const aktifFiltreSayisi =
+    Number(Boolean(idBolum) && idBolum !== "0") +
+    Number(Boolean(girisYok)) +
+    Number(Boolean(cikisYok));
 
   return (
     <Popover>
@@ -105,13 +121,16 @@ export default function PdksFiltre({ onApply }: Props) {
         <Button type="button" color="secondary" appearance="outline" size="sm">
           <Filter className="size-4" />
           Filtre
+          {aktifFiltreSayisi > 0 && (
+            <span className="ml-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              {aktifFiltreSayisi}
+            </span>
+          )}
         </Button>
       </PopoverTrigger>
 
       <PopoverContent align="end" className="w-100 space-y-4">
-        <p className="text-sm font-semibold text-foreground">
-          PDKS Filtrele
-        </p>
+        <p className="text-sm font-semibold text-foreground">PDKS Filtrele</p>
 
         <div className="space-y-3">
           <FormSelect
@@ -123,12 +142,8 @@ export default function PdksFiltre({ onApply }: Props) {
             labelKey="BolumAdi"
           />
 
-          <FormInput
-            control={form.control}
-            name="Tarih"
-            label="Tarih"
-            type="date"
-          />
+          <FormSwitch control={form.control} name="GirisYok" label="Giriş" />
+          <FormSwitch control={form.control} name="CikisYok" label="Çıkış" />
         </div>
 
         <div className="flex justify-end gap-2 border-t border-border pt-3">

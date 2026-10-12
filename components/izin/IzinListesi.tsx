@@ -8,7 +8,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { CustomDataTable } from "../customs/CustomDataTable";
-import { RowAction, RowActions } from "../customs/RowActions";
+import { RowActions } from "../customs/RowActions";
 import { ConfirmDialog } from "../customs/ConfirmDialog";
 import { useIzinList, useDeleteIzin } from "@/hooks/use-izin";
 import { IzinFilters, IzinSelectParams, IzinType } from "@/types/izin";
@@ -127,18 +127,18 @@ const IzinListesi = ({ enabled }: Props) => {
         // Personel kendi onaylanmış izinlerini sadece görüntüler, silemez.
         if (isPersonel) return null;
 
-        const actions: RowAction<IzinType>[] = [
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            onClick: (r) => setSilinecekId(r.IDIzinGenel),
-          },
-        ];
         return (
-          <div className="flex justify-end">
-            <RowActions row={row.original} actions={actions} />
-          </div>
+          <RowActions
+            row={row.original}
+            actions={[
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                onClick: (r) => setSilinecekId(r.IDIzinGenel),
+              },
+            ]}
+          />
         );
       },
     };

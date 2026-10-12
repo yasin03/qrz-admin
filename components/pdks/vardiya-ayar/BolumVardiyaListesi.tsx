@@ -6,29 +6,33 @@ import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { RowAction, RowActions } from "../customs/RowActions";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
-import { useSubeVardiyaList, useDeleteSubeVardiya } from "@/hooks/use-pdks";
-import { SubeVardiyaSaat } from "@/types/pdks";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { RowActions } from "@/components/customs/RowActions";
+import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
+import { useBolumVardiyaList, useDeleteBolumVardiya } from "@/hooks/use-pdks";
+import { BolumVardiyaSaat } from "@/types/pdks";
 import { formatDate } from "@/lib/format";
 
 type Props = {
+  idBolum: number | null;
   enabled: boolean;
-  onDuzenle: (kayit: SubeVardiyaSaat) => void;
+  onDuzenle: (kayit: BolumVardiyaSaat) => void;
 };
 
-const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
+const BolumVardiyaListesi = ({ idBolum, enabled, onDuzenle }: Props) => {
   const [silinecekId, setSilinecekId] = useState<number | null>(null);
 
-  const { data: vardiyaListesi = [], isLoading } = useSubeVardiyaList(enabled);
-  const deleteVardiya = useDeleteSubeVardiya();
+  const { data: vardiyaListesi = [], isLoading } = useBolumVardiyaList(
+    idBolum,
+    enabled,
+  );
+  const deleteVardiya = useDeleteBolumVardiya();
 
   const handleDeleteConfirm = () => {
     if (silinecekId === null) return;
 
     deleteVardiya.mutate(
-      { IDSubeVardiyaSaat: silinecekId },
+      { IDBolumVardiyaSaat: silinecekId },
       {
         onSuccess: () => {
           toast.success("Vardiya saati silindi");
@@ -43,7 +47,7 @@ const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
     );
   };
 
-  const columns: ColumnDef<SubeVardiyaSaat>[] = useMemo(
+  const columns: ColumnDef<BolumVardiyaSaat>[] = useMemo(
     () => [
       {
         id: "actions",
@@ -51,19 +55,19 @@ const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
         header: "",
         enableSorting: false,
         cell: ({ row }) => {
-          const actions: RowAction<SubeVardiyaSaat>[] = [
-            { label: "Düzenle", icon: Pencil, onClick: (r) => onDuzenle(r) },
-            {
-              label: "Sil",
-              icon: Trash2,
-              variant: "danger",
-              onClick: (r) => setSilinecekId(r.IDSubeVardiyaSaat),
-            },
-          ];
           return (
-            <div className="flex justify-end">
-              <RowActions row={row.original} actions={actions} />
-            </div>
+            <RowActions
+              row={row.original}
+              actions={[
+                { label: "Düzenle", icon: Pencil, onClick: (r) => onDuzenle(r) },
+                {
+                  label: "Sil",
+                  icon: Trash2,
+                  variant: "danger",
+                  onClick: (r) => setSilinecekId(r.IDBolumVardiyaSaat),
+                },
+              ]}
+            />
           );
         },
       },
@@ -92,13 +96,21 @@ const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
     [onDuzenle],
   );
 
+  if (!idBolum) {
+    return (
+      <p className="text-sm text-muted-foreground py-8 text-center">
+        Vardiya saatlerini görmek için lütfen bir bölüm seçiniz.
+      </p>
+    );
+  }
+
   return (
     <>
       <CustomDataTable
         data={vardiyaListesi}
         columns={columns}
         loading={isLoading}
-        getRowId={(row) => String(row.IDSubeVardiyaSaat)}
+        getRowId={(row) => String(row.IDBolumVardiyaSaat)}
         pagination
         emptyMessage="Vardiya saati kaydı bulunamadı."
       />
@@ -117,4 +129,4 @@ const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
   );
 };
 
-export default SubeVardiyaListesi;
+export default BolumVardiyaListesi;

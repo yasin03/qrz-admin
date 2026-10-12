@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { useBolumler, useDeleteBolum } from "@/hooks/use-kurumsal-data";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
-import { RowAction, RowActions } from "@/components/customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { formatDate } from "@/lib/format";
@@ -76,28 +76,24 @@ export default function Bolum({ idSube }: BolumProps) {
         cell: ({ row }) => {
           const sube = row.original;
 
-          const actions: RowAction<BolumType>[] = [
-            {
-              label: "Düzenle",
-              icon: Pencil,
-              onClick: (r) => setDuzenlenecekBolum(r),
-            },
-            {
-              label: "Sil",
-              icon: Trash2,
-              variant: "danger",
-              separatorBefore: true,
-              onClick: (r) => setSilinecekBolum(r),
-            },
-          ];
-
           return (
-            <div
-              className="flex justify-end"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <RowActions row={sube} actions={actions} />
-            </div>
+            <RowActions
+              row={sube}
+              actions={[
+                {
+                  label: "Düzenle",
+                  icon: Pencil,
+                  onClick: (r) => setDuzenlenecekBolum(r),
+                },
+                { divider: true },
+                {
+                  label: "Sil",
+                  icon: Trash2,
+                  variant: "danger",
+                  onClick: (r) => setSilinecekBolum(r),
+                },
+              ]}
+            />
           );
         },
       },

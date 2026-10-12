@@ -3,7 +3,7 @@ import { CustomDataTable } from "../customs/CustomDataTable";
 import { Button } from "../ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { RowAction, RowActions } from "../customs/RowActions";
+import { RowActions } from "../customs/RowActions";
 import {
   UserPlus,
   Pencil,
@@ -294,56 +294,55 @@ const Personel = () => {
       cell: ({ row }) => {
         const personel = row.original;
 
-        const actions: RowAction<Personel>[] = [
-          {
-            label: "Düzenle",
-            icon: Pencil,
-            onClick: (r) =>
-              setSecilenPersonel({ id: r.IDSubePersonel, tip: "duzenle" }),
-          },
-          {
-            label: "Personel Detayı",
-            icon: ListChevronsUpDown,
-            onClick: (r) =>
-              setSecilenPersonel({ id: r.IDSubePersonel, tip: "detay" }),
-          },
-          {
-            label: "Kullanıcı Ayarları",
-            icon: UserCog,
-            onClick: (r) => {
-              setSettingsPersonel({
-                IDSubePersonel: r.IDSubePersonel,
-                AdSoyad: r.AdSoyad,
-                Telefon: r.Telefon,
-                KullaniciAktif: r.KullaniciAktif,
-              });
-              setSettingsOpen(true);
-            },
-          },
-          {
-            label: personel.Durum ? "SGK İşten Çıkış Yap" : "SGK İşe Giriş Yap",
-            icon: Hospital,
-            onClick: (r) => handleSgkAction(r, r.Durum),
-          },
-          {
-            label: "Telefon Aktivasyon Resetle",
-            icon: Smartphone,
-            separatorBefore: true,
-            onClick: (r) => handleAktivasyonResetle(r),
-          },
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            separatorBefore: true,
-            onClick: (r) => setSilinecekId(r.IDSubePersonel),
-          },
-        ];
-
         return (
-          <div className="flex justify-end">
-            <RowActions row={personel} actions={actions} />
-          </div>
+          <RowActions
+            row={personel}
+            actions={[
+              {
+                label: "Düzenle",
+                icon: Pencil,
+                onClick: (r) =>
+                  setSecilenPersonel({ id: r.IDSubePersonel, tip: "duzenle" }),
+              },
+              {
+                label: "Personel Detayı",
+                icon: ListChevronsUpDown,
+                onClick: (r) =>
+                  setSecilenPersonel({ id: r.IDSubePersonel, tip: "detay" }),
+              },
+              {
+                label: "Kullanıcı Ayarları",
+                icon: UserCog,
+                onClick: (r) => {
+                  setSettingsPersonel({
+                    IDSubePersonel: r.IDSubePersonel,
+                    AdSoyad: r.AdSoyad,
+                    Telefon: r.Telefon,
+                    KullaniciAktif: r.KullaniciAktif,
+                  });
+                  setSettingsOpen(true);
+                },
+              },
+              {
+                label: personel.Durum ? "SGK İşten Çıkış Yap" : "SGK İşe Giriş Yap",
+                icon: Hospital,
+                onClick: (r) => handleSgkAction(r, r.Durum),
+              },
+              { divider: true },
+              {
+                label: "Telefon Aktivasyon Resetle",
+                icon: Smartphone,
+                onClick: (r) => handleAktivasyonResetle(r),
+              },
+              { divider: true },
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                onClick: (r) => setSilinecekId(r.IDSubePersonel),
+              },
+            ]}
+          />
         );
       },
     },

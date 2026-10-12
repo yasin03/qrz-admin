@@ -2,21 +2,12 @@
 
 import { useMemo, useState } from "react";
 
-import { Button } from "../ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { CustomDateNavigator } from "../customs/CustomDateNavigator";
 import { usePuantajById } from "@/hooks/use-puantaj";
-import { AY_DATA, HAFTA_DATA, useYearOptions } from "@/constants/data";
+import { HAFTA_DATA } from "@/constants/data";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/stores/auth-store";
 import {
-  ChevronLeft,
-  ChevronRight,
   Info,
   CalendarCheck,
   CalendarDays,
@@ -115,8 +106,6 @@ export default function PersonelPuantajTakvimi({
     initialAy || (new Date().getMonth() + 1).toString().padStart(2, "0"),
   );
 
-  const yilSecenekleri = useYearOptions(5,1);
-
   const { data, isLoading } = usePuantajById({
     IDSubePersonel: user?.IDSubePersonel ?? "0",
     Yil: yil,
@@ -157,26 +146,6 @@ export default function PersonelPuantajTakvimi({
     });
   }, [gunSayisi, kayit, yil, ay]);
 
-  const handlePrevMonth = () => {
-    const a = Number(ay);
-    if (a === 1) {
-      setAy("12");
-      setYil((y) => (Number(y) - 1).toString());
-    } else {
-      setAy((a - 1).toString().padStart(2, "0"));
-    }
-  };
-
-  const handleNextMonth = () => {
-    const a = Number(ay);
-    if (a === 12) {
-      setAy("01");
-      setYil((y) => (Number(y) + 1).toString());
-    } else {
-      setAy((a + 1).toString().padStart(2, "0"));
-    }
-  };
-
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/60 p-4">
@@ -190,55 +159,15 @@ export default function PersonelPuantajTakvimi({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            size="icon-sm"
-            appearance="outline"
-            color="secondary"
-            onClick={handlePrevMonth}
-            aria-label="Önceki ay"
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-
-          <Select value={ay} onValueChange={setAy}>
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="Ay" />
-            </SelectTrigger>
-            <SelectContent>
-              {AY_DATA.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={yil} onValueChange={setYil}>
-            <SelectTrigger className="w-24">
-              <SelectValue placeholder="Yıl" />
-            </SelectTrigger>
-            <SelectContent>
-              {yilSecenekleri.map((y) => (
-                <SelectItem key={y} value={y}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            type="button"
-            size="icon-sm"
-            appearance="outline"
-            color="secondary"
-            onClick={handleNextMonth}
-            aria-label="Sonraki ay"
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
+        <CustomDateNavigator
+          mode="month"
+          value={`${yil}-${ay}`}
+          onChange={(value) => {
+            const [y, a] = value.split("-");
+            setYil(y);
+            setAy(a);
+          }}
+        />
       </div>
 
       {kayit && (

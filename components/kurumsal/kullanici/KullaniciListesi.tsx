@@ -1,6 +1,6 @@
 "use client";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
-import { RowAction, RowActions } from "@/components/customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { ExportMenu } from "@/components/export/ExportMenu";
@@ -138,27 +138,26 @@ const KullaniciListesi = () => {
         const isSelf =
           String(rowdata.IDKullanici) === String(user?.IDKullanici);
 
-        const actions: RowAction<SelectKullaniciResponseType>[] = [
-          {
-            label: "Düzenleme & Yetkiler",
-            icon: ShieldUser,
-            onClick: (r) => setDuzenlenecekId(String(r.IDKullanici)),
-          },
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            separatorBefore: true,
-            // Kişi kendi hesabını silemesin.
-            disabled: isSelf,
-            onClick: (r) => setSilinecek(r),
-          },
-        ];
-
         return (
-          <div className="flex justify-end">
-            <RowActions row={rowdata} actions={actions} />
-          </div>
+          <RowActions
+            row={rowdata}
+            actions={[
+              {
+                label: "Düzenleme & Yetkiler",
+                icon: ShieldUser,
+                onClick: (r) => setDuzenlenecekId(String(r.IDKullanici)),
+              },
+              { divider: true },
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                // Kişi kendi hesabını silemesin.
+                disabled: isSelf,
+                onClick: (r) => setSilinecek(r),
+              },
+            ]}
+          />
         );
       },
     },

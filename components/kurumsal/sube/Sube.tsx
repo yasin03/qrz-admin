@@ -10,7 +10,7 @@ import {
   useAktifPasifSube,
 } from "@/hooks/use-kurumsal-data";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
-import { RowAction, RowActions } from "@/components/customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
@@ -107,30 +107,29 @@ export default function Sube({ idSirket }: SubeProps) {
         cell: ({ row }) => {
           const sube = row.original;
 
-          const actions: RowAction<SubeType>[] = [
-            {
-              label: "Düzenle",
-              icon: Pencil,
-              onClick: (r) => router.push(`/kurumsal/subeler/${r.IDSube}`),
-            },
-            {
-              label: sube.Durum ? "Pasif Yap" : "Aktif Yap",
-              icon: Power,
-              onClick: (r) => handleToggleDurum(r),
-            },
-            {
-              label: "Sil",
-              icon: Trash2,
-              variant: "danger",
-              separatorBefore: true,
-              onClick: (r) => setSilinecekSube(r),
-            },
-          ];
-
           return (
-            <div className="flex justify-end">
-              <RowActions row={sube} actions={actions} />
-            </div>
+            <RowActions
+              row={sube}
+              actions={[
+                {
+                  label: "Düzenle",
+                  icon: Pencil,
+                  onClick: (r) => router.push(`/kurumsal/subeler/${r.IDSube}`),
+                },
+                {
+                  label: sube.Durum ? "Pasif Yap" : "Aktif Yap",
+                  icon: Power,
+                  onClick: (r) => handleToggleDurum(r),
+                },
+                { divider: true },
+                {
+                  label: "Sil",
+                  icon: Trash2,
+                  variant: "danger",
+                  onClick: (r) => setSilinecekSube(r),
+                },
+              ]}
+            />
           );
         },
       },

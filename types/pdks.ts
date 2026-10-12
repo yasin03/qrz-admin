@@ -27,6 +27,49 @@ export type PDKSSelectResponseType = {
   IDKullanici: string | number;
 };
 
+// Personelin kendi kayıtları (SELECT_PDKS_KENDI) - IDSubePersonel session'dan gelir
+export type PDKSKendiSelectRequestType = {
+  Yil: string;
+  /** "01".."12" */
+  Ay: string;
+};
+
+export type PDKSKendiSelectResponseType = {
+  IDSubePersonelSaat: string;
+  IDSubePersonel: string;
+  Tarih: string;
+  Giris: string | null;
+  Cikis: string | null;
+  NormalSure: string | null;
+  MesaiSure: string | null;
+  IzinSure: string | null;
+  ToplamSure: string | null;
+};
+
+export type PdksYon = "Giriş" | "Çıkış";
+
+export type PDKSUpdateInput = {
+  /** Tek kayıt için id, toplu işlemde id'ler "-" ile birleştirilmiş string (ör. "12-15-18"). */
+  IDSubePersonelSaat: string;
+  Yon: PdksYon;
+  /** "HH:mm" (ör. "09:00") */
+  Saat: string;
+};
+
+export type PDKSUpdateResponseType = {
+  test: number;
+};
+
+export type PDKSDeleteInput = {
+  /** Tek kayıt için id, toplu işlemde id'ler "-" ile birleştirilmiş string (ör. "12-15-18"). */
+  IDSubePersonelSaat: string;
+};
+
+/** test: 1 başarılı, 0 başarısız */
+export type PDKSDeleteResponseType = {
+  test: number;
+};
+
 export type PDKSDetaySelectRequestType = {
   IDSubePersonelSaat: string | number;
 };

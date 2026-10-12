@@ -8,7 +8,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { CustomDataTable } from "../../customs/CustomDataTable";
-import { RowAction, RowActions } from "../../customs/RowActions";
+import { RowActions } from "../../customs/RowActions";
 import { ConfirmDialog } from "../../customs/ConfirmDialog";
 import { CustomColumnVisibility } from "../../customs/CustomColumnVisibility";
 import { Input } from "../../ui/input";
@@ -159,23 +159,23 @@ const EklentiListesi = ({ enabled }: Props) => {
         // Personel kendi eklentilerini sadece görüntüler, silemez.
         if (isPersonel) return null;
 
-        const actions: RowAction<EklentiResponseType>[] = [
-          {
-            label: "Düzenle",
-            icon: Pencil,
-            onClick: (r) => setDuzenlenecekEklenti(r),
-          },
-          {
-            label: "Sil",
-            icon: Trash2,
-            variant: "danger",
-            onClick: (r) => setSilinecekId(String(r.IDSubePersonelYardim)),
-          },
-        ];
         return (
-          <div className="flex justify-end">
-            <RowActions row={row.original} actions={actions} />
-          </div>
+          <RowActions
+            row={row.original}
+            actions={[
+              {
+                label: "Düzenle",
+                icon: Pencil,
+                onClick: (r) => setDuzenlenecekEklenti(r),
+              },
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                onClick: (r) => setSilinecekId(String(r.IDSubePersonelYardim)),
+              },
+            ]}
+          />
         );
       },
     };

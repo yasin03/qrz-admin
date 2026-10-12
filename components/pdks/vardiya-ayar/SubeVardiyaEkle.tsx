@@ -13,19 +13,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { FormInput, FormLabel, FormSelect, FormSwitch } from "../forms";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { FormInput, FormLabel, FormSelect, FormSwitch } from "@/components/forms";
 
 import { HAFTA_DATA } from "@/constants/data";
-import { useInsertBolumVardiya, useUpdateBolumVardiya } from "@/hooks/use-pdks";
-import { BolumVardiyaSaat } from "@/types/pdks";
+import { useInsertSubeVardiya, useUpdateSubeVardiya } from "@/hooks/use-pdks";
+import { SubeVardiyaSaat } from "@/types/pdks";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  idBolum: number | null;
-  duzenlenecekKayit?: BolumVardiyaSaat | null;
+  duzenlenecekKayit?: SubeVardiyaSaat | null;
 };
 
 const saatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -53,17 +52,12 @@ const DEFAULT_VALUES: VardiyaForm = {
   HT: "",
 };
 
-const BolumVardiyaEkle = ({
-  open,
-  onOpenChange,
-  idBolum,
-  duzenlenecekKayit,
-}: Props) => {
+const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
   const isEdit = Boolean(duzenlenecekKayit);
   const { mutateAsync: insertVardiya, isPending: isInserting } =
-    useInsertBolumVardiya();
+    useInsertSubeVardiya();
   const { mutateAsync: updateVardiya, isPending: isUpdating } =
-    useUpdateBolumVardiya();
+    useUpdateSubeVardiya();
   const isSaving = isInserting || isUpdating;
 
   const form = useForm<VardiyaForm>({
@@ -92,11 +86,6 @@ const BolumVardiyaEkle = ({
   }));
 
   const handleSubmit = async (values: VardiyaForm) => {
-    if (!idBolum) {
-      toast.error("Lütfen önce bir bölüm seçiniz.");
-      return;
-    }
-
     const htNumber = Number(values.HT);
     const HTGun =
       HAFTA_DATA.find((gun) => gun.value === values.HT)?.label ?? "";
@@ -104,8 +93,7 @@ const BolumVardiyaEkle = ({
     try {
       if (isEdit && duzenlenecekKayit) {
         await updateVardiya({
-          IDBolumVardiyaSaat: duzenlenecekKayit.IDBolumVardiyaSaat,
-          IDBolum: idBolum,
+          IDSubeVardiyaSaat: duzenlenecekKayit.IDSubeVardiyaSaat,
           VardiyaAdi: values.VardiyaAdi,
           BaslamaSaati: values.BaslamaSaati,
           BitisSaati: values.BitisSaati,
@@ -116,7 +104,6 @@ const BolumVardiyaEkle = ({
         toast.success("Vardiya saati güncellendi.");
       } else {
         await insertVardiya({
-          IDBolum: idBolum,
           VardiyaAdi: values.VardiyaAdi,
           BaslamaSaati: values.BaslamaSaati,
           BitisSaati: values.BitisSaati,
@@ -140,12 +127,12 @@ const BolumVardiyaEkle = ({
             {isEdit ? "Vardiya Saatini Düzenle" : "Yeni Vardiya Saati Ekle"}
           </DialogTitle>
           <DialogDescription>
-            Bölüme ait vardiya saat aralığını ve hafta tatilini tanımlayın.
+            Şubenize ait vardiya saat aralığını ve hafta tatilini tanımlayın.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="space-y-2 py-1">
+          <div className="space-y-3 py-1">
             <FormInput
               control={form.control}
               name="VardiyaAdi"
@@ -169,6 +156,7 @@ const BolumVardiyaEkle = ({
                 disabled={isSaving}
               />
             </FormLabel>
+
             <FormSelect
               control={form.control}
               name="HT"
@@ -207,4 +195,4 @@ const BolumVardiyaEkle = ({
   );
 };
 
-export default BolumVardiyaEkle;
+export default SubeVardiyaEkle;
