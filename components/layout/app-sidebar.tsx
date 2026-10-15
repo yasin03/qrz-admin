@@ -34,46 +34,46 @@ import {
 } from "@/components/ui/sidebar";
 import { logout } from "@/services/auth";
 import { useAuthStore } from "@/stores/auth-store";
-import { KULLANICI_TIPI } from "@/lib/roles";
+import { KULLANICI_TIPI, type KullaniciTipi } from "@/lib/roles";
 
 type MenuItem = {
   href: string;
   label: string;
   icon: typeof Users;
+  /** Bu menüyü görebilecek kullanıcı tipleri. */
+  roles: KullaniciTipi[];
 };
 
-const personelMenuItems: MenuItem[] = [
-  { href: "/ozluk", label: "Özlük", icon: FileUser },
-  { href: "/izin", label: "İzin", icon: Parasol },
-  { href: "/avans", label: "Avans", icon: HandCoins },
+const { ADMIN, YONETICI, PERSONEL } = KULLANICI_TIPI;
+const TUMU: KullaniciTipi[] = [ADMIN, YONETICI, PERSONEL];
+
+const MENU_ITEMS: MenuItem[] = [
+  {
+    href: "/personel",
+    label: "Personel",
+    icon: Users,
+    roles: [ADMIN, YONETICI],
+  },
+  {
+    href: "/lokasyon",
+    label: "Lokasyon",
+    icon: MapPinned,
+    roles: [ADMIN, YONETICI],
+  },
+  { href: "/ozluk", label: "Özlük", icon: FileUser, roles: TUMU },
+  { href: "/izin", label: "İzin", icon: Parasol, roles: TUMU },
+  { href: "/avans", label: "Avans", icon: HandCoins, roles: TUMU },
   {
     href: "/bordro/parametre",
     label: "Eklenti & Kesinti",
     icon: GitMergeConflict,
+    roles: TUMU,
   },
-  { href: "/pdks", label: "PDKS", icon: Fingerprint },
-  { href: "/puantaj", label: "Puantaj", icon: CalendarRange },
-  { href: "/bordro", label: "Bordro", icon: ContactRound },
-  { href: "/belgeler", label: "Belgeler", icon: FileText },
+  { href: "/pdks", label: "PDKS", icon: Fingerprint, roles: TUMU },
+  { href: "/puantaj", label: "Puantaj", icon: CalendarRange, roles: TUMU },
+  { href: "/bordro", label: "Bordro", icon: ContactRound, roles: TUMU },
+  { href: "/belgeler", label: "Belgeler", icon: FileText, roles: TUMU },
 ];
-const adminMenuItems: MenuItem[] = [
-  { href: "/personel", label: "Personel", icon: Users },
-  { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
-  ...personelMenuItems,
-];
-
-const yoneticiMenuItems: MenuItem[] = [
-  { href: "/personel", label: "Personel", icon: Users },
-  { href: "/lokasyon", label: "Lokasyon", icon: MapPinned },
-  ...personelMenuItems,
-];
-
-/** IDKullaniciTip -> gösterilecek menü. Yeni bir rol eklenirse sadece buraya satır eklenir. */
-const MENU_BY_ROLE: Record<string, MenuItem[]> = {
-  [KULLANICI_TIPI.ADMIN]: adminMenuItems,
-  [KULLANICI_TIPI.YONETICI]: yoneticiMenuItems,
-  [KULLANICI_TIPI.PERSONEL]: personelMenuItems,
-};
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -96,7 +96,11 @@ export function AppSidebar() {
     }
   }, [pathname, pendingHref]);
 
-  const menuItems = user ? (MENU_BY_ROLE[user.IDKullaniciTip] ?? []) : [];
+  const menuItems = user
+    ? MENU_ITEMS.filter((item) =>
+        item.roles.includes(user.IDKullaniciTip as KullaniciTipi),
+      )
+    : [];
 
   const handleLogout = async () => {
     if (isLoggingOut) return;

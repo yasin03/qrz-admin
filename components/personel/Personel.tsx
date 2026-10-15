@@ -324,7 +324,9 @@ const Personel = () => {
                 },
               },
               {
-                label: personel.Durum ? "SGK İşten Çıkış Yap" : "SGK İşe Giriş Yap",
+                label: personel.Durum
+                  ? "SGK İşten Çıkış Yap"
+                  : "SGK İşe Giriş Yap",
                 icon: Hospital,
                 onClick: (r) => handleSgkAction(r, r.Durum),
               },
@@ -361,7 +363,19 @@ const Personel = () => {
         </div>
       ),
     },
+    {
+      accessorKey: "Cinsiyet",
+      header: "Cinsiyet",
+      cell: ({ row }) => {
+        const cinsiyet = row.original.Cinsiyet;
 
+        return (
+          <Badge variant={cinsiyet === "ERKEK" ? "blue" : "pink"}>
+            {cinsiyet}
+          </Badge>
+        );
+      },
+    },
     {
       accessorKey: "CalismaDurumu",
       header: "Çalışma Durumu",
@@ -419,14 +433,14 @@ const Personel = () => {
     },
 
     {
-      accessorKey: "Cinsiyet",
-      header: "Cinsiyet",
+      accessorKey: "Durum",
+      header: "Durum",
       cell: ({ row }) => {
-        const cinsiyet = row.original.Cinsiyet;
+        const durum = row.original.Durum;
 
         return (
-          <Badge variant={cinsiyet === "ERKEK" ? "blue" : "pink"}>
-            {cinsiyet}
+          <Badge variant={durum ? "success" : "danger"}>
+            {durum ? "Aktif" : "Pasif"}
           </Badge>
         );
       },

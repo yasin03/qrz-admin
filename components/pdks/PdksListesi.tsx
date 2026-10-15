@@ -4,7 +4,7 @@ import { Eye, EyeOff, Loader2, Pencil, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { format, parse } from "date-fns";
+import { addDays, format, parse } from "date-fns";
 import { ConfirmDialog } from "../customs/ConfirmDialog";
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { CustomDateNavigator } from "../customs/CustomDateNavigator";
@@ -21,7 +21,7 @@ import {
   PdksYon,
 } from "@/types/pdks";
 import { Input } from "../ui/input";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { normalize } from "@/lib/utils";
 import PdksFiltre, { PdksFiltreValues } from "./PdksFiltre";
 import PdksDetay from "./PdksDetay";
@@ -50,6 +50,7 @@ const PdksListesi = ({ enabled }: Props) => {
     data: pdksData = [],
     isLoading: isPdksLoading,
     isError: isPdksError,
+    refetch: refetchPdks,
   } = usePdksList(pdksFilters, enabled && bolumFiltre !== null);
   const [searchText, setSearchText] = useState("");
 
@@ -208,6 +209,48 @@ const PdksListesi = ({ enabled }: Props) => {
     );
   };
 
+  // ---- Klavye kısayolları -------------------------------------------------
+  // ←/→ gün değiştirir, G/Ç seçili satırlara giriş/çıkış saatini uygular.
+  // Yazı alanında, açık popover/dialog/menüde veya sekme gizliyken çalışmaz.
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey)
+        return;
+
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest(
+          'input, textarea, select, [contenteditable="true"], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]',
+        )
+      )
+        return;
+
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        const yon = event.key === "ArrowLeft" ? -1 : 1;
+        setTarih((t) =>
+          format(addDays(parse(t, "yyyy-MM-dd", new Date()), yon), "yyyy-MM-dd"),
+        );
+        return;
+      }
+
+      if (!selectedRows.length || updateSaat.isPending) return;
+      const key = event.key.toLocaleLowerCase("tr-TR");
+      if (key === "g") {
+        event.preventDefault();
+        handleTopluKaydet("Giriş");
+      } else if (key === "ç" || key === "c") {
+        event.preventDefault();
+        handleTopluKaydet("Çıkış");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
   const exportColumns: ExportColumn<PDKSSelectResponseType>[] = [
     { header: "Ad Soyad", accessorKey: "AdSoyad" },
     { header: "Tarih", accessorKey: "Tarih" },
@@ -321,7 +364,7 @@ const PdksListesi = ({ enabled }: Props) => {
               showSave={selectedRows.length > 0}
               onSave={() => handleTopluKaydet(yon)}
               saving={topluKaydedilenYon === yon}
-              saveLabel={`${yon} saatini seçili ${selectedRows.length} kayda uygula`}
+              saveLabel={`${yon} saatini seçili ${selectedRows.length} kayda uygula (${yon === "Giriş" ? "G" : "Ç"})`}
             />
           ))}
         </div>
@@ -337,10 +380,11 @@ const PdksListesi = ({ enabled }: Props) => {
           <CustomDateNavigator value={tarih} onChange={setTarih} />
           <PdksFiltre onApply={setBolumFiltre} />
           <ExportMenu
-            data={pdksData}
+            // Arama ve filtreler uygulanmış, ekranda görünen kayıtlar aktarılır
+            data={filteredPdksData}
             exportColumns={exportColumns}
-            title="İzin Listesi"
-            fileName="izin-listesi"
+            title={`PDKS Listesi - ${tarihGosterim}`}
+            fileName={`pdks-listesi-${tarih}`}
             showImport
             onImport={(rows) => {
               // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
@@ -375,6 +419,7 @@ const PdksListesi = ({ enabled }: Props) => {
             ? "Kayıtlar yüklenirken hata oluştu."
             : "Pdks kaydı bulunamadı."
         }
+        onRetry={isPdksError ? () => refetchPdks() : undefined}
       />
 
       <ConfirmDialog

@@ -105,6 +105,9 @@ export type CustomDataTableProps<TData> = {
   highlightOnHover?: boolean;
   loading?: boolean;
   emptyMessage?: React.ReactNode;
+  /** Verilirse boş/hata satırında mesajın altında "Tekrar dene" butonu gösterilir. */
+  onRetry?: () => void;
+  retryLabel?: string;
   onRowClick?: (row: TData) => void;
   title?: React.ReactNode;
   actions?: React.ReactNode;
@@ -162,6 +165,8 @@ export function CustomDataTable<TData>({
   highlightOnHover = true,
   loading = false,
   emptyMessage = "Kayıt bulunamadı.",
+  onRetry,
+  retryLabel = "Tekrar dene",
   onRowClick,
   title,
   actions,
@@ -688,6 +693,17 @@ export function CustomDataTable<TData>({
                   <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                     <Inbox className="size-6" />
                     <span>{emptyMessage}</span>
+                    {onRetry && !loading && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        appearance="outline"
+                        size="sm"
+                        onClick={onRetry}
+                      >
+                        {retryLabel}
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>

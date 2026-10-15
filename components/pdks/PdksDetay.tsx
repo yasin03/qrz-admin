@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { CustomDataTable } from "../customs/CustomDataTable";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { usePdksDetay } from "@/hooks/use-pdks";
 import { formatDate } from "@/lib/format";
 import { PDKSDetaySelectResponseType } from "@/types/pdks";
@@ -21,6 +22,7 @@ export default function PdksDetay({ idSubePersonelSaat }: PdksDetayProps) {
     data: detaylar = [],
     isLoading,
     isError,
+    refetch,
   } = usePdksDetay(idSubePersonelSaat);
 
   const columns = useMemo<ColumnDef<PDKSDetaySelectResponseType>[]>(
@@ -76,9 +78,20 @@ export default function PdksDetay({ idSubePersonelSaat }: PdksDetayProps) {
 
   if (isError) {
     return (
-      <p className="p-4 text-center text-sm text-destructive">
-        Detay kayıtları getirilemedi.
-      </p>
+      <div className="flex flex-col items-center gap-2 p-4">
+        <p className="text-center text-sm text-destructive">
+          Detay kayıtları getirilemedi.
+        </p>
+        <Button
+          type="button"
+          variant="secondary"
+          appearance="outline"
+          size="sm"
+          onClick={() => refetch()}
+        >
+          Tekrar dene
+        </Button>
+      </div>
     );
   }
 

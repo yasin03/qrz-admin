@@ -52,3 +52,10 @@ export interface GrupKullanici {
   GrupAdi: string;
   Durum: 0 | 1;
 }
+
+export interface GrupFilters {
+  /** null = tümü */
+  Durum: 0 | 1 | null;
+  /** "" = tümü, "VAR" = en az bir şirketi olan, "YOK" = şirketi olmayan */
+  Sirket: "" | "VAR" | "YOK";
+}

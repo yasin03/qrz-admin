@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   UserPlus,
   FileText,
@@ -25,19 +25,42 @@ import GrupEkle from "./GrupEkle";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { RowActions } from "@/components/customs/RowActions";
 import { ColumnDef } from "@tanstack/react-table";
-import { GrupType } from "@/types/kurumsal/grup";
+import { GrupFilters, GrupType } from "@/types/kurumsal/grup";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { Input } from "@/components/ui/input";
+import { useRole } from "@/stores/auth-store";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
+import { ExportMenu } from "@/components/export/ExportMenu";
+import type { ExportColumn } from "@/components/export/types";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import Filtre from "./Filtre";
 import SirketEkle from "../sirket/SirketEkle";
 import Sirket from "../sirket/Sirket";
+
+const INITIAL_FILTERS: GrupFilters = {
+  Durum: null,
+  Sirket: "",
+};
+
+const grupExportColumns: ExportColumn<GrupType>[] = [
+  { header: "Grup Adı", accessorKey: "GurupAdi" },
+  { header: "Tel", accessorKey: (r) => r.Tel || "-" },
+  { header: "Durum", accessorKey: (r) => (r.Durum ? "Aktif" : "Pasif") },
+  {
+    header: "Oluşturma Tarihi",
+    accessorKey: (r) => formatDate(r.CreatedDate),
+  },
+  { header: "Şirket Sayısı", accessorKey: "SirketSayisi" },
+];
 
 export default function Grup() {
   const { gruplar, isLoadingGruplar, createGrup } = useKurumsalData();
   const deleteGrup = useDeleteGrup();
   const aktifPasifGrup = useAktifPasifGrup();
+  const { isAdmin } = useRole();
 
   const [openGrup, setOpenGrup] = useState(false);
   const [openSirketEkle, setOpenSirketEkle] = useState(false);
@@ -48,18 +71,35 @@ export default function Grup() {
     null,
   );
   const [searchText, setSearchText] = useState<string>("");
+  const [filters, setFilters] = useState<GrupFilters>(INITIAL_FILTERS);
+  const [columnVisibility, setColumnVisibility] =
+    useColumnVisibility("grup-kolonlar");
 
   const filteredGruplar = useMemo(() => {
-    if (!searchText.trim()) return gruplar;
+    const search = normalize(searchText.trim());
 
-    const search = normalize(searchText);
+    return gruplar.filter((grup) => {
+      const matchesDurum =
+        filters.Durum === null || Number(grup.Durum) === filters.Durum;
+      const sirketSayisi = Number(grup.SirketSayisi) || 0;
+      const matchesSirket =
+        filters.Sirket === "" ||
+        (filters.Sirket === "VAR" ? sirketSayisi > 0 : sirketSayisi === 0);
+      const matchesSearch =
+        !search ||
+        [grup.GurupAdi, grup.Tel]
+          .filter(Boolean)
+          .some((value) => normalize(String(value)).includes(search));
 
-    return gruplar.filter((grup) =>
-      [grup.GurupAdi, grup.Tel]
-        .filter(Boolean)
-        .some((value) => value && normalize(value.toString()).includes(search)),
-    );
-  }, [gruplar, searchText]);
+      return matchesDurum && matchesSirket && matchesSearch;
+    });
+  }, [gruplar, searchText, filters]);
+
+  const handleFilterChange = useCallback(
+    (next: GrupFilters) => setFilters(next),
+    [],
+  );
+  const handleFilterReset = useCallback(() => setFilters(INITIAL_FILTERS), []);
 
   const handleEdit = (grup: GrupType) => {
     setDuzenlenecekGrup(grup);
@@ -154,7 +194,7 @@ export default function Grup() {
         },
       },
       {
-        accessorKey: "GrupAdi",
+        accessorKey: "GurupAdi",
         header: "Grup Adı",
         cell: ({ row }) => (
           <span className="font-medium text-foreground">
@@ -216,25 +256,49 @@ export default function Grup() {
           <div>
             <h1 className="text-xl font-bold sm:text-2xl">Kurumsal Yönetim</h1>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="w-full sm:w-48 sm:shrink-0">
-              <Input
-                startIcon={<Search className="h-4 w-4" />}
-                placeholder="Grup Ara..."
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center justify-end">
+          <div className="w-full sm:w-48 sm:shrink-0">
+            <Input
+              startIcon={<Search className="h-4 w-4" />}
+              placeholder="Grup Ara..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Filtre
+              filters={filters}
+              onChange={handleFilterChange}
+              onReset={handleFilterReset}
+            />
+            {isAdmin && (
+              <Button type="button" size="sm" onClick={() => setOpenGrup(true)}>
+                <Plus className="size-4" />
+                Yeni Grup Ekle
+              </Button>
+            )}
+            <ExportMenu
+              data={filteredGruplar}
+              exportColumns={grupExportColumns}
+              title="Grup Listesi"
+              fileName="grup-listesi"
+            />
+            <div className="shrink-0">
+              <CustomColumnVisibility
+                columns={columns}
+                value={columnVisibility}
+                onChange={setColumnVisibility}
               />
             </div>
-            <Button type="button" size="sm" onClick={() => setOpenGrup(true)}>
-              <Plus className="size-4" />
-              Yeni Grup Ekle
-            </Button>
           </div>
         </div>
 
         <CustomDataTable
           data={filteredGruplar}
           columns={columns}
+          columnVisibilityValue={columnVisibility}
+          onColumnVisibilityValueChange={setColumnVisibility}
           expandable
           expandedRowContent={(row) => (
             <Sirket idGurup={row.original.IDGurup} />

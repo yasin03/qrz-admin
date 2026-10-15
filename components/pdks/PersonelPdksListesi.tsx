@@ -28,6 +28,7 @@ export default function PersonelPdksListesi({ initialYil, initialAy }: Props) {
     data: kayitlar = [],
     isLoading,
     isError,
+    refetch,
   } = usePdksKendi({ Yil: yil, Ay: ay });
 
   const columns = useMemo<ColumnDef<PDKSKendiSelectResponseType>[]>(
@@ -102,6 +103,7 @@ export default function PersonelPdksListesi({ initialYil, initialAy }: Props) {
             ? "Kayıtlar yüklenirken hata oluştu."
             : "Bu ay için PDKS kaydı bulunamadı."
         }
+        onRetry={isError ? () => refetch() : undefined}
       />
     </div>
   );

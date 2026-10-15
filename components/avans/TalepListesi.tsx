@@ -260,8 +260,8 @@ const TalepListesi = ({ enabled }: Props) => {
           <ExportMenu
             data={filteredTalepListesi}
             exportColumns={exportColumns}
-            title="İzin Listesi"
-            fileName="izin-listesi"
+            title="Avans Listesi"
+            fileName="avans-listesi"
             showImport
             onImport={(rows) => {
               // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
