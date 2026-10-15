@@ -6,7 +6,7 @@ import type { User } from "@/stores/auth-store";
 const SESSION_COOKIE_NAME = "sid";
 
 // Cookie olmadan da erişilebilecek sayfalar
-const PUBLIC_PATHS = ["/login", "/forgot-password"];
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/yasal", "/hesap-silme"];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some(

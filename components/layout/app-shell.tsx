@@ -11,7 +11,7 @@ type AppShellProps = {
   defaultSidebarOpen?: boolean;
 };
 
-const PUBLIC_PATHS = ["/login", "/forgot-password"];
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/yasal", "/hesap-silme"];
 
 export function AppShell({ children, defaultSidebarOpen }: AppShellProps) {
   const pathname = usePathname();

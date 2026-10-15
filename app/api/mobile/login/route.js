@@ -20,8 +20,6 @@ export async function POST(request) {
     }
     const sorgu = `[LoginKontrolMobil] '${username}', '${password}', '${idDevice}'`;
     const [sonuc] = await ExecuteQuery(sorgu);
-    console.log(sorgu);
-    console.log(sonuc);
 
     if (!sonuc) {
       return apiError("Sunucu hatasi.", 500, "SERVER_ERROR");

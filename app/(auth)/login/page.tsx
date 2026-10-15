@@ -185,7 +185,7 @@ const Page = () => {
                 size="lg"
                 color="primary"
                 appearance="solid"
-                className="w-full"
+                className="w-full h-12"
                 disabled={isPending}
               >
                 {isPending && <Loader2 className="size-4 animate-spin" />}
@@ -193,8 +193,17 @@ const Page = () => {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-xs text-muted-foreground sm:mt-8">
+            <p className="mt-4 text-center text-xs text-muted-foreground sm:mt-4">
               Hesabınız yok mu? Yöneticinizle iletişime geçin.
+            </p>
+
+            <p className=" text-center text-xs">
+              <Link
+                href="/yasal"
+                className="font-medium text-info hover:underline"
+              >
+                Gizlilik Politikası ve KVKK Aydınlatma Metni
+              </Link>
             </p>
           </Card>
         </div>
