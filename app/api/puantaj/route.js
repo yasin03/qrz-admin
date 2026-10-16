@@ -39,6 +39,7 @@ export const POST = withSession(async (request, session) => {
     }
 
     const query = queryFunction(queryParams);
+    console.log("Executing query:", query); // Log the query for debugging
     const result = await ExecuteQuery(query);
 
     return ok(session.isMobile, result);
