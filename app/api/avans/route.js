@@ -36,6 +36,11 @@ export const POST = withSession(async (request, session) => {
       OdemeBaslangicTarihi: payload.OdemeBaslangicTarihi,
       BaslangicTarihi: payload.BaslangicTarihi,
       BitisTarihi: payload.BitisTarihi,
+      // UPDATE_TALEP (talep onay/red) alanları — eksikti, sorgu
+      // 'undefined' değerlerle gidiyordu.
+      IDSubePersonelAvansTalep: payload.IDSubePersonelAvansTalep,
+      KabulRed: payload.KabulRed,
+      RedAciklama: payload.RedAciklama,
     };
 
     const queryFunction = queryTypes[type];
