@@ -32,7 +32,9 @@ export const subeSchema = z.object({
   VergiDairesi: z.string(),
   VergiNo: z.string(),
 
-  IsyeriSgkSicilNumarasi: z.string(),
+  IsyeriSgkSicilNumarasi: z
+    .string()
+    .max(26, "İşyeri SGK Sicil No en fazla 26 karakter olabilir."),
   IsyeriSgkIsKoluKodu: z.string(),
   TicaretSicilNumarasi: z.string(),
 

@@ -23,9 +23,11 @@ import {
 } from "@/hooks/use-il-ilce-vergi-data";
 import { useEffect, useRef } from "react";
 
+// API'ye sayı kodu gider: 0 = seçilmedi, 1 = kendi mülkü, 2 = kiralık
 const MULKIYET_OPTIONS = [
-  { label: "Kendi Mülkü", value: "Kendi Mülkü" },
-  { label: "Kiralık", value: "Kiralık" },
+  { label: "Seçilmedi", value: "0" },
+  { label: "Kendi Mülkü", value: "1" },
+  { label: "Kiralık", value: "2" },
 ];
 
 // Her akordiyon bölümünün hangi form alanlarını kapsadığı — başlıkta hata
@@ -244,6 +246,7 @@ export function SubeFormFields({ control, setValue }: Props) {
             control={control}
             name="IsyeriSgkSicilNumarasi"
             label="İşyeri SGK Sicil No"
+            maxLength={26}
             vertical
           />
           <FormInput

@@ -71,7 +71,7 @@ function buildSubeParams(p) {
     sqlStr(p.stUcretTipi),
     sqlNum(p.stUcret),
     sqlStr(p.stAdresKodu),
-    sqlStr(p.MulkiyetTuru),
+    sqlNum(p.MulkiyetTuru), // 0 = seçilmedi, 1 = kendi mülkü, 2 = kiralık
     sqlStr(p.TicaretSicilMudurluk),
     sqlStr(p.IsyeriFaaliyetKodu),
     sqlStr(p.AdresKodu),

@@ -17,8 +17,10 @@ export default function ReactQueryProvider({ children }: Props) {
             retry: 1,
             refetchOnWindowFocus: false,
           },
+          // Kaydet/güncelle/sil hata verince otomatik tekrar denenmesin: INSERT gibi
+          // işlemler ikinci kez çalışıp çift kayıt oluşturabiliyordu.
           mutations: {
-            retry: 1,
+            retry: 0,
           },
         },
       }),
