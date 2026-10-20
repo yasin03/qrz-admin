@@ -83,6 +83,7 @@ export interface PersonelType {
   SaatlikUcret2: number | null;
   DayanismaDurumu: boolean;
   AsgeriUcretli: boolean;
+  HaftaTatilGunu: string | number | null;
   HastalikRiskPrimDurumu: boolean;
   AgiOranID: number | null;
   SendikaBaslangicTarihi: string | null;

@@ -21,7 +21,7 @@ type FormSelectProps<T extends FieldValues> = {
   label?: string;
   required?: boolean;
   placeholder?: string;
-  options: any[];
+  options: readonly any[];
   disabled?: boolean;
   valueType?: "string" | "boolean" | "number";
   /** options'taki her öğeden "değer" olarak okunacak alan adı. Örn: "IlKodu", "IDSirket". Varsayılan: "value" */

@@ -14,6 +14,8 @@ import {
   FormSelect,
   FormSwitch,
 } from "@/components/forms";
+import { Switch } from "@/components/ui/switch";
+import { FormMultiSelect } from "../forms/form-multi-select";
 import { cn, normalize } from "@/lib/utils";
 import {
   Accordion,
@@ -31,6 +33,7 @@ import {
   usePersonelSabitTanimlar,
   useSabitTanimlar,
 } from "@/hooks/use-sabit-tanimlar";
+import { HAFTA_DATA } from "@/constants/data";
 
 const CINSIYET_OPTIONS = [
   { label: "Kadın", value: "KADIN" },
@@ -112,6 +115,7 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
       "Ucret",
       "GunlukUcret",
       "SaatlikUcret",
+      "HaftaTatilGunu",
     ],
     adres: ["IlKodu", "IlceKodu", "Adres", "Telefon"],
   } as const satisfies Record<string, (keyof PersonelForm)[]>;
@@ -166,6 +170,9 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
   const sgkDurumu = useWatch({ control, name: "SgkDurumu" });
   const ucretTipi = useWatch({ control, name: "UcretTipi" });
   const aylikUcret = useWatch({ control, name: "Ucret" });
+  // Hafta tatili: "" → yok (switch kapalı), "7" / "5-7" → seçili gün(ler)
+  const haftaTatilGunu = useWatch({ control, name: "HaftaTatilGunu" });
+  const haftaTatiliVar = Boolean(haftaTatilGunu);
 
   const { data: asgariUcret, isLoading: isLoadingAsgariUcret } =
     useAsgariUcret();
@@ -227,18 +234,18 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               label="* TC Kimlik No"
               format="tcno"
             />
-            <FormInput control={control} name="Ad" label="* Ad" format="text" />
+            <FormInput control={control} name="Ad" label="* Ad" format="ad" />
             <FormInput
               control={control}
               name="Soyad"
               label="* Soyad"
-              format="text"
+              format="soyad"
             />
             <FormInput
               control={control}
               name="IlkSoyad"
               label="İlk Soyad"
-              format="text"
+              format="soyad"
             />
             <FormInput
               control={control}
@@ -486,6 +493,30 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
                 format="money"
                 readOnly
               />
+            </FormLabel>
+            <FormLabel label="Hafta Tatil Günü">
+              {/* Switch ayrı bir form alanı değil: açıkken varsayılan Pazar ("7"),
+                  kapalıyken "" gönderilir */}
+              <Switch
+                checked={haftaTatiliVar}
+                onCheckedChange={(checked) =>
+                  setValue("HaftaTatilGunu", checked ? "7" : "", {
+                    shouldDirty: true,
+                  })
+                }
+                className="flex-none! self-center"
+              />
+              {haftaTatiliVar && (
+                <FormMultiSelect
+                  control={control}
+                  name="HaftaTatilGunu"
+                  options={HAFTA_DATA}
+                  valueSeparator="-"
+                  placeholder="Gün seçiniz"
+                  searchPlaceholder="Gün ara..."
+                  maxVisibleChips={7}
+                />
+              )}
             </FormLabel>
           </div>
         </AccordionContent>

@@ -208,6 +208,11 @@ export default function PersonelEkle({
           personel.UcretOdemeGun != null ? String(personel.UcretOdemeGun) : "",
         HastalikRiskPrimDurumu: Boolean(personel.HastalikRiskPrimDurumu),
         AsgeriUcretli: Boolean(personel.AsgeriUcretli),
+        // Backend "7" veya "5-7" ('-' ile ayrılmış günler) döner; boşsa hafta tatili yok
+        HaftaTatilGunu:
+          personel.HaftaTatilGunu && String(personel.HaftaTatilGunu) !== "0"
+            ? String(personel.HaftaTatilGunu)
+            : "",
         IDBanka: personel.IDBanka != null ? String(personel.IDBanka) : "",
         BankaSubeKodu: personel.BankaSubeKodu ?? "",
         BankaHesapNo: personel.BankaHesapNo ?? "",

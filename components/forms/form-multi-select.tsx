@@ -31,7 +31,7 @@ type FormMultiSelectProps<T extends FieldValues> = {
   placeholder?: string;
   searchPlaceholder?: string;
   emptyMessage?: string;
-  options: any[];
+  options: readonly any[];
   disabled?: boolean;
   valueKey?: string;
   labelKey?: string;
@@ -41,6 +41,11 @@ type FormMultiSelectProps<T extends FieldValues> = {
   maxVisibleChips?: number;
   vertical?: boolean;
   className?: string;
+  /**
+   * Verilirse form değeri dizi yerine bu ayırıcıyla birleşik string olur
+   * (örn. "-" → "5-7"). Seçimler options sırasına göre dizilir; seçim yoksa "".
+   */
+  valueSeparator?: string;
 };
 
 export function FormMultiSelect<T extends FieldValues>({
@@ -59,6 +64,7 @@ export function FormMultiSelect<T extends FieldValues>({
   maxVisibleChips = 3,
   vertical = true,
   className,
+  valueSeparator,
 }: FormMultiSelectProps<T>) {
   const [open, setOpen] = useState(false);
 
@@ -74,26 +80,42 @@ export function FormMultiSelect<T extends FieldValues>({
       name={name}
       render={({ field, fieldState }) => {
         const hasLabel = Boolean(label);
-        const selectedValues: string[] = Array.isArray(field.value)
-          ? field.value
-          : [];
+        const rawValue: unknown = field.value;
+        const selectedValues: string[] = Array.isArray(rawValue)
+          ? rawValue
+          : valueSeparator && typeof rawValue === "string"
+            ? rawValue.split(valueSeparator).filter(Boolean)
+            : [];
+
+        // valueSeparator varsa diziyi options sırasıyla birleşik string'e çevir
+        const emit = (next: string[]) => {
+          if (!valueSeparator) {
+            field.onChange(next);
+            return;
+          }
+          const order = [...optionMap.keys()];
+          const sorted = [...next].sort(
+            (a, b) => order.indexOf(a) - order.indexOf(b),
+          );
+          field.onChange(sorted.join(valueSeparator));
+        };
 
         const toggleValue = (value: string) => {
           const exists = selectedValues.includes(value);
           const next = exists
             ? selectedValues.filter((v) => v !== value)
             : [...selectedValues, value];
-          field.onChange(next);
+          emit(next);
         };
 
         const removeValue = (value: string, event: React.MouseEvent) => {
           event.stopPropagation();
-          field.onChange(selectedValues.filter((v) => v !== value));
+          emit(selectedValues.filter((v) => v !== value));
         };
 
         const clearAll = (event: React.MouseEvent) => {
           event.stopPropagation();
-          field.onChange([]);
+          emit([]);
         };
 
         const visibleChips = selectedValues.slice(0, maxVisibleChips);

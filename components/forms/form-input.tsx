@@ -35,7 +35,9 @@ export type InputFormat =
   | "number"
   | "decimal"
   | "text"
-  | "money";
+  | "money"
+  | "ad"
+  | "soyad";
 
 /** Field'ın davranışını belirleyen "tip". Native input type'larından
  *  ayrı tutuyoruz çünkü "date" ve "textarea" tamamen farklı component'lere
@@ -67,6 +69,8 @@ const FORMAT_META: Record<
   decimal: { htmlType: "text", inputMode: "decimal" },
   text: { htmlType: "text" },
   money: { htmlType: "text", inputMode: "decimal" },
+  ad: { htmlType: "text" },
+  soyad: { htmlType: "text" },
 };
 
 /** Cep telefonunu "555 444 22 33" şeklinde grupluyor, başındaki 0'ı atıyor. */
@@ -83,6 +87,29 @@ function formatTel(raw: string): string {
   ].filter(Boolean);
 
   return groups.join(" ");
+}
+
+/** Ad/soyad için: yalnızca harfler (Türkçe dahil) ve kelimeler arasında tek boşluk.
+ *  Rakam ve . , ? - gibi özel karakterler atılır. Sondaki boşluk yazarken
+ *  kelime ayırmak için korunur; kayıtta schema trim ediyor. */
+function onlyLetters(raw: string): string {
+  return raw
+    .replace(/[^\p{L}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .replace(/^\s/, "");
+}
+
+/** "ahmet  CAN" -> "Ahmet Can" (Türkçe: "ismail" -> "İsmail") */
+function toTitleCaseTr(value: string): string {
+  return value
+    .split(" ")
+    .map((word) =>
+      word
+        ? word.charAt(0).toLocaleUpperCase("tr-TR") +
+          word.slice(1).toLocaleLowerCase("tr-TR")
+        : word,
+    )
+    .join(" ");
 }
 
 /** Form değerini ekranda gösterilecek hale getirir. "tel" formatında değer
@@ -122,6 +149,10 @@ function applyFormat(raw: string, format?: InputFormat): string {
     }
     case "text":
       return raw.replace(/[0-9]/g, "");
+    case "ad":
+      return toTitleCaseTr(onlyLetters(raw));
+    case "soyad":
+      return onlyLetters(raw).toLocaleUpperCase("tr-TR");
     case "tel":
       return formatTel(raw).replace(/\s/g, "");
     default:

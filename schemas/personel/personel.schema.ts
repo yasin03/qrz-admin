@@ -7,9 +7,22 @@ export const personelSchema = z.object({
     .string()
     .min(1, "TC Kimlik No zorunludur.")
     .length(11, "TC Kimlik No 11 haneli olmalıdır."),
-  Ad: z.string().min(1, "Ad zorunludur."),
-  Soyad: z.string().min(1, "Soyad zorunludur."),
-  IlkSoyad: z.string(),
+  // Yazarken format="ad" / "soyad" harf dışını atıp büyük harfe çeviriyor; burada
+  // yazarken korunan sondaki boşluk temizleniyor ve yapıştırılan değerler de doğrulanıyor.
+  Ad: z
+    .string()
+    .trim()
+    .min(1, "Ad zorunludur.")
+    .regex(/^[\p{L} ]+$/u, "Ad yalnızca harf içerebilir."),
+  Soyad: z
+    .string()
+    .trim()
+    .min(1, "Soyad zorunludur.")
+    .regex(/^[\p{L} ]+$/u, "Soyad yalnızca harf içerebilir."),
+  IlkSoyad: z
+    .string()
+    .trim()
+    .regex(/^[\p{L} ]*$/u, "İlk soyad yalnızca harf içerebilir."),
   Cinsiyet: z.string().min(1, "Cinsiyet zorunludur."),
   DogumTarihi: z.string().min(1, "Doğum Tarihi zorunludur."),
   DogumYeri: z.string(),
@@ -87,6 +100,7 @@ export const personelSchema = z.object({
   UcretOdemeGun: z.string(),
   HastalikRiskPrimDurumu: z.boolean(),
   AsgeriUcretli: z.boolean(),
+  HaftaTatilGunu: z.string(),
   IDBanka: z.string(),
   BankaSubeKodu: z.string(),
   BankaHesapNo: z.string(),
@@ -195,6 +209,7 @@ export const DEFAULT_PERSONEL_FORM: PersonelForm = {
   UcretOdemeGun: "",
   HastalikRiskPrimDurumu: false,
   AsgeriUcretli: false,
+  HaftaTatilGunu: "", // Hafta tatili yok; seçilirse "7" veya "5-7"
   IDBanka: "",
   BankaSubeKodu: "",
   BankaHesapNo: "",

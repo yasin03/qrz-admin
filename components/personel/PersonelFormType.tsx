@@ -84,6 +84,7 @@ export type PersonelForm = {
   UcretOdemeGun: string;
   HastalikRiskPrimDurumu: boolean;
   AsgeriUcretli: boolean;
+  HaftaTatilGunu: string;
   IDBanka: string;
   BankaSubeKodu: string;
   BankaHesapNo: string;
@@ -189,6 +190,7 @@ export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
   UcretOdemeGun: "",
   HastalikRiskPrimDurumu: false,
   AsgeriUcretli: false,
+  HaftaTatilGunu: "", // Hafta tatili yok; seçilirse "7" veya "5-7" (HAFTA_DATA değerleri, "-" ile)
   IDBanka: "",
   BankaSubeKodu: "",
   BankaHesapNo: "",
@@ -303,6 +305,10 @@ export function mapPersonelToForm(personel: PersonelType): PersonelForm {
     BesKesilmezDurumu: Boolean(personel.BesKesilmezDurumu),
     DayanismaDurumu: Boolean(personel.DayanismaDurumu),
     AsgeriUcretli: Boolean(personel.AsgeriUcretli),
+    HaftaTatilGunu:
+      personel.HaftaTatilGunu && String(personel.HaftaTatilGunu) !== "0"
+        ? String(personel.HaftaTatilGunu)
+        : "",
     HastalikRiskPrimDurumu: Boolean(personel.HastalikRiskPrimDurumu),
     VergidenMuaf: Boolean(personel.VergidenMuaf),
     YardimHaric: Boolean(personel.YardimHaric),
