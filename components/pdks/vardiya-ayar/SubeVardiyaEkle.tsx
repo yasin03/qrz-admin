@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "sonner";
 
 import {
@@ -15,41 +14,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FormInput, FormLabel, FormSelect, FormSwitch } from "@/components/forms";
 
-import { HAFTA_DATA } from "@/constants/data";
+import { formatSaat } from "@/lib/format";
 import { useInsertSubeVardiya, useUpdateSubeVardiya } from "@/hooks/use-pdks";
 import { SubeVardiyaSaat } from "@/types/pdks";
+import {
+  VardiyaForm,
+  VardiyaFormFields,
+  VARDIYA_DEFAULT_VALUES,
+  vardiyaSchema,
+} from "./VardiyaFormFields";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   duzenlenecekKayit?: SubeVardiyaSaat | null;
-};
-
-const saatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-const vardiyaSchema = z
-  .object({
-    VardiyaAdi: z.string().min(2, "Vardiya adı en az 2 karakter olmalı"),
-    BaslamaSaati: z.string().regex(saatRegex, "Geçerli bir saat giriniz"),
-    BitisSaati: z.string().regex(saatRegex, "Geçerli bir saat giriniz"),
-    Gece: z.boolean(),
-    HT: z.string().min(1, "Hafta tatili seçiniz"),
-  })
-  .refine((data) => data.Gece || data.BaslamaSaati < data.BitisSaati, {
-    message: "Bitiş saati başlangıçtan sonra olmalı",
-    path: ["BitisSaati"],
-  });
-
-type VardiyaForm = z.infer<typeof vardiyaSchema>;
-
-const DEFAULT_VALUES: VardiyaForm = {
-  VardiyaAdi: "",
-  BaslamaSaati: "",
-  BitisSaati: "",
-  Gece: false,
-  HT: "",
 };
 
 const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
@@ -62,7 +41,7 @@ const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
 
   const form = useForm<VardiyaForm>({
     resolver: zodResolver(vardiyaSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: VARDIYA_DEFAULT_VALUES,
   });
 
   useEffect(() => {
@@ -71,25 +50,17 @@ const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
       duzenlenecekKayit
         ? {
             VardiyaAdi: duzenlenecekKayit.VardiyaAdi,
-            BaslamaSaati: duzenlenecekKayit.BaslamaSaati,
-            BitisSaati: duzenlenecekKayit.BitisSaati,
+            BaslamaSaati: formatSaat(duzenlenecekKayit.BaslamaSaati),
+            BitisSaati: formatSaat(duzenlenecekKayit.BitisSaati),
             Gece: duzenlenecekKayit.Gece,
-            HT: String(duzenlenecekKayit.HT),
+            HaftaTatilGunu: duzenlenecekKayit.HaftaTatilGunu ?? "",
+            ToplamMolaSuresi: formatSaat(duzenlenecekKayit.ToplamMolaSuresi),
           }
-        : DEFAULT_VALUES,
+        : VARDIYA_DEFAULT_VALUES,
     );
   }, [open, duzenlenecekKayit, form]);
 
-  const haftaGunuOptions = HAFTA_DATA.map((gun) => ({
-    value: gun.value,
-    label: gun.label,
-  }));
-
   const handleSubmit = async (values: VardiyaForm) => {
-    const htNumber = Number(values.HT);
-    const HTGun =
-      HAFTA_DATA.find((gun) => gun.value === values.HT)?.label ?? "";
-
     try {
       if (isEdit && duzenlenecekKayit) {
         await updateVardiya({
@@ -98,8 +69,8 @@ const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
           BaslamaSaati: values.BaslamaSaati,
           BitisSaati: values.BitisSaati,
           Gece: values.Gece,
-          HT: htNumber,
-          HTGun,
+          HaftaTatilGunu: values.HaftaTatilGunu,
+          ToplamMolaSuresi: values.ToplamMolaSuresi,
         });
         toast.success("Vardiya saati güncellendi.");
       } else {
@@ -108,8 +79,8 @@ const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
           BaslamaSaati: values.BaslamaSaati,
           BitisSaati: values.BitisSaati,
           Gece: values.Gece,
-          HT: htNumber,
-          HTGun,
+          HaftaTatilGunu: values.HaftaTatilGunu,
+          ToplamMolaSuresi: values.ToplamMolaSuresi,
         });
         toast.success("Vardiya saati eklendi.");
       }
@@ -121,7 +92,7 @@ const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Vardiya Saatini Düzenle" : "Yeni Vardiya Saati Ekle"}
@@ -132,49 +103,7 @@ const SubeVardiyaEkle = ({ open, onOpenChange, duzenlenecekKayit }: Props) => {
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="space-y-3 py-1">
-            <FormInput
-              control={form.control}
-              name="VardiyaAdi"
-              label="Vardiya Adı"
-              placeholder="Örn: Gündüz Vardiyası"
-              disabled={isSaving}
-            />
-
-            <FormLabel label="Başlama / Bitiş Saatleri" vertical>
-              <FormInput
-                control={form.control}
-                name="BaslamaSaati"
-                type="time"
-                disabled={isSaving}
-              />
-
-              <FormInput
-                control={form.control}
-                name="BitisSaati"
-                type="time"
-                disabled={isSaving}
-              />
-            </FormLabel>
-
-            <FormSelect
-              control={form.control}
-              name="HT"
-              label="Hafta Tatili"
-              options={haftaGunuOptions}
-              valueKey="value"
-              labelKey="label"
-              placeholder="Gün seçiniz"
-              disabled={isSaving}
-            />
-
-            <FormSwitch
-              control={form.control}
-              name="Gece"
-              label="Gece Vardiyası"
-              disabled={isSaving}
-            />
-          </div>
+          <VardiyaFormFields control={form.control} disabled={isSaving} />
 
           <DialogFooter>
             <Button

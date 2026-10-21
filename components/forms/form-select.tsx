@@ -71,6 +71,10 @@ export function FormSelect<T extends FieldValues>({
             ? ""
             : String(field.value);
 
+        const selectedLabel = options.find(
+          (item) => String(item[valueKey]) === selectValue,
+        )?.[labelKey];
+
         const handleValueChange = (value: string) => {
           // Radix Select, mevcut değer henüz options'ta yokken (örn. liste
           // API'den gelmeden önce form.reset ile değer set edildiğinde)
@@ -94,17 +98,28 @@ export function FormSelect<T extends FieldValues>({
             onValueChange={handleValueChange}
             disabled={disabled}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={placeholder} />
+            {/* Uzun metinler (örn. şirket adları) trigger'ı genişletip
+                dialog dışına taşırmasın: tek satıra sığmazsa en fazla 2
+                satıra kayar, fazlası "…" ile kesilir; tam ad title'da ve
+                açılan listede görünür. Kayabilmesi, üst grid/flex'lerin de
+                daralabilmesini sağlıyor (nowrap metin onları da genişletiyordu). */}
+            <SelectTrigger
+              className="h-auto! min-h-8 w-full min-w-0 py-1.5 text-left whitespace-normal"
+              title={selectedLabel}
+            >
+              <SelectValue
+                placeholder={placeholder}
+                className="line-clamp-2! min-w-0 [overflow-wrap:anywhere]"
+              />
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent className="max-w-[calc(100vw-2rem)]">
               {options.map((item) => {
                 const itemValue = String(item[valueKey]);
                 const itemLabel = item[labelKey];
                 return (
-                  <SelectItem key={itemValue} value={itemValue} className="h-8">
-                    {itemLabel}
+                  <SelectItem key={itemValue} value={itemValue} className="min-h-8">
+                    <span>{itemLabel}</span>
                   </SelectItem>
                 );
               })}
@@ -146,7 +161,7 @@ export function FormSelect<T extends FieldValues>({
             <Field className={className}>
               <div className="flex items-center gap-3">
                 {labelNode}
-                <div className="flex-1">{select}</div>
+                <div className="min-w-0 flex-1">{select}</div>
               </div>
               {errorMessage}
             </Field>

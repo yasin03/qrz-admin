@@ -20,6 +20,18 @@ export function formatDate(
   return format(value, pattern);
 }
 
+/**
+ * Saat/süre değerini "HH:mm"e çevirir; hiçbir formatta hata fırlatmaz.
+ * "08:30", "08:30:00", "1970-01-01T08:30:00.000Z", "1970-01-01T08:30:00Z" →
+ * "08:30". ISO değerlerde saat, formatDate'teki gibi olduğu gibi (Z'siz,
+ * timezone çevrimi yapılmadan) alınır. Tanınmayan değerde "" döner.
+ */
+export function formatSaat(value: string | null | undefined) {
+  if (!value) return "";
+  const match = String(value).match(/(?:T|^)(\d{2}):(\d{2})/);
+  return match ? `${match[1]}:${match[2]}` : "";
+}
+
 export const formatMoney = (value: number | string | null | undefined) => {
   if (value === null || value === undefined || value === "") {
     return "0,00";

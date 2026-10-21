@@ -40,6 +40,15 @@ type ContextResponse = {
   } | null;
 };
 
+// API ID'leri bazen string ("5"), bazen number (5) döndürüyor (ör. mssql
+// bigint'i string verir); === ile karşılaştırınca eşleşmiyor ve liste hep
+// ilk elemana düşüyordu.
+const sameId = (a: unknown, b: unknown) =>
+  a !== null && a !== undefined && a !== "" && Number(a) === Number(b);
+
+const truncateText = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
+
 const HeaderCompany = () => {
   const currentDate = new Date();
   const currentYear = String(currentDate.getFullYear());
@@ -80,6 +89,7 @@ const HeaderCompany = () => {
 
   const saveContext = useSaveContext();
   const hasHydratedFromContext = useRef(false);
+  console.log("form", form.getValues());
 
   useEffect(() => {
     if (isLoadingContext || hasHydratedFromContext.current) return;
@@ -97,13 +107,15 @@ const HeaderCompany = () => {
     }
   }, [isLoadingContext, savedContext, form]);
 
+  // Kayıtlı context gelmeden varsayılan (ilk eleman) seçmiyoruz; yoksa
+  // ilk şube seçilip kayıtlı şubenin önüne geçebiliyordu.
   useEffect(() => {
-    if (!gruplar.length) return;
+    if (isLoadingContext || !gruplar.length) return;
 
     const currentGrupValue = Number(form.getValues("IDGurup") ?? 0);
     if (
       currentGrupValue &&
-      gruplar.some((x) => x.IDGurup === currentGrupValue)
+      gruplar.some((x) => sameId(x.IDGurup, currentGrupValue))
     ) {
       return;
     }
@@ -112,20 +124,20 @@ const HeaderCompany = () => {
       ? Number(preferredContext.IDGurup)
       : null;
     const nextGrup =
-      preferredGrup && gruplar.some((x) => x.IDGurup === preferredGrup)
+      preferredGrup && gruplar.some((x) => sameId(x.IDGurup, preferredGrup))
         ? preferredGrup
         : gruplar[0].IDGurup;
 
     form.setValue("IDGurup", nextGrup);
-  }, [gruplar, form, preferredContext]);
+  }, [gruplar, form, preferredContext, isLoadingContext]);
 
   useEffect(() => {
-    if (!sirketler.length) return;
+    if (isLoadingContext || !sirketler.length) return;
 
     const currentSirketValue = Number(form.getValues("IDSirket") ?? 0);
     if (
       currentSirketValue &&
-      sirketler.some((x) => x.IDSirket === currentSirketValue)
+      sirketler.some((x) => sameId(x.IDSirket, currentSirketValue))
     ) {
       return;
     }
@@ -134,20 +146,21 @@ const HeaderCompany = () => {
       ? Number(preferredContext.IDSirket)
       : null;
     const nextSirket =
-      preferredSirket && sirketler.some((x) => x.IDSirket === preferredSirket)
+      preferredSirket &&
+      sirketler.some((x) => sameId(x.IDSirket, preferredSirket))
         ? preferredSirket
         : sirketler[0].IDSirket;
 
     form.setValue("IDSirket", nextSirket);
-  }, [sirketler, form, preferredContext]);
+  }, [sirketler, form, preferredContext, isLoadingContext]);
 
   useEffect(() => {
-    if (!subeler.length) return;
+    if (isLoadingContext || !subeler.length) return;
 
     const currentSubeValue = Number(form.getValues("IDSube") ?? 0);
     if (
       currentSubeValue &&
-      subeler.some((x) => x.IDSube === currentSubeValue)
+      subeler.some((x) => sameId(x.IDSube, currentSubeValue))
     ) {
       return;
     }
@@ -156,12 +169,12 @@ const HeaderCompany = () => {
       ? Number(preferredContext.IDSube)
       : null;
     const nextSube =
-      preferredSube && subeler.some((x) => x.IDSube === preferredSube)
+      preferredSube && subeler.some((x) => sameId(x.IDSube, preferredSube))
         ? preferredSube
         : subeler[0].IDSube;
 
     form.setValue("IDSube", nextSube);
-  }, [subeler, form, preferredContext]);
+  }, [subeler, form, preferredContext, isLoadingContext]);
 
   const hasAutoSaved = useRef(false);
 
@@ -210,17 +223,17 @@ const HeaderCompany = () => {
   ]);
 
   const currentGrup = useMemo(
-    () => gruplar.find((x) => x.IDGurup === selectedGrup),
+    () => gruplar.find((x) => sameId(x.IDGurup, selectedGrup)),
     [gruplar, selectedGrup],
   );
 
   const currentSirket = useMemo(
-    () => sirketler.find((x) => x.IDSirket === selectedSirket),
+    () => sirketler.find((x) => sameId(x.IDSirket, selectedSirket)),
     [sirketler, selectedSirket],
   );
 
   const currentSube = useMemo(
-    () => subeler.find((x) => x.IDSube === selectedSube),
+    () => subeler.find((x) => sameId(x.IDSube, selectedSube)),
     [subeler, selectedSube],
   );
 
@@ -273,7 +286,9 @@ const HeaderCompany = () => {
         >
           <Building2Icon />
           <span className="text-sm font-semibold text-foreground">
-            {currentGrup?.GurupAdi ?? ""}
+            {/* Şirket adları uzun; butonu genişletmesin diye ilk 10
+                karakter + "…". Tam ad butonun title'ında görünüyor. */}
+            {truncateText(currentSirket?.SirketAdi ?? "", 10)}
           </span>
           <span className="text-xs text-muted-foreground">
             {selectedYear}/{selectedMonth}
@@ -281,7 +296,7 @@ const HeaderCompany = () => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Şirket Seçimi</DialogTitle>
         </DialogHeader>

@@ -11,7 +11,8 @@ import { RowActions } from "@/components/customs/RowActions";
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { useSubeVardiyaList, useDeleteSubeVardiya } from "@/hooks/use-pdks";
 import { SubeVardiyaSaat } from "@/types/pdks";
-import { formatDate } from "@/lib/format";
+import { formatSaat } from "@/lib/format";
+import { formatHaftaTatili } from "./VardiyaFormFields";
 
 type Props = {
   enabled: boolean;
@@ -55,7 +56,11 @@ const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
             <RowActions
               row={row.original}
               actions={[
-                { label: "Düzenle", icon: Pencil, onClick: (r) => onDuzenle(r) },
+                {
+                  label: "Düzenle",
+                  icon: Pencil,
+                  onClick: (r) => onDuzenle(r),
+                },
                 {
                   label: "Sil",
                   icon: Trash2,
@@ -71,12 +76,12 @@ const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
       {
         accessorKey: "BaslamaSaati",
         header: "Başlama",
-        cell: ({ row }) => formatDate(row.original.BaslamaSaati, "HH:mm"),
+        cell: ({ row }) => formatSaat(row.original.BaslamaSaati) || "-",
       },
       {
         accessorKey: "BitisSaati",
         header: "Bitiş",
-        cell: ({ row }) => formatDate(row.original.BitisSaati, "HH:mm"),
+        cell: ({ row }) => formatSaat(row.original.BitisSaati) || "-",
       },
       {
         accessorKey: "Gece",
@@ -87,7 +92,16 @@ const SubeVardiyaListesi = ({ enabled, onDuzenle }: Props) => {
           </Badge>
         ),
       },
-      { accessorKey: "HTGun", header: "Hafta Tatili" },
+      {
+        accessorKey: "ToplamMolaSuresi",
+        header: "Toplam Mola",
+        cell: ({ row }) => formatSaat(row.original.ToplamMolaSuresi) || "-",
+      },
+      {
+        accessorKey: "HaftaTatilGunu",
+        header: "Hafta Tatili",
+        cell: ({ row }) => formatHaftaTatili(row.original.HaftaTatilGunu),
+      },
     ],
     [onDuzenle],
   );

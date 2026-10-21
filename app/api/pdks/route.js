@@ -14,18 +14,18 @@ const queryTypes = {
 
   SELECT_PDKS_SUBE: (params) => `[SubeVardiyaSaat_SELECT] '${params.IDSube}'`,
   INSERT_PDKS_SUBE: (params) =>
-    `[SubeVardiyaSaat_INSERT] '${params.IDSube}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HT}','${params.HTGun}'`,
+    `[SubeVardiyaSaat_INSERT] '${params.IDSube}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HaftaTatilGunu}','${params.ToplamMolaSuresi}'`,
   UPDATE_PDKS_SUBE: (params) =>
-    `[SubeVardiyaSaat_UPDATEByIDSubeVardiyaSaat] '${params.IDSubeVardiyaSaat}', '${params.IDSube}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HT}','${params.HTGun}'`,
+    `[SubeVardiyaSaat_UPDATEByIDSubeVardiyaSaat] '${params.IDSubeVardiyaSaat}', '${params.IDSube}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HaftaTatilGunu}','${params.ToplamMolaSuresi}'`,
   DELETE_PDKS_SUBE: (params) =>
     `[SubeVardiyaSaat_DELETEByIDSubeVardiyaSaat] '${params.IDSubeVardiyaSaat}'`,
 
   SELECT_PDKS_BOLUM: (params) =>
     `[BolumVardiyaSaat_SELECT] '${params.IDBolum}'`,
   INSERT_PDKS_BOLUM: (params) =>
-    `[BolumVardiyaSaat_INSERT] '${params.IDBolum}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HT}','${params.HTGun}'`,
+    `[BolumVardiyaSaat_INSERT] '${params.IDBolum}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HaftaTatilGunu}','${params.ToplamMolaSuresi}'`,
   UPDATE_PDKS_BOLUM: (params) =>
-    `[BolumVardiyaSaat_UPDATEByIDBolumVardiyaSaat] '${params.IDBolumVardiyaSaat}', '${params.IDBolum}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HT}','${params.HTGun}'`,
+    `[BolumVardiyaSaat_UPDATEByIDBolumVardiyaSaat] '${params.IDBolumVardiyaSaat}', '${params.IDBolum}','${params.VardiyaAdi}','${params.BaslamaSaati}','${params.BitisSaati}','${params.Gece}','${params.HaftaTatilGunu}','${params.ToplamMolaSuresi}'`,
   DELETE_PDKS_BOLUM: (params) =>
     `[BolumVardiyaSaat_DELETEByIDBolumVardiyaSaat] '${params.IDBolumVardiyaSaat}'`,
 
@@ -54,6 +54,8 @@ export const POST = withSession(async (request, session) => {
       BaslamaSaati: payload.BaslamaSaati,
       BitisSaati: payload.BitisSaati,
       Gece: payload.Gece,
+      HaftaTatilGunu: payload.HaftaTatilGunu,
+      ToplamMolaSuresi : payload.ToplamMolaSuresi,
       HT: payload.HT,
       HTGun: payload.HTGun,
       Tarih: payload.Tarih,

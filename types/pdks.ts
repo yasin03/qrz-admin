@@ -89,8 +89,8 @@ export interface SubeVardiyaSaat {
   BaslamaSaati: string; // "HH:mm"
   BitisSaati: string; // "HH:mm"
   Gece: boolean;
-  HT: number; // 1: Pazartesi ... 7: Pazar
-  HTGun: string;
+  HaftaTatilGunu: string; // HAFTA_DATA değerleri "-" ile: "7", "5-7" (1: Pazartesi ... 7: Pazar)
+  ToplamMolaSuresi: string; // Günlük toplam mola, "HH:mm"
 }
 
 // INSERT_PDKS_SUBE için gönderilecek alanlar (IDSube route'da token'dan eklenir)
@@ -106,8 +106,8 @@ export interface BolumVardiyaSaat {
   BaslamaSaati: string; // "HH:mm"
   BitisSaati: string; // "HH:mm"
   Gece: boolean;
-  HT: number; // 1: Pazartesi ... 7: Pazar
-  HTGun: string;
+  HaftaTatilGunu: string; // HAFTA_DATA değerleri "-" ile: "7", "5-7" (1: Pazartesi ... 7: Pazar)
+  ToplamMolaSuresi: string; // Günlük toplam mola, "HH:mm"
 }
 
 // IDBolum, Sube'nin aksine session'dan gelmiyor — dropdown'dan seçilip
