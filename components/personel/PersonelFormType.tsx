@@ -2,6 +2,7 @@ import { PersonelType } from "@/types/personel";
 
 export type PersonelForm = {
   // Personel Bilgileri
+  IDBolum: string;
   SicilNo: string;
   TcKimlikNo: string;
   Ad: string;
@@ -110,6 +111,7 @@ export type PersonelForm = {
 };
 
 export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
+  IDBolum: "0",
   SicilNo: "",
   TcKimlikNo: "",
   Ad: "",
@@ -224,6 +226,7 @@ export function mapPersonelToForm(personel: PersonelType): PersonelForm {
     value === null || value === undefined ? "" : String(value);
 
   return {
+    IDBolum: str(personel.IDBolum) || "0",
     SicilNo: str(personel.SicilNo),
     TcKimlikNo: str(personel.TcKimlikNo),
     Ad: str(personel.Ad),

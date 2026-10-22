@@ -34,6 +34,8 @@ import {
   useSabitTanimlar,
 } from "@/hooks/use-sabit-tanimlar";
 import { HAFTA_DATA } from "@/constants/data";
+import { useCurrentContext } from "@/hooks/use-context";
+import { useBolumler } from "@/hooks/use-kurumsal-data";
 
 const CINSIYET_OPTIONS = [
   { label: "Kadın", value: "KADIN" },
@@ -71,6 +73,21 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
   const selectedIlKodu = useWatch({ control, name: "IlKodu" });
   const { data: iller = [] } = useIller();
   const { data: ilceler = [] } = useIlceler(selectedIlKodu || undefined);
+
+  // Bölüm: context'teki şubenin bölümleri. Bölüm seçilmezse (ya da şubenin
+  // hiç bölümü yoksa) API'ye IDBolum "0" gidiyor.
+  const { data: context } = useCurrentContext();
+  const { data: bolumlerData = [] } = useBolumler(Number(context?.IDSube) || 0);
+  const bolumler = useMemo(
+    () => [
+      { IDBolum: "0", BolumAdi: "Seçiniz" },
+      ...bolumlerData.map((bolum) => ({
+        IDBolum: String(bolum.IDBolum),
+        BolumAdi: bolum.BolumAdi,
+      })),
+    ],
+    [bolumlerData],
+  );
 
   // Dosyanın üstüne, CINSIYET_OPTIONS'ın yanına ekleyin
   const SECTION_FIELDS = {
@@ -228,6 +245,14 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
         </AccordionTrigger>
         <AccordionContent className="p-4">
           <div className=" space-y-2 py-1">
+            <FormSelect
+              control={control}
+              name="IDBolum"
+              label="Bölümü"
+              options={bolumler}
+              valueKey="IDBolum"
+              labelKey="BolumAdi"
+            />
             <FormInput
               control={control}
               name="TcKimlikNo"

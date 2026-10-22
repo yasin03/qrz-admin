@@ -63,6 +63,7 @@ export default function PersonelEkle({
 
     if (isEditMode && personel) {
       form.reset({
+        IDBolum: personel.IDBolum ? String(personel.IDBolum) : "0",
         SicilNo: personel.SicilNo ?? "",
         TcKimlikNo: personel.TcKimlikNo ?? "",
         Ad: personel.Ad ?? "",
@@ -283,7 +284,6 @@ export default function PersonelEkle({
           ...values,
           IDSubePersonel: personel.IDSubePersonel,
           IDSube: personel.IDSube,
-          IDBolum: personel.IDBolum,
         });
 
         const apiResult = getApiResult(result);
@@ -298,7 +298,6 @@ export default function PersonelEkle({
         const result = await createPersonel({
           ...values,
           IDSube: context?.IDSube,
-          IDBolum: context?.IDBolum ?? "",
         });
 
         const apiResult = getApiResult(result);

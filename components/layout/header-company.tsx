@@ -89,7 +89,6 @@ const HeaderCompany = () => {
 
   const saveContext = useSaveContext();
   const hasHydratedFromContext = useRef(false);
-  console.log("form", form.getValues());
 
   useEffect(() => {
     if (isLoadingContext || hasHydratedFromContext.current) return;
@@ -286,8 +285,6 @@ const HeaderCompany = () => {
         >
           <Building2Icon />
           <span className="text-sm font-semibold text-foreground">
-            {/* Şirket adları uzun; butonu genişletmesin diye ilk 10
-                karakter + "…". Tam ad butonun title'ında görünüyor. */}
             {truncateText(currentSirket?.SirketAdi ?? "", 10)}
           </span>
           <span className="text-xs text-muted-foreground">
