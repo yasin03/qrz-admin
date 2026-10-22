@@ -14,6 +14,13 @@ import {
   KesintiSelectRequestType,
   KesintiUpdateRequestType,
   KesintiUpdateResponseType,
+  MesaiDeleteRequestType,
+  MesaiInsertRequestType,
+  MesaiInsertResponseType,
+  MesaiResponseType,
+  MesaiSelectRequestType,
+  MesaiUpdateRequestType,
+  MesaiUpdateResponseType,
 } from "@/types/bordro-parametre";
 
 const BORDRO_PARAMETRE_ENDPOINT = "/api/bordro/parametre";
@@ -92,6 +99,46 @@ export const bordroParametreService = {
   deleteKesinti: async (params: KesintiDeleteRequestType) => {
     const { data } = await api.post(BORDRO_PARAMETRE_ENDPOINT, {
       type: "DELETE_KESINTI",
+      ...params,
+    });
+    return data;
+  },
+
+  // ---- Mesai ------------------------------------------------------------
+
+  selectMesai: async (
+    params: MesaiSelectRequestType,
+  ): Promise<MesaiResponseType[]> => {
+    const { data } = await api.post(BORDRO_PARAMETRE_ENDPOINT, {
+      type: "SELECT_MESAI",
+      ...params,
+    });
+    return data ?? [];
+  },
+
+  insertMesai: async (
+    params: MesaiInsertRequestType,
+  ): Promise<MesaiInsertResponseType | undefined> => {
+    const { data } = await api.post(BORDRO_PARAMETRE_ENDPOINT, {
+      type: "INSERT_MESAI",
+      ...params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  updateMesai: async (
+    params: MesaiUpdateRequestType,
+  ): Promise<MesaiUpdateResponseType | undefined> => {
+    const { data } = await api.post(BORDRO_PARAMETRE_ENDPOINT, {
+      type: "UPDATE_MESAI",
+      ...params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  deleteMesai: async (params: MesaiDeleteRequestType) => {
+    const { data } = await api.post(BORDRO_PARAMETRE_ENDPOINT, {
+      type: "DELETE_MESAI",
       ...params,
     });
     return data;

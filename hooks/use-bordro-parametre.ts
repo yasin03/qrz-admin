@@ -8,11 +8,16 @@ import {
   KesintiInsertRequestType,
   KesintiSelectRequestType,
   KesintiUpdateRequestType,
+  MesaiDeleteRequestType,
+  MesaiInsertRequestType,
+  MesaiSelectRequestType,
+  MesaiUpdateRequestType,
 } from "@/types/bordro-parametre";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const EKLENTI_QUERY_KEY = "eklenti-list";
 export const KESINTI_QUERY_KEY = "kesinti-list";
+export const MESAI_QUERY_KEY = "mesai-list";
 
 export function useEklentiList(
   params: EklentiSelectRequestType,
@@ -102,6 +107,50 @@ export function useDeleteKesinti() {
       bordroParametreService.deleteKesinti(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [KESINTI_QUERY_KEY] });
+    },
+  });
+}
+
+// ---- Mesai --------------------------------------------------------------
+
+export function useMesaiList(params: MesaiSelectRequestType, enabled = true) {
+  return useQuery({
+    queryKey: [MESAI_QUERY_KEY, params],
+    queryFn: () => bordroParametreService.selectMesai(params),
+    enabled: enabled && Boolean(params.IDSube),
+    staleTime: 5 * 60 * 1000, // 5 dakika
+  });
+}
+
+export function useInsertMesai() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: MesaiInsertRequestType) =>
+      bordroParametreService.insertMesai(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [MESAI_QUERY_KEY] });
+    },
+  });
+}
+
+export function useUpdateMesai() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: MesaiUpdateRequestType) =>
+      bordroParametreService.updateMesai(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [MESAI_QUERY_KEY] });
+    },
+  });
+}
+
+export function useDeleteMesai() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: MesaiDeleteRequestType) =>
+      bordroParametreService.deleteMesai(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [MESAI_QUERY_KEY] });
     },
   });
 }

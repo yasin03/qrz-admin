@@ -6,10 +6,10 @@ import { format } from "date-fns";
 import { Filter } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
-import { Button } from "../../ui/button";
-import { FormSelect } from "../../forms";
-import { CustomDatePicker } from "../../customs/CustomDatePicker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { FormSelect } from "@/components/forms";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
 import { EklentiFilters } from "@/types/bordro-parametre";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 

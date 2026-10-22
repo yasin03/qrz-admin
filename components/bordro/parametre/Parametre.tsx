@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useUser } from "@/stores/auth-store";
 import { KULLANICI_TIPI } from "@/lib/roles";
-import EklentiListesi from "./EklentiListesi";
-import KesintiListesi from "./KesintiListesi";
+import EklentiListesi from "./eklenti/EklentiListesi";
+import KesintiListesi from "./kesinti/KesintiListesi";
+import MesaiListesi from "./mesai/MesaiListesi";
 
-type TabValue = "eklenti" | "kesinti";
+type TabValue = "eklenti" | "kesinti" | "mesai";
 
 const ParametrePage = () => {
   const user = useUser();
@@ -17,7 +18,7 @@ const ParametrePage = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold sm:text-2xl">Eklenti & Kesinti Yönetimi</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Eklenti, Kesinti & Mesai Yönetimi</h1>
       </div>
 
       <Tabs
@@ -27,10 +28,13 @@ const ParametrePage = () => {
         <div className="flex items-center justify-between gap-2">
           <TabsList>
             <TabsTrigger value="eklenti">
-              {isPersonel ? "Eklentilerim" : "Tüm Eklentiler"}
+              {isPersonel ? "Eklentilerim" : "Eklentiler"}
             </TabsTrigger>
             <TabsTrigger value="kesinti">
-              {isPersonel ? "Kesintilerim" : "Tüm Kesintiler"}
+              {isPersonel ? "Kesintilerim" : "Kesintiler"}
+            </TabsTrigger>
+            <TabsTrigger value="mesai">
+              {isPersonel ? "Mesailerim" : "Mesailer"}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -45,6 +49,10 @@ const ParametrePage = () => {
           <KesintiListesi
             enabled={Boolean(user) && activeTab === "kesinti"}
           />
+        </TabsContent>
+
+        <TabsContent value="mesai">
+          <MesaiListesi enabled={Boolean(user) && activeTab === "mesai"} />
         </TabsContent>
       </Tabs>
     </div>

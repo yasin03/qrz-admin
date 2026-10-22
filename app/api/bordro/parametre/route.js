@@ -20,6 +20,15 @@ const queryTypes = {
     `[SubePersonelOzelKesinti_UPDATEByIDSubePersonelOzelKesinti] '${params.IDSubePersonelOzelKesinti}','${params.BordroKesintiTutari}','${params.KesintiTarihi}','${params.KesintiTipi}'`,
   DELETE_KESINTI: (params) =>
     `[SubePersonelOzelKesinti_DELETEByIDSubePersonelOzelKesinti] '${params.IDSubePersonelOzelKesinti}'`,
+
+  SELECT_MESAI: (params) =>
+    `[SubePersonelMesai_SELECTByIDSubePersonel] '${params.IDSube}','${params.IDSubePersonel}','${params.Tarih1}','${params.Tarih2}', '${params.MesaiTipi}'`,
+  INSERT_MESAI: (params) =>
+    `[SubePersonelMesai_INSERT] '${params.IDSube}','${params.IDSubePersonel}', '${params.Deger}', '${params.Tarih}', '${params.MesaiTipi}', '${params.Net}'`,
+  UPDATE_MESAI: (params) =>
+    `[SubePersonelMesai_UPDATEByIDSubePersonelMesai] '${params.IDSubePersonelMesai}','${params.IDSube}','${params.IDSubePersonel}', '${params.Deger}','${params.Tarih}', '${params.MesaiTipi}', '${params.Net}'`,
+  DELETE_MESAI: (params) =>
+    `[SubePersonelMesai_DELETEByIDSubePersonelMesai] '${params.IDSubePersonelMesai}'`,
 };
 
 export const POST = withSession(async (request, session) => {
@@ -44,6 +53,12 @@ export const POST = withSession(async (request, session) => {
       BordroKesintiTutari: payload.BordroKesintiTutari,
       KesintiTarihi: payload.KesintiTarihi,
       KesintiTipi: payload.KesintiTipi,
+
+      MesaiTipi: payload.MesaiTipi,
+      IDSubePersonelMesai: payload.IDSubePersonelMesai,
+      Deger: payload.Deger,
+      Tarih: payload.Tarih,
+
     };
     const queryFunction = queryTypes[type];
 
@@ -52,6 +67,7 @@ export const POST = withSession(async (request, session) => {
     }
 
     const query = queryFunction(queryParams);
+    console.log("Executing query:", query);
     const result = await ExecuteQuery(query);
 
     return ok(session.isMobile, result);

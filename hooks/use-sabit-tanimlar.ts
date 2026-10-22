@@ -120,7 +120,7 @@ const toMeslekKoduOptions = (value: unknown) =>
     label: String(item.Kod2),
   }));
 
-const toIzinTipleriOptions =(value: unknown) =>
+const toIzinTipleriOptions = (value: unknown) =>
   mapOptions<IzinTipleri>(value, (item) => ({
     value: String(item.KisaKod),
     label: item.Kod,
@@ -177,6 +177,7 @@ export const personelSabitTanimlarKeys = {
   izinTipleri: ["izin-tipleri"] as const,
   eklentiTipleri: ["tahakkuk-tipleri", "Yardım"] as const,
   kesintiTipleri: ["tahakkuk-tipleri", "Kesinti"] as const,
+  mesaiTipleri: ["tahakkuk-tipleri", "Mesai"] as const,
 };
 
 export function usePersonelSabitTanimlar() {
@@ -204,6 +205,12 @@ export function usePersonelSabitTanimlar() {
     staleTime: STALE_TIME,
   });
 
+  const mesaiQuery = useQuery({
+    queryKey: personelSabitTanimlarKeys.mesaiTipleri,
+    queryFn: () => getTahakkukTipleri("Mesai"),
+    staleTime: 1000 * 60 * 60, // 1 saat
+  });
+
   const data = query.data ?? [];
 
   return {
@@ -216,6 +223,7 @@ export function usePersonelSabitTanimlar() {
     izinTipleri: toIzinTipleriOptions(izinQuery.data),
     eklentiTipleri: toTahakkukTipleriOptions(eklentiQuery.data),
     kesintiTipleri: toTahakkukTipleriOptions(kesintiQuery.data),
+    mesaiTipleri: toTahakkukTipleriOptions(mesaiQuery.data),
   };
 }
 

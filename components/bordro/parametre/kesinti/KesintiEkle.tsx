@@ -14,11 +14,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
-import { Button } from "../../ui/button";
-import { FormInput, FormSelect } from "../../forms";
-import { FormMultiSelect } from "../../forms/form-multi-select";
-import { CustomDatePicker } from "../../customs/CustomDatePicker";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { FormInput, FormSelect } from "@/components/forms";
+import { FormMultiSelect } from "@/components/forms/form-multi-select";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
 
 import { useAktifPersonelListesi } from "@/hooks/use-personel";
 import {

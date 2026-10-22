@@ -6,30 +6,45 @@ import { format } from "date-fns";
 import { Filter } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
-import { Button } from "../../ui/button";
-import { FormSelect } from "../../forms";
-import { CustomDatePicker } from "../../customs/CustomDatePicker";
-import { KesintiFilters } from "@/types/bordro-parametre";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { FormSelect } from "@/components/forms";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
+import { MesaiFilters } from "@/types/bordro-parametre";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
+import { toMesaiTipiOptions } from "./mesai-utils";
 
 type FormValues = {
   tarihAraligi: DateRange | undefined;
-  KesintiTipi: string;
+  MesaiTipi: string;
+  Net: MesaiFilters["Net"];
 };
 
-type KesintiFiltreProps = {
-  filters: KesintiFilters;
-  onChange: (next: KesintiFilters) => void;
+type MesaiFiltreProps = {
+  filters: MesaiFilters;
+  onChange: (next: MesaiFilters) => void;
   onReset: () => void;
 };
 
-const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
-  const { kesintiTipleri } = usePersonelSabitTanimlar();
+const netOptions = [
+  { value: "ALL", label: "Tümü" },
+  { value: "NET", label: "Net" },
+  { value: "BRUT", label: "Brüt" },
+];
 
-  const kesintiTipiOptions = useMemo(
-    () => [{ value: "ALL", label: "Tümü" }, ...kesintiTipleri],
-    [kesintiTipleri],
+const MesaiFiltre = ({ filters, onChange, onReset }: MesaiFiltreProps) => {
+  const { mesaiTipleri } = usePersonelSabitTanimlar();
+
+  const mesaiTipiOptions = useMemo(
+    () => [
+      { value: "ALL", label: "Tümü" },
+      ...toMesaiTipiOptions(mesaiTipleri),
+    ],
+    [mesaiTipleri],
   );
 
   const initialFormValues = useMemo<FormValues>(
@@ -38,7 +53,8 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
         from: filters.Tarih1 ? new Date(filters.Tarih1) : undefined,
         to: filters.Tarih2 ? new Date(filters.Tarih2) : undefined,
       },
-      KesintiTipi: filters.KesintiTipi ?? "ALL",
+      MesaiTipi: filters.MesaiTipi ?? "ALL",
+      Net: filters.Net ?? "ALL",
     }),
     [filters],
   );
@@ -52,7 +68,8 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
 
   useEffect(() => {
     const subscription = form.watch((values, { name }) => {
-      if (name !== "tarihAraligi" && name !== "KesintiTipi") return;
+      if (name !== "tarihAraligi" && name !== "MesaiTipi" && name !== "Net")
+        return;
 
       const range = values.tarihAraligi;
       if (!range?.from || !range?.to) return;
@@ -60,7 +77,8 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
       onChange({
         Tarih1: format(range.from, "yyyy-MM-dd"),
         Tarih2: format(range.to, "yyyy-MM-dd"),
-        KesintiTipi: values.KesintiTipi ?? "ALL",
+        MesaiTipi: values.MesaiTipi ?? "ALL",
+        Net: values.Net ?? "ALL",
       });
     });
 
@@ -69,7 +87,7 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
   }, [form, onChange]);
 
   const handleReset = () => {
-    form.reset({ tarihAraligi: undefined, KesintiTipi: "ALL" });
+    form.reset({ tarihAraligi: undefined, MesaiTipi: "ALL", Net: "ALL" });
     onReset();
   };
 
@@ -88,9 +106,7 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
       </PopoverTrigger>
 
       <PopoverContent align="end" className="min-w-96 space-y-4">
-        <p className="text-sm font-semibold text-foreground">
-          Kesinti Filtrele
-        </p>
+        <p className="text-sm font-semibold text-foreground">Mesai Filtrele</p>
 
         <div className="space-y-3">
           <CustomDatePicker
@@ -102,9 +118,18 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
 
           <FormSelect
             control={form.control}
-            name="KesintiTipi"
-            label="Kesinti Tipi"
-            options={kesintiTipiOptions}
+            name="MesaiTipi"
+            label="Mesai Tipi"
+            options={mesaiTipiOptions}
+            valueKey="value"
+            labelKey="label"
+          />
+
+          <FormSelect
+            control={form.control}
+            name="Net"
+            label="Net / Brüt"
+            options={netOptions}
             valueKey="value"
             labelKey="label"
           />
@@ -126,4 +151,4 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
   );
 };
 
-export default KesintiFiltre;
+export default MesaiFiltre;
