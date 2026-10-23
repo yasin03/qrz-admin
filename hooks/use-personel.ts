@@ -38,6 +38,8 @@ export type PersonelFilters = {
   Cinsiyet?: "" | "KADIN" | "ERKEK";
   MedeniDurum?: "" | "BEKAR" | "EVLİ";
   CalismaDurumu?: "" | "ÇALISIYOR" | "ÇALIŞMIYOR";
+  /** Personel grubu id'si, "" → tümü (client-side filtreleniyor) */
+  IDSirketPersonelGrup?: string;
 };
 
 export type PersonelSgkIslemType =

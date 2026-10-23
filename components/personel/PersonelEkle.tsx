@@ -64,6 +64,9 @@ export default function PersonelEkle({
     if (isEditMode && personel) {
       form.reset({
         IDBolum: personel.IDBolum ? String(personel.IDBolum) : "0",
+        IDSirketPersonelGrup: personel.IDSirketPersonelGrup
+          ? String(personel.IDSirketPersonelGrup)
+          : "0",
         SicilNo: personel.SicilNo ?? "",
         TcKimlikNo: personel.TcKimlikNo ?? "",
         Ad: personel.Ad ?? "",
@@ -195,7 +198,7 @@ export default function PersonelEkle({
         AuKumulatifVergiMatrahi:
           personel.AuKumulatifVergiMatrahi != null
             ? String(personel.AuKumulatifVergiMatrahi)
-            : "",
+            : "0",
         TesvikOrani:
           personel.TesvikOrani != null ? String(personel.TesvikOrani) : "",
         VergidenMuaf: Boolean(personel.VergidenMuaf),

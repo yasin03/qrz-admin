@@ -10,6 +10,7 @@ import { FormSelect, FormInput } from "../forms";
 import { useCurrentContext } from "@/hooks/use-context";
 import { useSubeler, useBolumler } from "@/hooks/use-kurumsal-data";
 import { type PersonelFilters } from "@/hooks/use-personel";
+import { usePersonelGrupList } from "@/hooks/use-personel-grup";
 
 const DURUM_OPTIONS = [
   { label: "Tümü", value: "TÜMÜ" },
@@ -51,6 +52,8 @@ type FormValues = {
   Cinsiyet: "TÜMÜ" | "KADIN" | "ERKEK";
   MedeniDurum: "TÜMÜ" | "BEKAR" | "EVLİ";
   CalismaDurumu: "TÜMÜ" | "ÇALISIYOR" | "ÇALIŞMIYOR";
+  /** "TÜMÜ" ya da personel grubu id'si */
+  IDSirketPersonelGrup: string;
 };
 
 type Props = {
@@ -69,6 +72,7 @@ export default function PersonelFiltre({ onApply }: Props) {
       Cinsiyet: "TÜMÜ",
       MedeniDurum: "TÜMÜ",
       CalismaDurumu: "TÜMÜ",
+      IDSirketPersonelGrup: "TÜMÜ",
     },
   });
 
@@ -76,6 +80,19 @@ export default function PersonelFiltre({ onApply }: Props) {
 
   const selectedSube = form.watch("IDSube");
   const { data: bolumlerData = [] } = useBolumler(Number(selectedSube) || 0);
+
+  // FormSelect "" değerini yok saydığı için "Tümü" seçeneği "TÜMÜ" değeriyle.
+  const { data: gruplarData = [] } = usePersonelGrupList();
+  const personelGruplari = useMemo(
+    () => [
+      { value: "TÜMÜ", label: "Tümü" },
+      ...gruplarData.map((grup) => ({
+        value: String(grup.IDSirketPersonelGrup),
+        label: grup.Adi,
+      })),
+    ],
+    [gruplarData],
+  );
 
   const bolumler = useMemo(
     () => [{ IDBolum: "", BolumAdi: "Tümü" }, ...bolumlerData],
@@ -112,6 +129,7 @@ export default function PersonelFiltre({ onApply }: Props) {
       CalismaDurumu: normalize(
         values.CalismaDurumu,
       ) as PersonelFilters["CalismaDurumu"],
+      IDSirketPersonelGrup: normalize(values.IDSirketPersonelGrup),
     };
   }, []);
 
@@ -145,6 +163,7 @@ export default function PersonelFiltre({ onApply }: Props) {
       Cinsiyet: "TÜMÜ",
       MedeniDurum: "TÜMÜ",
       CalismaDurumu: "TÜMÜ",
+      IDSirketPersonelGrup: "TÜMÜ",
     });
     // form.reset watch subscription'ı tetikler, ayrıca onApply çağırmaya gerek yok
   };
@@ -181,6 +200,12 @@ export default function PersonelFiltre({ onApply }: Props) {
             labelKey="BolumAdi"
             disabled={!selectedSube}
             placeholder={!selectedSube ? "Önce şube seçin" : "Tümü"}
+          />
+          <FormSelect
+            control={form.control}
+            name="IDSirketPersonelGrup"
+            label="Personel Grubu"
+            options={personelGruplari}
           />
           <FormSelect
             control={form.control}

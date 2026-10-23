@@ -2,6 +2,7 @@ export interface PersonelType {
   IDSubePersonel: string;
   IDSube: string;
   IDBolum: string;
+  IDSirketPersonelGrup?: string | number | null;
 
   SicilNo: string;
   TcKimlikNo: string;

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarRange,
+  ChevronRight,
   ContactRound,
   FileText,
   FileUser,
@@ -15,6 +16,7 @@ import {
   LogOut,
   MapPinned,
   Parasol,
+  Settings,
   Users,
 } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
@@ -30,6 +32,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { logout } from "@/services/auth";
@@ -41,6 +46,17 @@ type MenuItem = {
   label: string;
   icon: typeof Users;
   /** Bu menüyü görebilecek kullanıcı tipleri. */
+  roles: KullaniciTipi[];
+  /**
+   * Verilirse öğe link değil, tıklanınca açılıp kapanan bir grup olur;
+   * alt öğeler altında listelenir.
+   */
+  children?: SubMenuItem[];
+};
+
+type SubMenuItem = {
+  href: string;
+  label: string;
   roles: KullaniciTipi[];
 };
 
@@ -73,6 +89,24 @@ const MENU_ITEMS: MenuItem[] = [
   { href: "/puantaj", label: "Puantaj", icon: CalendarRange, roles: TUMU },
   { href: "/bordro", label: "Bordro", icon: ContactRound, roles: TUMU },
   { href: "/belgeler", label: "Belgeler", icon: FileText, roles: TUMU },
+  {
+    href: "/ayarlar",
+    label: "Ayarlar",
+    icon: Settings,
+    roles: [ADMIN, YONETICI],
+    children: [
+      {
+        href: "/ayarlar/tanimlamalar",
+        label: "Tanımlamalar",
+        roles: [ADMIN, YONETICI],
+      },
+      {
+        href: "/ayarlar/per-yetkiler",
+        label: "Personel Yetkileri",
+        roles: [ADMIN, YONETICI],
+      },
+    ],
+  },
 ];
 
 export function AppSidebar() {
@@ -96,11 +130,23 @@ export function AppSidebar() {
     }
   }, [pathname, pendingHref]);
 
-  const menuItems = user
-    ? MENU_ITEMS.filter((item) =>
-        item.roles.includes(user.IDKullaniciTip as KullaniciTipi),
-      )
+  const userTip = user?.IDKullaniciTip as KullaniciTipi | undefined;
+  const menuItems = userTip
+    ? MENU_ITEMS.filter((item) => item.roles.includes(userTip)).map((item) => ({
+        ...item,
+        children: item.children?.filter((child) =>
+          child.roles.includes(userTip),
+        ),
+      }))
     : [];
+
+  // Açık olan alt menüler (href → açık mı). Aktif route bir alt öğedeyse o
+  // grup kullanıcı kapatmadıkça açık görünür.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const isGroupOpen = (href: string) =>
+    openGroups[href] ?? pathname.startsWith(href);
+  const toggleGroup = (href: string) =>
+    setOpenGroups((prev) => ({ ...prev, [href]: !isGroupOpen(href) }));
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -163,11 +209,87 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {
+                const Icon = item.icon;
+
+                if (item.children?.length) {
+                  const firstChild = item.children[0];
+                  const isOpen = isGroupOpen(item.href);
+                  const isGroupActive = pendingHref
+                    ? pendingHref.startsWith(item.href)
+                    : pathname.startsWith(item.href);
+
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      {isCollapsed ? (
+                        // Daraltılmış sidebar'da alt menü görünmediği için
+                        // doğrudan ilk alt öğeye gidiyoruz.
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isGroupActive}
+                          tooltip={item.label}
+                          className="h-10"
+                        >
+                          <Link
+                            href={firstChild.href}
+                            onClick={handleNavigate(firstChild.href)}
+                          >
+                            <Icon />
+                            <span>{item.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      ) : (
+                        <SidebarMenuButton
+                          isActive={isGroupActive && !isOpen}
+                          tooltip={item.label}
+                          className="h-10"
+                          aria-expanded={isOpen}
+                          onClick={() => toggleGroup(item.href)}
+                        >
+                          <Icon />
+                          <span>{item.label}</span>
+                          <ChevronRight
+                            className={`ml-auto transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+                          />
+                        </SidebarMenuButton>
+                      )}
+
+                      {isOpen && (
+                        <SidebarMenuSub>
+                          {item.children.map((child) => {
+                            const isChildPending = pendingHref === child.href;
+                            const isChildActive = pendingHref
+                              ? isChildPending
+                              : pathname === child.href;
+
+                            return (
+                              <SidebarMenuSubItem key={child.href}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={isChildActive}
+                                >
+                                  <Link
+                                    href={child.href}
+                                    onClick={handleNavigate(child.href)}
+                                  >
+                                    {isChildPending && (
+                                      <Loader2 className="animate-spin" />
+                                    )}
+                                    <span>{child.label}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      )}
+                    </SidebarMenuItem>
+                  );
+                }
+
                 const isTargetPending = pendingHref === item.href;
                 const isActive = pendingHref
                   ? isTargetPending
                   : pathname === item.href;
-                const Icon = item.icon;
 
                 return (
                   <SidebarMenuItem key={item.href}>

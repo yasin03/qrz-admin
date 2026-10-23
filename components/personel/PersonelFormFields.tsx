@@ -24,7 +24,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useIlceler, useIller } from "@/hooks/use-il-ilce-vergi-data";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PersonelForm } from "./PersonelFormType";
 import {
   MESLEK_KODU_MIN_SEARCH,
@@ -36,6 +36,10 @@ import {
 import { HAFTA_DATA } from "@/constants/data";
 import { useCurrentContext } from "@/hooks/use-context";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
+import { usePersonelGrupList } from "@/hooks/use-personel-grup";
+import PersonelGrupEkle from "@/components/ayarlar/tanimlamalar/personel-grup/PersonelGrupEkle";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const CINSIYET_OPTIONS = [
   { label: "Kadın", value: "KADIN" },
@@ -88,6 +92,21 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     ],
     [bolumlerData],
   );
+
+  // Personel grubu: şirketin grupları. Seçilmezse IDSirketPersonelGrup "0".
+  // "+" ile hızlı ekleme; düzenleme/silme Ayarlar → Tanımlamalar'da.
+  const { data: gruplarData = [] } = usePersonelGrupList();
+  const personelGruplari = useMemo(
+    () => [
+      { IDSirketPersonelGrup: "0", Adi: "Seçiniz" },
+      ...gruplarData.map((grup) => ({
+        IDSirketPersonelGrup: String(grup.IDSirketPersonelGrup),
+        Adi: grup.Adi,
+      })),
+    ],
+    [gruplarData],
+  );
+  const [openGrupEkle, setOpenGrupEkle] = useState(false);
 
   // Dosyanın üstüne, CINSIYET_OPTIONS'ın yanına ekleyin
   const SECTION_FIELDS = {
@@ -252,6 +271,30 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               options={bolumler}
               valueKey="IDBolum"
               labelKey="BolumAdi"
+            />
+            <FormLabel label="Personel Grubu">
+              <FormSelect
+                control={control}
+                name="IDSirketPersonelGrup"
+                options={personelGruplari}
+                valueKey="IDSirketPersonelGrup"
+                labelKey="Adi"
+              />
+              <Button
+                type="button"
+                appearance="outline"
+                size="icon"
+                className="flex-none!"
+                title="Yeni personel grubu ekle"
+                aria-label="Yeni personel grubu ekle"
+                onClick={() => setOpenGrupEkle(true)}
+              >
+                <Plus />
+              </Button>
+            </FormLabel>
+            <PersonelGrupEkle
+              open={openGrupEkle}
+              onOpenChange={setOpenGrupEkle}
             />
             <FormInput
               control={control}

@@ -39,8 +39,11 @@ import api, { ApiClientError } from "@/lib/axios";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { ExportMenu } from "../export/ExportMenu";
+import type { ExportColumn } from "../export/types";
 import PersonelDetayDialog from "./PersonelDetayDialog";
 import PersonelImportDialog from "./PersonelImportDialog";
+import { usePersonelGrupList } from "@/hooks/use-personel-grup";
+import { format } from "date-fns";
 
 type Personel = {
   SicilNo: string;
@@ -69,6 +72,7 @@ type Personel = {
   IDSubePersonel: string;
   IDSube: string;
   IDBolum: string;
+  IDSirketPersonelGrup?: string | number | null;
   SgkDurumu: string;
   CalismaDurumu: string;
   AgiAlmazDurumu: boolean;
@@ -123,19 +127,36 @@ const Personel = () => {
     refetch: refetchPersonelListesi,
   } = usePersonelListesi(filters);
 
+  // Personel listesi grup id'sini döndürüyor; adı tanımlardan eşleştiriyoruz.
+  const { data: personelGruplari = [] } = usePersonelGrupList();
+  const grupAdlari = useMemo(
+    () =>
+      new Map(
+        personelGruplari.map((grup) => [
+          String(grup.IDSirketPersonelGrup),
+          grup.Adi,
+        ]),
+      ),
+    [personelGruplari],
+  );
+  const getGrupAdi = (personel: Personel) =>
+    grupAdlari.get(String(personel.IDSirketPersonelGrup ?? "")) ?? "";
+
   const filteredPersonelListesi = useMemo(() => {
     const query = searchText.trim().toLocaleLowerCase("tr-TR");
     const selectedUcretTipi = filters?.UcretTipi || "";
     const selectedCinsiyet = filters?.Cinsiyet || "";
     const selectedMedeniDurum = filters?.MedeniDurum || "";
     const selectedCalismaDurumu = filters?.CalismaDurumu || "";
+    const selectedGrup = filters?.IDSirketPersonelGrup || "";
 
     const hasTextFilter = Boolean(query);
     const hasSelectFilter = Boolean(
       selectedUcretTipi ||
       selectedCinsiyet ||
       selectedMedeniDurum ||
-      selectedCalismaDurumu,
+      selectedCalismaDurumu ||
+      selectedGrup,
     );
 
     if (!hasTextFilter && !hasSelectFilter) {
@@ -163,13 +184,17 @@ const Personel = () => {
       const calismaDurumuMatch =
         !selectedCalismaDurumu ||
         personel.CalismaDurumu === selectedCalismaDurumu;
+      const grupMatch =
+        !selectedGrup ||
+        String(personel.IDSirketPersonelGrup ?? "") === selectedGrup;
 
       return (
         (!hasTextFilter || textMatch) &&
         ucretTipiMatch &&
         cinsiyetMatch &&
         medeniDurumMatch &&
-        calismaDurumuMatch
+        calismaDurumuMatch &&
+        grupMatch
       );
     });
   }, [personelListesi, searchText, filters]);
@@ -263,11 +288,12 @@ const Personel = () => {
     });
   };
 
-  const exportColumns = [
+  const exportColumns: ExportColumn<Personel>[] = [
     { header: "Sicil No", accessorKey: "SicilNo" },
     { header: "TC Kimlik No", accessorKey: "TcKimlikNo" },
     { header: "Ad Soyad", accessorKey: "AdSoyad" },
     { header: "Bölüm", accessorKey: "BolumAdi" },
+    { header: "Personel Grubu", accessorKey: getGrupAdi },
     { header: "Cinsiyet", accessorKey: "Cinsiyet" },
     { header: "Doğum Tarihi", accessorKey: "DogumTarihi" },
     { header: "Medeni Durum", accessorKey: "MedeniDurum" },
@@ -364,6 +390,12 @@ const Personel = () => {
       ),
     },
     {
+      id: "personelGrubu",
+      header: "Personel Grubu",
+      accessorFn: getGrupAdi,
+      cell: ({ getValue }) => getValue<string>() || "-",
+    },
+    {
       accessorKey: "Cinsiyet",
       header: "Cinsiyet",
       cell: ({ row }) => {
@@ -417,22 +449,6 @@ const Personel = () => {
     },
 
     {
-      accessorKey: "IseSonGirisTarihi",
-      header: "İşe Giriş Tarihi",
-      cell: ({ row }) => {
-        const value = row.original.IseSonGirisTarihi;
-
-        if (!value) return "-";
-
-        return new Intl.DateTimeFormat("tr-TR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).format(new Date(value));
-      },
-    },
-
-    {
       accessorKey: "Durum",
       header: "Durum",
       cell: ({ row }) => {
@@ -455,13 +471,6 @@ const Personel = () => {
         <div>
           <p className="text-xs text-muted-foreground">TC Kimlik No</p>
           <p className="font-medium">{personel.TcKimlikNo}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">Cinsiyet</p>
-          <Badge variant={personel.Cinsiyet === "ERKEK" ? "blue" : "pink"}>
-            {personel.Cinsiyet}
-          </Badge>
         </div>
 
         <div>
@@ -492,6 +501,10 @@ const Personel = () => {
         <div>
           <p className="text-xs text-muted-foreground">Çıkış Tarihi</p>
           <p className="font-medium">{personel.CikisTarihi2 || "-"}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">İşe Giriş Tarihi</p>
+          <p className="font-medium">{format(personel.IseSonGirisTarihi, "dd.MM.yyyy") || "-"}</p>
         </div>
       </div>
     );

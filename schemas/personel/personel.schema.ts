@@ -3,6 +3,7 @@ import { z } from "zod";
 export const personelSchema = z.object({
   // Personel Bilgileri
   IDBolum: z.string(),
+  IDSirketPersonelGrup: z.string(),
   SicilNo: z.string(),
   TcKimlikNo: z
     .string()
@@ -131,6 +132,7 @@ export type PersonelForm = z.infer<typeof personelSchema>;
 
 export const DEFAULT_PERSONEL_FORM: PersonelForm = {
   IDBolum: "0",
+  IDSirketPersonelGrup: "0",
   SicilNo: "",
   TcKimlikNo: "",
   Ad: "",
