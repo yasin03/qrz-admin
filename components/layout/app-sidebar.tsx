@@ -101,8 +101,8 @@ const MENU_ITEMS: MenuItem[] = [
         roles: [ADMIN, YONETICI],
       },
       {
-        href: "/ayarlar/per-yetkiler",
-        label: "Personel Yetkileri",
+        href: "/ayarlar/kurumsal",
+        label: "Kurumsal Ayarlar",
         roles: [ADMIN, YONETICI],
       },
     ],
@@ -125,7 +125,7 @@ export function AppSidebar() {
 
   // Navigation tamamlanınca (pathname gerçekten değişince) pending'i temizle
   useEffect(() => {
-    if (pendingHref && pathname === pendingHref) {
+    if (pendingHref && pathname.startsWith(pendingHref)) {
       setPendingHref(null);
     }
   }, [pathname, pendingHref]);
@@ -259,7 +259,7 @@ export function AppSidebar() {
                             const isChildPending = pendingHref === child.href;
                             const isChildActive = pendingHref
                               ? isChildPending
-                              : pathname === child.href;
+                              : pathname.startsWith(child.href);
 
                             return (
                               <SidebarMenuSubItem key={child.href}>

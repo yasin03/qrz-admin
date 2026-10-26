@@ -119,7 +119,7 @@ export function SirketFormFields({ control, setValue }: Props) {
         <AccordionTrigger>
           <SectionTitle title="Temel Bilgiler" hasError={hasError("temel")} />
         </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-2 py-2">
+        <AccordionContent className="flex flex-col gap-2 p-5">
           <FormSelect
             control={control}
             name="SirketTip"
@@ -232,7 +232,7 @@ export function SirketFormFields({ control, setValue }: Props) {
         <AccordionTrigger>
           <SectionTitle title="Adres" hasError={hasError("adres")} />
         </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-2 py-2">
+        <AccordionContent className="flex flex-col gap-2 p-5">
           <FormInput
             control={control}
             name="Tel"
@@ -292,7 +292,7 @@ export function SirketFormFields({ control, setValue }: Props) {
             hasError={hasError("resmi")}
           />
         </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-2 py-2">
+        <AccordionContent className="flex flex-col gap-2 p-5">
           <FormInput
             control={control}
             name="IsyeriSgkSicilNumarasi"
@@ -358,7 +358,7 @@ export function SirketFormFields({ control, setValue }: Props) {
             hasError={hasError("servis")}
           />
         </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-2 py-2">
+        <AccordionContent className="flex flex-col gap-2 p-5">
           <FormInput
             control={control}
             name="ServisPassword"
