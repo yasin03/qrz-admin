@@ -54,6 +54,8 @@ type MenuItem = {
    * Admin/Yönetici'yi etkilemez.
    */
   yetki?: PerYetkiKey;
+  /** true ise alt yollarda da (href/...) aktif görünür. */
+  matchNested?: boolean;
   /**
    * Verilirse öğe link değil, tıklanınca açılıp kapanan bir grup olur;
    * alt öğeler altında listelenir.
@@ -119,18 +121,9 @@ const MENU_ITEMS: MenuItem[] = [
     label: "Ayarlar",
     icon: Settings,
     roles: [ADMIN, YONETICI],
-    children: [
-      {
-        href: "/ayarlar/tanimlamalar",
-        label: "Tanımlamalar",
-        roles: [ADMIN, YONETICI],
-      },
-      {
-        href: "/ayarlar/kurumsal",
-        label: "Kurumsal Ayarlar",
-        roles: [ADMIN, YONETICI],
-      },
-    ],
+    // Alt sayfalar (şirket bilgileri, yetkiler, tanımlamalar) Ayarlar'ın
+    // kendi iç menüsünde; ana sidebar'da tek öğe olarak seçili kalsın.
+    matchNested: true,
   },
 ];
 
@@ -321,7 +314,9 @@ export function AppSidebar() {
                 const isTargetPending = pendingHref === item.href;
                 const isActive = pendingHref
                   ? isTargetPending
-                  : pathname === item.href;
+                  : pathname === item.href ||
+                    (!!item.matchNested &&
+                      pathname.startsWith(`${item.href}/`));
 
                 return (
                   <SidebarMenuItem key={item.href}>

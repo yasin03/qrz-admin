@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import PersonelGrupListesi from "./personel-grup/PersonelGrupListesi";
+import KatsayiListesi from "./katsayi/KatsayiListesi";
 
 // Yeni tanım tipleri buraya tab olarak ekleniyor.
-type TabValue = "personel-grup";
+type TabValue = "personel-grup" | "katsayilar";
 
 const TanimlamalarPage = () => {
   const [activeTab, setActiveTab] = useState<TabValue>("personel-grup");
@@ -31,11 +32,7 @@ const TanimlamalarPage = () => {
           <PersonelGrupListesi enabled={activeTab === "personel-grup"} />
         </TabsContent>
         <TabsContent value="katsayilar">
-          <div className="flex h-96 items-center justify-center rounded-lg border border-dashed">
-            <p className="text-muted-foreground">
-              Katsayıları tanımlama işlemleri henüz geliştirilme aşamasındadır.
-            </p>
-          </div>
+          <KatsayiListesi enabled={activeTab === "katsayilar"} />
         </TabsContent>
       </Tabs>
     </div>

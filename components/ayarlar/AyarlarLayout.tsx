@@ -4,9 +4,9 @@ import { useState } from "react";
 import { PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import KurumsalNav from "./KurumsalNav";
+import AyarlarNav from "./AyarlarNav";
 
-const KurumsalLayout = ({ children }: { children: React.ReactNode }) => {
+const AyarlarLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ const KurumsalLayout = ({ children }: { children: React.ReactNode }) => {
         >
           {!collapsed && (
             <span className="text-muted-foreground text-xs font-medium">
-              Kurumsal Ayarlar
+              Ayarlar
             </span>
           )}
           <Button
@@ -39,7 +39,7 @@ const KurumsalLayout = ({ children }: { children: React.ReactNode }) => {
             <PanelLeft />
           </Button>
         </div>
-        <KurumsalNav collapsed={collapsed} />
+        <AyarlarNav collapsed={collapsed} />
       </aside>
 
       <div className="bg-card min-w-0 flex-1 rounded-xl border border-border/80 p-5 shadow-sm lg:overflow-y-auto">
@@ -49,4 +49,4 @@ const KurumsalLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default KurumsalLayout;
+export default AyarlarLayout;

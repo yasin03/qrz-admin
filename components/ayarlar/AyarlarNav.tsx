@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, ShieldCheck } from "lucide-react";
+import { Building2, ListTree, ShieldCheck } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Tooltip,
@@ -11,21 +11,26 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-// Yeni kurumsal ayar sayfaları buraya eklenir.
+// Yeni ayar sayfaları buraya eklenir.
 const NAV_ITEMS = [
   {
-    href: "/ayarlar/kurumsal/sirket-bilgileri",
+    href: "/ayarlar/sirket-bilgileri",
     label: "Şirket Bilgileri",
     icon: Building2,
   },
   {
-    href: "/ayarlar/kurumsal/yetki-ayarlari",
+    href: "/ayarlar/yetki-ayarlari",
     label: "Yetki Ayarları",
     icon: ShieldCheck,
   },
+  {
+    href: "/ayarlar/tanimlamalar",
+    label: "Tanımlamalar",
+    icon: ListTree,
+  },
 ];
 
-const KurumsalNav = ({ collapsed = false }: { collapsed?: boolean }) => {
+const AyarlarNav = ({ collapsed = false }: { collapsed?: boolean }) => {
   const pathname = usePathname();
 
   return (
@@ -64,4 +69,4 @@ const KurumsalNav = ({ collapsed = false }: { collapsed?: boolean }) => {
   );
 };
 
-export default KurumsalNav;
+export default AyarlarNav;
