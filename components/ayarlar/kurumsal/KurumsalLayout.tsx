@@ -10,10 +10,10 @@ const KurumsalLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex min-h-[calc(100svh-12rem)] flex-col gap-4 lg:flex-row">
+    <div className="flex flex-col gap-4 lg:h-[calc(100svh-12.5rem)] lg:min-h-96 lg:flex-row">
       <aside
         className={cn(
-          "bg-sidebar/60 flex flex-col gap-3 rounded-xl border border-border/80 p-2 transition-[width] duration-200 lg:shrink-0",
+          "bg-sidebar/60 flex flex-col gap-3 overflow-hidden rounded-xl border border-border/80 p-2 transition-[width] duration-200 lg:shrink-0",
           collapsed ? "lg:w-14" : "lg:w-56",
         )}
       >
@@ -25,7 +25,7 @@ const KurumsalLayout = ({ children }: { children: React.ReactNode }) => {
         >
           {!collapsed && (
             <span className="text-muted-foreground text-xs font-medium">
-              Kurumsal Yönetim
+              Kurumsal Ayarlar
             </span>
           )}
           <Button
@@ -42,7 +42,7 @@ const KurumsalLayout = ({ children }: { children: React.ReactNode }) => {
         <KurumsalNav collapsed={collapsed} />
       </aside>
 
-      <div className="bg-card min-w-0 flex-1 rounded-xl border border-border/80 p-5 shadow-sm">
+      <div className="bg-card min-w-0 flex-1 rounded-xl border border-border/80 p-5 shadow-sm lg:overflow-y-auto">
         {children}
       </div>
     </div>

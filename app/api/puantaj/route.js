@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ExecuteQuery } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
+import { assertPersonelYetki } from "@/lib/per-yetki-server";
 
 const queryTypes = {
   SELECT_PUANTAJ: (params) =>
@@ -11,6 +12,11 @@ const queryTypes = {
     `[UcretCizelgesi_UPDATEByCell] '${params.IDSubePersonel}','${params.Yil}','${params.Ay}','${params.Gun}','${params.Saat}','${params.Tur}'`,
   DELETE_PUANTAJ: (params) =>
     `[UcretCizelgesiDelete_ByIDSubePersonel] '${params.IDSube}','${params.IDBolum}','${params.Yil}','${params.Ay}','${params.List}'`,
+};
+
+// Personelin kendi verisini okuduğu tipler → gereken yetki bayrağı.
+const personelYetkiTypes = {
+  SELECT_PUANTAJ_BYID: "PersonelPuantajGorur",
 };
 
 export const POST = withSession(async (request, session) => {
@@ -36,6 +42,14 @@ export const POST = withSession(async (request, session) => {
 
     if (!queryFunction) {
       return fail(session.isMobile, "Geçersiz sorgu tipi", 400);
+    }
+
+    if (personelYetkiTypes[type]) {
+      const denied = await assertPersonelYetki(
+        session,
+        personelYetkiTypes[type],
+      );
+      if (denied) return denied;
     }
 
     const query = queryFunction(queryParams);

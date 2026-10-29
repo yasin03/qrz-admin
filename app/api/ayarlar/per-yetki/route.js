@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ExecuteQuery } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
+import { KULLANICI_TIPI } from "@/lib/roles";
 
 const queryTypes = {
   SELECT_PERYETKI: (params) => `[SirketSabit_SELECT] '${params.IDSirket}'`,
@@ -21,6 +22,22 @@ export const POST = withSession(async (request, session) => {
       PersonelHerLokasyonuKullanabilir:
         payload.PersonelHerLokasyonuKullanabilir,
     };
+
+    // Yetkileri sadece Admin/Yönetici değiştirebilir; personel kendine
+    // yetki veremesin. SELECT herkese açık (personel kendi bayraklarını okur).
+    if (
+      type === "UPDATE_PERYETKI" &&
+      ![KULLANICI_TIPI.ADMIN, KULLANICI_TIPI.YONETICI].includes(
+        session.user.IDKullaniciTip,
+      )
+    ) {
+      return fail(
+        session.isMobile,
+        "Bu işlem için yetkiniz yok",
+        403,
+        "FORBIDDEN",
+      );
+    }
 
     const queryFunction = queryTypes[type];
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ExecuteQuery } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
+import { assertPersonelYetki } from "@/lib/per-yetki-server";
 
 const queryTypes = {
   SELECT_PDKS: (params) =>
@@ -38,6 +39,11 @@ const queryTypes = {
     `[SubePersonelSaat_InsertMobil] '${params.IDSubePersonel}','${params.Yon}','${params.JsonData}'`,
 };
 
+// Personelin kendi verisini okuduğu tipler → gereken yetki bayrağı.
+const personelYetkiTypes = {
+  SELECT_PDKS_KENDI: "PersonelPdksGorur",
+};
+
 export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
@@ -55,7 +61,7 @@ export const POST = withSession(async (request, session) => {
       BitisSaati: payload.BitisSaati,
       Gece: payload.Gece,
       HaftaTatilGunu: payload.HaftaTatilGunu,
-      ToplamMolaSuresi : payload.ToplamMolaSuresi,
+      ToplamMolaSuresi: payload.ToplamMolaSuresi,
       HT: payload.HT,
       HTGun: payload.HTGun,
       Tarih: payload.Tarih,
@@ -63,7 +69,7 @@ export const POST = withSession(async (request, session) => {
       Tarih2: payload.Tarih2,
       Yil: payload.Yil,
       Ay: payload.Ay,
-      
+
       // Kendi kaydi tipleri icin IDSubePersonel her zaman token'dan -
       // client'in body'de baska bir personel ID'si gondererek baskasinin
       // kaydini okuyup/yazmasini engeller.
@@ -78,6 +84,14 @@ export const POST = withSession(async (request, session) => {
 
     if (!queryFunction) {
       return fail(session.isMobile, "Geçersiz sorgu tipi", 400);
+    }
+
+    if (personelYetkiTypes[type]) {
+      const denied = await assertPersonelYetki(
+        session,
+        personelYetkiTypes[type],
+      );
+      if (denied) return denied;
     }
 
     const query = queryFunction(queryParams);

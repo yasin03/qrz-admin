@@ -109,7 +109,7 @@ export function FormSelect<T extends FieldValues>({
             >
               <SelectValue
                 placeholder={placeholder}
-                className="line-clamp-2! min-w-0 [overflow-wrap:anywhere]"
+                className="line-clamp-2! min-w-0 wrap:anywhere"
               />
             </SelectTrigger>
 

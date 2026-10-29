@@ -74,7 +74,14 @@ export async function getSession(request: NextRequest): Promise<Session> {
     IDKullaniciTip:
       sid.IDKullaniciTip != null ? String(sid.IDKullaniciTip) : null,
     IDGurup: grsisudo?.IDGurup != null ? String(grsisudo.IDGurup) : null,
-    IDSirket: grsisudo?.IDSirket != null ? String(grsisudo.IDSirket) : null,
+    // Personel header'dan şirket seçmediği için grsisudo'da IDSirket boş
+    // olabiliyor; o durumda login'deki kendi şirketine (sid) düşüyoruz.
+    IDSirket:
+      grsisudo?.IDSirket != null
+        ? String(grsisudo.IDSirket)
+        : sid.IDSirket != null
+          ? String(sid.IDSirket)
+          : null,
     IDSube: grsisudo?.IDSube != null ? String(grsisudo.IDSube) : null,
     IDSubePersonel:
       sid.IDSubePersonel != null ? String(sid.IDSubePersonel) : null,

@@ -40,6 +40,7 @@ const Page = () => {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       const data = await loginMutation(values);
+      console.log("Login response:", data);
       if (String(data?.Sonuc ?? "") != "1") {
         toast.error("Giris basarisiz", {
           description:

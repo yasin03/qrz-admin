@@ -27,6 +27,7 @@ import {
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext } from "@/hooks/use-context";
 import { useRole } from "@/stores/auth-store";
+import { PersonelYetkiGuard } from "@/components/customs/PersonelYetkiGuard";
 import PersonelPdksListesi from "@/components/pdks/PersonelPdksListesi";
 
 type TabValue = "pdks" | "sube-vardiya" | "bolum-vardiya";
@@ -39,20 +40,22 @@ const PdksPage = () => {
 
   if (isPersonel) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-xl font-bold sm:text-2xl">PDKS Kayıtlarım</h1>
-        {/* Yil/Ay ilk değer olarak alındığı için context gelmeden mount etme */}
-        {isContextPending ? (
-          <div className="flex h-32 items-center justify-center text-muted-foreground">
-            <Loader2 className="size-5 animate-spin" />
-          </div>
-        ) : (
-          <PersonelPdksListesi
-            initialYil={savedContext?.Yil}
-            initialAy={savedContext?.Ay}
-          />
-        )}
-      </div>
+      <PersonelYetkiGuard yetki="PersonelPdksGorur">
+        <div className="space-y-4">
+          <h1 className="text-xl font-bold sm:text-2xl">PDKS Kayıtlarım</h1>
+          {/* Yil/Ay ilk değer olarak alındığı için context gelmeden mount etme */}
+          {isContextPending ? (
+            <div className="flex h-32 items-center justify-center text-muted-foreground">
+              <Loader2 className="size-5 animate-spin" />
+            </div>
+          ) : (
+            <PersonelPdksListesi
+              initialYil={savedContext?.Yil}
+              initialAy={savedContext?.Ay}
+            />
+          )}
+        </div>
+      </PersonelYetkiGuard>
     );
   }
 

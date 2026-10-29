@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ExecuteQuery } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
+import { assertPersonelYetki } from "@/lib/per-yetki-server";
 
 const queryTypes = {
   SELECT_BORDRO: (params) =>
@@ -14,6 +15,11 @@ const queryTypes = {
     `[Bordro_SETByIDSubePersonel] '${params.IDSube}','${params.IDSubePersonelList}','${params.Yil}','${params.Ay}'`,
   ONAYLA_BORDRO: (params) =>
     `[BordroOnay_UpdateByIDSube] '${params.IDSube}','','${params.Yil}','${params.Ay}','${params.IDSubePersonelList}','${params.OnayDurum}'`,
+};
+
+// Personelin kendi verisini okuduğu tipler → gereken yetki bayrağı.
+const personelYetkiTypes = {
+  SELECT_BORDRO_BYID: "PersonelBordroGorur",
 };
 
 export const POST = withSession(async (request, session) => {
@@ -37,6 +43,14 @@ export const POST = withSession(async (request, session) => {
 
     if (!queryFunction) {
       return fail(session.isMobile, "Geçersiz sorgu tipi", 400);
+    }
+
+    if (personelYetkiTypes[type]) {
+      const denied = await assertPersonelYetki(
+        session,
+        personelYetkiTypes[type],
+      );
+      if (denied) return denied;
     }
 
     const query = queryFunction(queryParams);
@@ -64,4 +78,3 @@ export const POST = withSession(async (request, session) => {
     );
   }
 });
-

@@ -40,6 +40,8 @@ import {
 import { logout } from "@/services/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import { KULLANICI_TIPI, type KullaniciTipi } from "@/lib/roles";
+import type { PerYetkiKey } from "@/lib/per-yetki";
+import { usePersonelYetki } from "@/hooks/use-per-yetki";
 
 type MenuItem = {
   href: string;
@@ -47,6 +49,11 @@ type MenuItem = {
   icon: typeof Users;
   /** Bu menüyü görebilecek kullanıcı tipleri. */
   roles: KullaniciTipi[];
+  /**
+   * Personel için bu menüyü açan yetki bayrağı (Yetki Ayarları ekranından).
+   * Admin/Yönetici'yi etkilemez.
+   */
+  yetki?: PerYetkiKey;
   /**
    * Verilirse öğe link değil, tıklanınca açılıp kapanan bir grup olur;
    * alt öğeler altında listelenir.
@@ -85,9 +92,27 @@ const MENU_ITEMS: MenuItem[] = [
     icon: GitMergeConflict,
     roles: TUMU,
   },
-  { href: "/pdks", label: "PDKS", icon: Fingerprint, roles: TUMU },
-  { href: "/puantaj", label: "Puantaj", icon: CalendarRange, roles: TUMU },
-  { href: "/bordro", label: "Bordro", icon: ContactRound, roles: TUMU },
+  {
+    href: "/pdks",
+    label: "PDKS",
+    icon: Fingerprint,
+    roles: TUMU,
+    yetki: "PersonelPdksGorur",
+  },
+  {
+    href: "/puantaj",
+    label: "Puantaj",
+    icon: CalendarRange,
+    roles: TUMU,
+    yetki: "PersonelPuantajGorur",
+  },
+  {
+    href: "/bordro",
+    label: "Bordro",
+    icon: ContactRound,
+    roles: TUMU,
+    yetki: "PersonelBordroGorur",
+  },
   { href: "/belgeler", label: "Belgeler", icon: FileText, roles: TUMU },
   {
     href: "/ayarlar",
@@ -131,8 +156,15 @@ export function AppSidebar() {
   }, [pathname, pendingHref]);
 
   const userTip = user?.IDKullaniciTip as KullaniciTipi | undefined;
+  const { can, isLoading: isLoadingYetki } = usePersonelYetki();
+  // Yetkiler yüklenirken yetkiye bağlı menüleri gizli tut; yasak menü
+  // önce görünüp sonra kaybolmasın.
+  const hasYetki = (item: MenuItem) =>
+    !item.yetki || (!isLoadingYetki && can(item.yetki));
   const menuItems = userTip
-    ? MENU_ITEMS.filter((item) => item.roles.includes(userTip)).map((item) => ({
+    ? MENU_ITEMS.filter(
+        (item) => item.roles.includes(userTip) && hasYetki(item),
+      ).map((item) => ({
         ...item,
         children: item.children?.filter((child) =>
           child.roles.includes(userTip),

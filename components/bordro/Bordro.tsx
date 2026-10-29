@@ -3,6 +3,7 @@
 import { useCurrentContext } from "@/hooks/use-context";
 import BordroListesi from "./BordroListesi";
 import { useRole } from "@/stores/auth-store";
+import { PersonelYetkiGuard } from "@/components/customs/PersonelYetkiGuard";
 import PersonelBordroListesi from "./PersonelBordroListesi";
 
 const BordroPage = () => {
@@ -12,13 +13,15 @@ const BordroPage = () => {
 
   if (isPersonel) {
     return (
-      <div className="space-y-4">
-        <h1 className="mb-0 text-xl font-bold sm:text-2xl">Bordrom</h1>
-        <PersonelBordroListesi
-          initialYil={savedContext?.Yil}
-          initialAy={savedContext?.Ay}
-        />
-      </div>
+      <PersonelYetkiGuard yetki="PersonelBordroGorur">
+        <div className="space-y-4">
+          <h1 className="mb-0 text-xl font-bold sm:text-2xl">Bordrom</h1>
+          <PersonelBordroListesi
+            initialYil={savedContext?.Yil}
+            initialAy={savedContext?.Ay}
+          />
+        </div>
+      </PersonelYetkiGuard>
     );
   }
 

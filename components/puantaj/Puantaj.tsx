@@ -4,6 +4,7 @@ import { useCurrentContext } from "@/hooks/use-context";
 import PuantajListesi from "./PuantajListesi";
 import PersonelPuantajTakvimi from "./PersonelPuantajTakvimi";
 import { useRole } from "@/stores/auth-store";
+import { PersonelYetkiGuard } from "@/components/customs/PersonelYetkiGuard";
 
 const PuantajPage = () => {
   const { data: savedContext, isPending: isContextPending } =
@@ -12,13 +13,15 @@ const PuantajPage = () => {
 
   if (isPersonel) {
     return (
-      <div className="space-y-4">
-        <h1 className="mb-0 text-xl font-bold sm:text-2xl">Puantajım</h1>
-        <PersonelPuantajTakvimi
-          initialYil={savedContext?.Yil}
-          initialAy={savedContext?.Ay}
-        />
-      </div>
+      <PersonelYetkiGuard yetki="PersonelPuantajGorur">
+        <div className="space-y-4">
+          <h1 className="mb-0 text-xl font-bold sm:text-2xl">Puantajım</h1>
+          <PersonelPuantajTakvimi
+            initialYil={savedContext?.Yil}
+            initialAy={savedContext?.Ay}
+          />
+        </div>
+      </PersonelYetkiGuard>
     );
   }
 
