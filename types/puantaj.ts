@@ -30,6 +30,21 @@ export type PuantajDeleteRequestType = {
   List: string;
 };
 
+export type PuantajAktarimTipi = "GÜNLÜK" | "AYLIK";
+
+// IDSube route içinde session'dan alınıyor.
+export type PuantajAktarRequestType = {
+  /** "yyyy-MM-dd" */
+  Tarih: string;
+  AktarimTipi: PuantajAktarimTipi;
+};
+
+/** test === 1 başarılı, 0 başarısız; sonuc kullanıcıya gösterilecek mesaj. */
+export type PuantajAktarResponseType = {
+  test: number;
+  sonuc: string;
+};
+
 export type PuantajSelectResponseType = {
   IDSubePersonel: string;
   IDSube: string;

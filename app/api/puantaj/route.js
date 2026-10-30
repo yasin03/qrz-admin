@@ -12,6 +12,9 @@ const queryTypes = {
     `[UcretCizelgesi_UPDATEByCell] '${params.IDSubePersonel}','${params.Yil}','${params.Ay}','${params.Gun}','${params.Saat}','${params.Tur}'`,
   DELETE_PUANTAJ: (params) =>
     `[UcretCizelgesiDelete_ByIDSubePersonel] '${params.IDSube}','${params.IDBolum}','${params.Yil}','${params.Ay}','${params.List}'`,
+
+  AKTAR_PUANTAJ: (params) =>
+    `[SubePersonelSaat_AktarPuantaj] '${params.IDSube}', '${params.Tarih}','${params.AktarimTipi}'`,
 };
 
 // Personelin kendi verisini okuduğu tipler → gereken yetki bayrağı.
@@ -26,7 +29,7 @@ export const POST = withSession(async (request, session) => {
 
     const queryParams = {
       IDSirket: session.user.IDSirket,
-      IDSube: payload.IDSube,
+      IDSube: type == "AKTAR_PUANTAJ" ? session.user.IDSube : payload.IDSube,
       IDBolum: payload.IDBolum,
       IDSubePersonel: payload.IDSubePersonel,
       Yil: payload.Yil,
@@ -37,6 +40,8 @@ export const POST = withSession(async (request, session) => {
       Adi: payload.Adi,
       TcKimlikNo: payload.TcKimlikNo,
       List: payload.List,
+      Tarih: payload.Tarih,
+      AktarimTipi: payload.AktarimTipi,
     };
     const queryFunction = queryTypes[type];
 

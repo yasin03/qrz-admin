@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import {
+  PuantajAktarRequestType,
+  PuantajAktarResponseType,
   PuantajDeleteRequestType,
   PuantajSelectByIdRequestType,
   PuantajSelectRequestType,
@@ -83,6 +85,25 @@ export function useDeletePuantaj() {
         ...payload,
       });
       return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+    },
+  });
+}
+
+/** PDKS kayıtlarını seçilen tarihe göre (günlük/aylık) puantaja aktarır. */
+export function useAktarPuantaj() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      payload: PuantajAktarRequestType,
+    ): Promise<PuantajAktarResponseType | undefined> => {
+      const { data } = await api.post(ENDPOINT, {
+        type: "AKTAR_PUANTAJ",
+        ...payload,
+      });
+      return Array.isArray(data) ? data[0] : data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });

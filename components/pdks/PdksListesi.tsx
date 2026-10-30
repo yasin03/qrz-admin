@@ -12,8 +12,10 @@ import { RowActions } from "../customs/RowActions";
 import {
   useDeletePdks,
   usePdksList,
+  useSubeVardiyaList,
   useUpdatePdksSaat,
 } from "@/hooks/use-pdks";
+import { formatSaat } from "@/lib/format";
 import {
   PDKSSelectRequestType,
   PDKSSelectResponseType,
@@ -21,15 +23,17 @@ import {
   PdksYon,
 } from "@/types/pdks";
 import { Input } from "../ui/input";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { normalize } from "@/lib/utils";
 import PdksFiltre, { PdksFiltreValues } from "./PdksFiltre";
 import PdksDetay from "./PdksDetay";
 import SaatSecici from "./SaatSecici";
+import PuantajaAktar from "./PuantajaAktar";
 import { ExportMenu } from "../export/ExportMenu";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { ExportColumn } from "../export/types";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import { Button } from "../ui/button";
 
 type Props = {
   enabled: boolean;
@@ -53,6 +57,7 @@ const PdksListesi = ({ enabled }: Props) => {
     refetch: refetchPdks,
   } = usePdksList(pdksFilters, enabled && bolumFiltre !== null);
   const [searchText, setSearchText] = useState("");
+  const [openPuantajaAktar, setOpenPuantajaAktar] = useState(false);
 
   const filteredPdksData = useMemo(() => {
     const search = normalize(searchText.trim());
@@ -80,6 +85,21 @@ const PdksListesi = ({ enabled }: Props) => {
   // kaydet butonuyla seçili kayıtların hepsine uygulanır.
   const [girisSaat, setGirisSaat] = useState("09:00");
   const [cikisSaat, setCikisSaat] = useState("18:00");
+
+  // Şubenin vardiya saati tanımlıysa (ilk kayıt) varsayılan giriş/çıkış onlar
+  // olur; sadece ilk yüklemede set ediliyor, kullanıcının seçimini ezmesin diye.
+  const { data: vardiyaListesi } = useSubeVardiyaList();
+  const vardiyaSaatiUygulandi = useRef(false);
+  useEffect(() => {
+    if (vardiyaSaatiUygulandi.current || !vardiyaListesi) return;
+    vardiyaSaatiUygulandi.current = true;
+
+    const ilkVardiya = vardiyaListesi[0];
+    const baslama = formatSaat(ilkVardiya?.BaslamaSaati);
+    const bitis = formatSaat(ilkVardiya?.BitisSaati);
+    if (baslama) setGirisSaat(baslama);
+    if (bitis) setCikisSaat(bitis);
+  }, [vardiyaListesi]);
   const [selectedRows, setSelectedRows] = useState<PDKSSelectResponseType[]>(
     [],
   );
@@ -378,6 +398,9 @@ const PdksListesi = ({ enabled }: Props) => {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <CustomDateNavigator value={tarih} onChange={setTarih} />
+          <Button variant="success" onClick={() => setOpenPuantajaAktar(true)}>
+            Puantaja Aktar
+          </Button>
           <PdksFiltre onApply={setBolumFiltre} />
           <ExportMenu
             // Arama ve filtreler uygulanmış, ekranda görünen kayıtlar aktarılır
@@ -431,6 +454,12 @@ const PdksListesi = ({ enabled }: Props) => {
         confirmLabel="Temizle"
         isLoading={deletePdks.isPending}
         onConfirm={handleTemizleConfirm}
+      />
+
+      <PuantajaAktar
+        open={openPuantajaAktar}
+        onOpenChange={setOpenPuantajaAktar}
+        tarih={tarih}
       />
     </div>
   );
