@@ -26,11 +26,12 @@ import {
 } from "@/types/pdks";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext } from "@/hooks/use-context";
+import { useTabParam } from "@/hooks/use-tab-param";
 import { useRole } from "@/stores/auth-store";
 import { PersonelYetkiGuard } from "@/components/customs/PersonelYetkiGuard";
 import PersonelPdksListesi from "@/components/pdks/PersonelPdksListesi";
 
-type TabValue = "pdks" | "sube-vardiya" | "bolum-vardiya";
+const TABS = ["pdks", "sube-vardiya", "bolum-vardiya"] as const;
 
 // Personel kendi aylık kayıtlarını, diğer roller PDKS yönetim ekranını görür
 const PdksPage = () => {
@@ -63,7 +64,7 @@ const PdksPage = () => {
 };
 
 const PdksYonetimi = () => {
-  const [activeTab, setActiveTab] = useState<TabValue>("pdks");
+  const [activeTab, setActiveTab] = useTabParam(TABS);
   const { data: savedContext } = useCurrentContext();
   const idSube = savedContext?.IDSube ? Number(savedContext.IDSube) : 0;
 
@@ -118,7 +119,7 @@ const PdksYonetimi = () => {
 
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as TabValue)}
+        onValueChange={setActiveTab}
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <TabsList className="flex-wrap h-auto">

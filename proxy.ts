@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import type { User } from "@/stores/auth-store";
+import { KULLANICI_TIPI } from "@/lib/roles";
 
 const SESSION_COOKIE_NAME = "sid";
 
@@ -66,6 +67,14 @@ export async function proxy(request: NextRequest) {
 
   // Geçerli oturumla /login sayfasına gitmeye çalışıyor
   if (isAuthenticated && pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Sistem parametreleri yalnızca Admin'e açık
+  if (
+    (pathname === "/sistem" || pathname.startsWith("/sistem/")) &&
+    session?.IDKullaniciTip !== KULLANICI_TIPI.ADMIN
+  ) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

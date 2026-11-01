@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useUser } from "@/stores/auth-store";
 import { KULLANICI_TIPI } from "@/lib/roles";
+import { useTabParam } from "@/hooks/use-tab-param";
 import EklentiListesi from "./eklenti/EklentiListesi";
 import KesintiListesi from "./kesinti/KesintiListesi";
 import MesaiListesi from "./mesai/MesaiListesi";
 
-type TabValue = "eklenti" | "kesinti" | "mesai";
+const TABS = ["eklenti", "kesinti", "mesai"] as const;
 
 const ParametrePage = () => {
   const user = useUser();
   const isPersonel = user?.IDKullaniciTip === KULLANICI_TIPI.PERSONEL;
-  const [activeTab, setActiveTab] = useState<TabValue>("eklenti");
+  const [activeTab, setActiveTab] = useTabParam(TABS);
 
   return (
     <div className="space-y-4">
@@ -23,7 +23,7 @@ const ParametrePage = () => {
 
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as TabValue)}
+        onValueChange={setActiveTab}
       >
         <div className="flex items-center justify-between gap-2">
           <TabsList>

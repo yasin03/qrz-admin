@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ContactRound,
   LogOut,
+  SlidersHorizontal,
   User,
   UserCircle2,
 } from "lucide-react";
@@ -30,6 +31,7 @@ const ProfileMenu = () => {
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
+  const isAdmin = useHasRole(KULLANICI_TIPI.ADMIN);
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const queryClient = useQueryClient();
@@ -84,6 +86,13 @@ const ProfileMenu = () => {
               Kullanıcı Yönetimi
             </DropdownMenuItem>
           </>
+        )}
+
+        {isAdmin && (
+          <DropdownMenuItem onClick={() => router.push("/sistem")}>
+            <SlidersHorizontal />
+            Sistem Parametreleri
+          </DropdownMenuItem>
         )}
 
         <DropdownMenuSeparator />
