@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calculator, Landmark, Wallet } from "lucide-react";
+import { Binary, Calculator, Landmark, Percent, Wallet } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Tooltip,
@@ -28,6 +28,16 @@ const NAV_ITEMS = [
     label: "Personel Tahakkuk Parametreleri",
     icon: Wallet,
   },
+  {
+    href: "/sistem/vergi-oranlari",
+    label: "Vergi Oranları",
+    icon: Percent,
+  },
+  {
+    href: "/sistem/nace-kodlari",
+    label: "NACE Kodları",
+    icon: Binary,
+  },
 ];
 const SistemNav = ({ collapsed = false }: { collapsed?: boolean }) => {
   const pathname = usePathname();
@@ -45,16 +55,18 @@ const SistemNav = ({ collapsed = false }: { collapsed?: boolean }) => {
             className={cn(
               buttonVariants({ variant: "secondary", appearance: "ghost" }),
               "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shrink-0 justify-start lg:min-w-0 lg:shrink",
+              "lg:h-auto lg:min-h-8 lg:py-1.5 lg:whitespace-normal",
               collapsed && "lg:justify-center lg:px-0",
               isActive &&
                 "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
             )}
           >
             <item.icon />
-            {/* Dar menüde uzun etiketler "…" ile kesilir, tam hali title'da */}
             <span
-              title={collapsed ? undefined : item.label}
-              className={cn("min-w-0 truncate pl-1", collapsed && "lg:hidden")}
+              className={cn(
+                "min-w-0 pl-1 text-left wrap-break-word",
+                collapsed && "lg:hidden",
+              )}
             >
               {item.label}
             </span>

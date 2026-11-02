@@ -4,6 +4,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useTabParam } from "@/hooks/use-tab-param";
 import TatilListesi from "./tatiller/TatilListesi";
 import IzinLimitListesi from "./izin-limitleri/IzinLimitListesi";
+import VergiOranListesi from "./vergi-oranlari/VergiOranListesi";
+import KatsayiOranListesi from "./katsayi-oranlari/KatsayiOranListesi";
 
 // Yeni parametre tipleri buraya tab olarak eklenir.
 const TABS = [
@@ -18,7 +20,12 @@ const TABS = [
 
 const TAB_VALUES = TABS.map((t) => t.value);
 
-const HAZIR_TABLAR: string[] = ["izin-limitleri", "tatiller"];
+const HAZIR_TABLAR: string[] = [
+  "vergi-oranlari",
+  "katsayi-oranlari",
+  "izin-limitleri",
+  "tatiller",
+];
 
 const SgkBordroParametreleri = () => {
   const [activeTab, setActiveTab] = useTabParam(TAB_VALUES);
@@ -47,6 +54,14 @@ const SgkBordroParametreleri = () => {
         {TABS.filter((tab) => !HAZIR_TABLAR.includes(tab.value)).map((tab) => (
           <TabsContent key={tab.value} value={tab.value} />
         ))}
+
+        <TabsContent value="vergi-oranlari">
+          <VergiOranListesi enabled={activeTab === "vergi-oranlari"} />
+        </TabsContent>
+
+        <TabsContent value="katsayi-oranlari">
+          <KatsayiOranListesi enabled={activeTab === "katsayi-oranlari"} />
+        </TabsContent>
 
         <TabsContent value="izin-limitleri">
           <IzinLimitListesi enabled={activeTab === "izin-limitleri"} />

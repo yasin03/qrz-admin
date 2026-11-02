@@ -12,13 +12,6 @@ import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ExportMenu } from "@/components/export/ExportMenu";
 import { ExportColumn } from "@/components/export/types";
 import { useDeleteTatil, useTatilList } from "@/hooks/sistem/use-sgk-bordro";
@@ -28,14 +21,9 @@ import { TatilFilters, TatilType } from "@/types/sistem/sgk-bordro";
 import { getGunAdi, toDurumValue } from "./tatil-options";
 import TatilFiltre from "./TatilFiltre";
 import TatilEkle from "./TatilEkle";
+import YilSecici from "../YilSecici";
 
 const INITIAL_FILTERS: TatilFilters = { Durum: "ALL", ResmiDini: "ALL" };
-
-// Gelecek yılın tatilleri önceden girilebilsin diye bir sonraki yıl da listede.
-const YIL_OPTIONS = (() => {
-  const nextYear = new Date().getFullYear() + 1;
-  return Array.from({ length: 12 }, (_, i) => String(nextYear - i));
-})();
 
 type Props = {
   enabled: boolean;
@@ -63,14 +51,6 @@ const TatilListesi = ({ enabled }: Props) => {
   const [filters, setFilters] = useState<TatilFilters>(INITIAL_FILTERS);
 
   const { data: tatilListesi = [], isLoading } = useTatilList(yil, enabled);
-
-  const yilOptions = useMemo(
-    () =>
-      YIL_OPTIONS.includes(yil)
-        ? YIL_OPTIONS
-        : [...YIL_OPTIONS, yil].sort((a, b) => Number(b) - Number(a)),
-    [yil],
-  );
 
   // Durum, Resmi/Dini ve açıklama proc parametresi olmadığı için
   // client-side filtreleniyor.
@@ -203,6 +183,7 @@ const TatilListesi = ({ enabled }: Props) => {
             onChange={setFilters}
             onReset={() => setFilters(INITIAL_FILTERS)}
           />
+          <YilSecici value={yil} onChange={setSeciliYil} />
 
           <Button type="button" size="sm" onClick={() => setOpenTatilEkle(true)}>
             <Plus className="size-4" />
@@ -220,18 +201,6 @@ const TatilListesi = ({ enabled }: Props) => {
             onChange={setColumnVisibility}
           />
 
-          <Select value={yil} onValueChange={setSeciliYil}>
-            <SelectTrigger size="sm" className="w-24" aria-label="Yıl">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {yilOptions.map((y) => (
-                <SelectItem key={y} value={y}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 

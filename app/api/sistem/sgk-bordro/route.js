@@ -56,6 +56,66 @@ const queryTypes = {
     ].join(", ")}`,
   DELETE_IZINLIMIT: (params) =>
     `[PersonelIzinLimit_DELETEByIDPersonelIzinLimit] ${sqlNum(params.IDPersonelIzinLimit)}`,
+
+  SELECT_VERGIORAN: (params) => `[VergiYuzde_SELECT] ${sqlNum(params.Yil)}`,
+  INSERT_VERGIORAN: (params) =>
+    `[VergiYuzde_INSERT] ${[
+      sqlNum(params.Yil),
+      sqlNum(params.Baslangic),
+      sqlNum(params.Bitis),
+      sqlNum(params.Yuzde),
+    ].join(", ")}`,
+  UPDATE_VERGIORAN: (params) =>
+    `[VergiYuzde_UPDATEByIDVergiYuzde] ${[
+      sqlNum(params.IDVergiYuzde),
+      sqlNum(params.Yil),
+      sqlNum(params.Baslangic),
+      sqlNum(params.Bitis),
+      sqlNum(params.Yuzde),
+    ].join(", ")}`,
+  DELETE_VERGIORAN: (params) =>
+    `[VergiYuzde_DELETEByIDVergiYuzde] ${sqlNum(params.IDVergiYuzde)}`,
+  // Yil: kaynak yıl, Yil2: hedef yıl
+  AKTAR_VERGIORAN: (params) =>
+    `[VergiYuzde_AKTAR] ${sqlNum(params.Yil)}, ${sqlNum(params.Yil2)}`,
+
+  SELECT_KATSAYI: (params) => `[Gosterge_SELECT] ${sqlNum(params.Yil)}`,
+  INSERT_KATSAYI: (params) =>
+    `[Gosterge_INSERT] ${[
+      sqlNum(params.Yil),
+      sqlStr(params.Ay),
+      sqlNum(params.DamgaVergisi),
+      sqlNum(params.SskGunlukTaban),
+      sqlNum(params.SskGunlukTavan),
+      sqlNum(params.SskAylikTaban),
+      sqlNum(params.SskAylikTavan),
+      sqlNum(params.DamgaVergisiIstisnasi),
+      sqlNum(params.AuGelirVergisiMatrahi),
+      sqlNum(params.GelirVergisiIstisnasi),
+      sqlNum(params.SgkIssizIsverenPrimiOran),
+      sqlNum(params.EmekliNet),
+    ].join(", ")}`,
+  UPDATE_KATSAYI: (params) =>
+    `[Gosterge_UPDATEByIDGosterge] ${[
+      sqlNum(params.IDGosterge),
+      sqlNum(params.Yil),
+      sqlStr(params.Ay),
+      sqlNum(params.DamgaVergisi),
+      sqlNum(params.SskGunlukTaban),
+      sqlNum(params.SskGunlukTavan),
+      sqlNum(params.SskAylikTaban),
+      sqlNum(params.SskAylikTavan),
+      sqlNum(params.DamgaVergisiIstisnasi),
+      sqlNum(params.AuGelirVergisiMatrahi),
+      sqlNum(params.GelirVergisiIstisnasi),
+      sqlNum(params.SgkIssizIsverenPrimiOran),
+      sqlNum(params.EmekliNet),
+    ].join(", ")}`,
+  DELETE_KATSAYI: (params) =>
+    `[Gosterge_DELETEByIDGosterge] ${sqlNum(params.IDGosterge)}`,
+  // Yil: kaynak yıl, Yil2: hedef yıl
+  AKTAR_KATSAYI: (params) =>
+    `[Gosterge_AKTAR] ${sqlNum(params.Yil)}, ${sqlNum(params.Yil2)}`,
 };
 
 export const POST = withSession(async (request, session) => {
