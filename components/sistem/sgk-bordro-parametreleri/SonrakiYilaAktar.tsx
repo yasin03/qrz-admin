@@ -107,27 +107,25 @@ const SonrakiYilaAktar = ({
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3 py-1">
-            <FormSelect
-              control={form.control}
-              name="mevcutYil"
-              label="Mevcut Yıl"
-              options={yilOptions}
-              valueKey="value"
-              labelKey="label"
-              disabled={isPending}
-            />
+          <FormSelect
+            control={form.control}
+            name="mevcutYil"
+            label="Mevcut Yıl"
+            options={yilOptions}
+            valueKey="value"
+            labelKey="label"
+            disabled={isPending}
+          />
 
-            <FormSelect
-              control={form.control}
-              name="hedefYil"
-              label="Hedef Yıl"
-              options={yilOptions}
-              valueKey="value"
-              labelKey="label"
-              disabled={isPending}
-            />
-          </div>
+          <FormSelect
+            control={form.control}
+            name="hedefYil"
+            label="Hedef Yıl"
+            options={yilOptions}
+            valueKey="value"
+            labelKey="label"
+            disabled={isPending}
+          />
 
           <DialogFooter>
             <Button

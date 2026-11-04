@@ -116,6 +116,78 @@ const queryTypes = {
   // Yil: kaynak yıl, Yil2: hedef yıl
   AKTAR_KATSAYI: (params) =>
     `[Gosterge_AKTAR] ${sqlNum(params.Yil)}, ${sqlNum(params.Yil2)}`,
+
+  SELECT_ENGELINDIRIM: (params) =>
+    `[PersonelEngelliIndirim_SELECT] ${sqlNum(params.Yil)}`,
+  INSERT_ENGELINDIRIM: (params) =>
+    `[PersonelEngelliIndirim_INSERT] ${[
+      sqlNum(params.Yil),
+      sqlNum(params.Derece),
+      sqlStr(params.Aciklama),
+      sqlNum(params.IndirimTutari),
+    ].join(", ")}`,
+  UPDATE_ENGELINDIRIM: (params) =>
+    `[PersonelEngelliIndirim_UPDATEByIDPersonelEngelliIndirim] ${[
+      sqlNum(params.IDPersonelEngelliIndirim),
+      sqlNum(params.Yil),
+      sqlNum(params.Derece),
+      sqlStr(params.Aciklama),
+      sqlNum(params.IndirimTutari),
+    ].join(", ")}`,
+  DELETE_ENGELINDIRIM: (params) =>
+    `[PersonelEngelliIndirim_DELETEByIDPersonelEngelliIndirim] ${sqlNum(params.IDPersonelEngelliIndirim)}`,
+  // Yil: kaynak yıl, Yil2: hedef yıl
+  AKTAR_ENGELINDIRIM: (params) =>
+    `[PersonelEngelliIndirim_AKTAR] ${sqlNum(params.Yil)}, ${sqlNum(params.Yil2)}`,
+
+  SELECT_MESLEKKODU: (params) =>
+    `[PersonelMeslekKodu_SELECT] ${sqlStr(params.Adi)}`,
+  INSERT_MESLEKKODU: (params) =>
+    `[PersonelMeslekKodu_INSERT] ${[
+      sqlStr(params.Kod),
+      sqlStr(params.Aciklama),
+    ].join(", ")}`,
+  UPDATE_MESLEKKODU: (params) =>
+    `[PersonelMeslekKodu_UPDATEByIDPersonelMeslekKodu] ${[
+      sqlNum(params.IDPersonelMeslekKodu),
+      sqlStr(params.Kod),
+      sqlStr(params.Aciklama),
+    ].join(", ")}`,
+  DELETE_MESLEKKODU: (params) =>
+    `[PersonelMeslekKodu_DELETEByIDPersonelMeslekKodu] ${sqlNum(params.IDPersonelMeslekKodu)}`,
+
+  SELECT_KIDEMIHBAR: (params) =>
+    `[PersonelKidemSure_SELECT] ${sqlNum(params.Yil)}`,
+  INSERT_KIDEMIHBAR: (params) =>
+    `[PersonelKidemSure_INSERT] ${[
+      sqlNum(params.Yil),
+      sqlStr(params.Aciklama),
+      sqlNum(params.BaslangicGun),
+      sqlNum(params.BitisGun),
+      sqlNum(params.HesaplanacakGun),
+      sqlStr(params.Tip),
+      sqlNum(params.MaksimumDeger),
+      sqlStr(params.BaslangicAy),
+      sqlStr(params.BitisAy),
+    ].join(", ")}`,
+  UPDATE_KIDEMIHBAR: (params) =>
+    `[PersonelKidemSure_UPDATEByIDPersonelKidemSure] ${[
+      sqlNum(params.IDPersonelKidemSure),
+      sqlNum(params.Yil),
+      sqlStr(params.Aciklama),
+      sqlNum(params.BaslangicGun),
+      sqlNum(params.BitisGun),
+      sqlNum(params.HesaplanacakGun),
+      sqlStr(params.Tip),
+      sqlNum(params.MaksimumDeger),
+      sqlStr(params.BaslangicAy),
+      sqlStr(params.BitisAy),
+    ].join(", ")}`,
+  DELETE_KIDEMIHBAR: (params) =>
+    `[PersonelKidemSure_DELETEByIDPersonelKidemSure] ${sqlNum(params.IDPersonelKidemSure)}`,
+  // Yil: kaynak yıl, Yil2: hedef yıl
+  AKTAR_KIDEMIHBAR: (params) =>
+    `[PersonelKidemSure_AKTAR] ${sqlNum(params.Yil)}, ${sqlNum(params.Yil2)}`,
 };
 
 export const POST = withSession(async (request, session) => {

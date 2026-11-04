@@ -110,7 +110,7 @@ export type VergiOranDeleteRequestType = {
   IDVergiYuzde: number;
 };
 
-/** Yil'daki kayıtları Yil2'ye kopyalar (Vergi oranları, Katsayılar). */
+/** Yil'daki kayıtları Yil2'ye kopyalar (Vergi oranları, Katsayılar, Engelli indirimleri, Kıdem/İhbar). */
 export type YilAktarRequestType = {
   Yil: number;
   Yil2: number;
@@ -174,4 +174,126 @@ export type KatsayiOranResponseType = {
 export type KatsayiOranFilters = {
   /** "ALL" ya da AY_DATA value ("01") */
   Ay: string;
+};
+
+// ---- Engelli İndirim Oranları ---------------------------------------------
+
+export type EngelliIndirimType = {
+  IDPersonelEngelliIndirim: number;
+  Yil: number;
+  Derece: number; // 1, 2, 3
+  Aciklama: string;
+  IndirimTutari: number; // decimal, örn. 12000.50
+};
+
+export type EngelliIndirimSelectRequestType = {
+  Yil: string;
+};
+
+export type EngelliIndirimInsertRequestType = {
+  Yil: number;
+  Derece: number;
+  Aciklama: string;
+  IndirimTutari: number;
+};
+
+export type EngelliIndirimUpdateRequestType =
+  EngelliIndirimInsertRequestType & {
+    IDPersonelEngelliIndirim: number;
+  };
+
+export type EngelliIndirimDeleteRequestType = {
+  IDPersonelEngelliIndirim: number;
+};
+
+/** test === 1 başarılı, 0 başarısız. */
+export type EngelliIndirimResponseType = {
+  test: number;
+};
+
+export type EngelliIndirimFilters = {
+  /** "ALL" ya da tek bir derece değeri ("1") */
+  Derece: string;
+};
+
+// ---- Meslek Kodları -------------------------------------------------------
+
+export type MeslekKoduType = {
+  IDPersonelMeslekKodu: number;
+  Kod: string; // örn. "0110.01"
+  Aciklama: string;
+  Kod2: string; // "0110.01-Genelkurmay Başkanı"
+};
+
+export type MeslekKoduInsertRequestType = {
+  Kod: string;
+  Aciklama: string;
+};
+
+export type MeslekKoduUpdateRequestType = MeslekKoduInsertRequestType & {
+  IDPersonelMeslekKodu: number;
+};
+
+export type MeslekKoduDeleteRequestType = {
+  IDPersonelMeslekKodu: number;
+};
+
+/** test === 1 başarılı, 0 başarısız. */
+export type MeslekKoduResponseType = {
+  test: number;
+};
+
+export type MeslekKoduFilters = {
+  /** "ALL" ya da Kod'un ilk hanesi, ISCO ana grubu ("0" ... "9") */
+  AnaGrup: string;
+};
+
+// ---- Kıdem İhbar Tanımları ------------------------------------------------
+
+export type KidemIhbarTip = "İhbar" | "Kıdem";
+
+export type KidemIhbarType = {
+  IDPersonelKidemSure: number;
+  Yil: number;
+  Aciklama: string;
+  BaslangicGun: number;
+  BitisGun: number;
+  HesaplanacakGun: number;
+  Tip: string; // "İhbar" | "Kıdem"
+  MaksimumDeger: number; // decimal
+  BaslangicAy: string; // "01" ... "12" (AY_DATA)
+  BitisAy: string;
+};
+
+export type KidemIhbarSelectRequestType = {
+  Yil: string;
+};
+
+export type KidemIhbarInsertRequestType = {
+  Yil: number;
+  Aciklama: string;
+  BaslangicGun: number;
+  BitisGun: number;
+  HesaplanacakGun: number;
+  Tip: KidemIhbarTip;
+  MaksimumDeger: number;
+  BaslangicAy: string;
+  BitisAy: string;
+};
+
+export type KidemIhbarUpdateRequestType = KidemIhbarInsertRequestType & {
+  IDPersonelKidemSure: number;
+};
+
+export type KidemIhbarDeleteRequestType = {
+  IDPersonelKidemSure: number;
+};
+
+/** test === 1 başarılı, 0 başarısız. */
+export type KidemIhbarResponseType = {
+  test: number;
+};
+
+export type KidemIhbarFilters = {
+  Tip: "ALL" | KidemIhbarTip;
 };

@@ -1,6 +1,23 @@
 import api from "@/lib/axios";
 import {
+  EngelliIndirimDeleteRequestType,
+  EngelliIndirimInsertRequestType,
+  EngelliIndirimResponseType,
+  EngelliIndirimSelectRequestType,
+  EngelliIndirimType,
+  EngelliIndirimUpdateRequestType,
   IzinLimitDeleteRequestType,
+  KidemIhbarDeleteRequestType,
+  KidemIhbarInsertRequestType,
+  KidemIhbarResponseType,
+  KidemIhbarSelectRequestType,
+  KidemIhbarType,
+  KidemIhbarUpdateRequestType,
+  MeslekKoduDeleteRequestType,
+  MeslekKoduInsertRequestType,
+  MeslekKoduResponseType,
+  MeslekKoduType,
+  MeslekKoduUpdateRequestType,
   KatsayiOranDeleteRequestType,
   KatsayiOranInsertRequestType,
   KatsayiOranResponseType,
@@ -201,6 +218,145 @@ export const sgkBordroService = {
   ): Promise<KatsayiOranResponseType | undefined> => {
     const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
       type: "AKTAR_KATSAYI",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  engelliIndirimSelect: async (
+    params: EngelliIndirimSelectRequestType,
+  ): Promise<EngelliIndirimType[]> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "SELECT_ENGELINDIRIM",
+      params,
+    });
+    return data ?? [];
+  },
+
+  engelliIndirimInsert: async (
+    params: EngelliIndirimInsertRequestType,
+  ): Promise<EngelliIndirimResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "INSERT_ENGELINDIRIM",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  engelliIndirimUpdate: async (
+    params: EngelliIndirimUpdateRequestType,
+  ): Promise<EngelliIndirimResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "UPDATE_ENGELINDIRIM",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  engelliIndirimDelete: async (
+    params: EngelliIndirimDeleteRequestType,
+  ): Promise<EngelliIndirimResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "DELETE_ENGELINDIRIM",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  engelliIndirimAktar: async (
+    params: YilAktarRequestType,
+  ): Promise<EngelliIndirimResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "AKTAR_ENGELINDIRIM",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  // Adi filtresi kullanılmıyor, proc'a boş gidiyor.
+  meslekKoduSelect: async (): Promise<MeslekKoduType[]> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "SELECT_MESLEKKODU",
+      params: { Adi: "" },
+    });
+    return data ?? [];
+  },
+
+  meslekKoduInsert: async (
+    params: MeslekKoduInsertRequestType,
+  ): Promise<MeslekKoduResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "INSERT_MESLEKKODU",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  meslekKoduUpdate: async (
+    params: MeslekKoduUpdateRequestType,
+  ): Promise<MeslekKoduResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "UPDATE_MESLEKKODU",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  meslekKoduDelete: async (
+    params: MeslekKoduDeleteRequestType,
+  ): Promise<MeslekKoduResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "DELETE_MESLEKKODU",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  kidemIhbarSelect: async (
+    params: KidemIhbarSelectRequestType,
+  ): Promise<KidemIhbarType[]> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "SELECT_KIDEMIHBAR",
+      params,
+    });
+    return data ?? [];
+  },
+
+  kidemIhbarInsert: async (
+    params: KidemIhbarInsertRequestType,
+  ): Promise<KidemIhbarResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "INSERT_KIDEMIHBAR",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  kidemIhbarUpdate: async (
+    params: KidemIhbarUpdateRequestType,
+  ): Promise<KidemIhbarResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "UPDATE_KIDEMIHBAR",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  kidemIhbarDelete: async (
+    params: KidemIhbarDeleteRequestType,
+  ): Promise<KidemIhbarResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "DELETE_KIDEMIHBAR",
+      params,
+    });
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  kidemIhbarAktar: async (
+    params: YilAktarRequestType,
+  ): Promise<KidemIhbarResponseType | undefined> => {
+    const { data } = await api.post(SGK_BORDRO_ENDPOINT, {
+      type: "AKTAR_KIDEMIHBAR",
       params,
     });
     return Array.isArray(data) ? data[0] : data;

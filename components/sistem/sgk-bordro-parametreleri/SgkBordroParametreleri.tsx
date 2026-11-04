@@ -6,13 +6,16 @@ import TatilListesi from "./tatiller/TatilListesi";
 import IzinLimitListesi from "./izin-limitleri/IzinLimitListesi";
 import VergiOranListesi from "./vergi-oranlari/VergiOranListesi";
 import KatsayiOranListesi from "./katsayi-oranlari/KatsayiOranListesi";
+import EngelliIndirimListesi from "./engelli-indirim-oranlari/EngelliIndirimListesi";
+import MeslekKoduListesi from "./meslek-kodlari/MeslekKoduListesi";
+import KidemIhbarListesi from "./kidem-ihbar/KidemIhbarListesi";
 
 // Yeni parametre tipleri buraya tab olarak eklenir.
 const TABS = [
   { value: "vergi-oranlari", label: "Vergi Yüzde Oranları" },
   { value: "katsayi-oranlari", label: "Katsayı Oranları" },
+  { value: "kidem-ihbar", label: "Kıdem İhbar Tanımları" },
   { value: "engelli-indirim-oranlari", label: "Engelli İndirim Oranları" },
-  { value: "kidem-ihbar-sureleri", label: "Kıdem-İhbar Süreleri" },
   { value: "meslek-kodlari", label: "Meslek Kodları" },
   { value: "izin-limitleri", label: "İzin Limitleri" },
   { value: "tatiller", label: "Tatiller" },
@@ -23,6 +26,9 @@ const TAB_VALUES = TABS.map((t) => t.value);
 const HAZIR_TABLAR: string[] = [
   "vergi-oranlari",
   "katsayi-oranlari",
+  "kidem-ihbar",
+  "engelli-indirim-oranlari",
+  "meslek-kodlari",
   "izin-limitleri",
   "tatiller",
 ];
@@ -61,6 +67,20 @@ const SgkBordroParametreleri = () => {
 
         <TabsContent value="katsayi-oranlari">
           <KatsayiOranListesi enabled={activeTab === "katsayi-oranlari"} />
+        </TabsContent>
+
+        <TabsContent value="kidem-ihbar">
+          <KidemIhbarListesi enabled={activeTab === "kidem-ihbar"} />
+        </TabsContent>
+
+        <TabsContent value="engelli-indirim-oranlari">
+          <EngelliIndirimListesi
+            enabled={activeTab === "engelli-indirim-oranlari"}
+          />
+        </TabsContent>
+
+        <TabsContent value="meslek-kodlari">
+          <MeslekKoduListesi enabled={activeTab === "meslek-kodlari"} />
         </TabsContent>
 
         <TabsContent value="izin-limitleri">

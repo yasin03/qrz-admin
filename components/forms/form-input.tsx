@@ -554,7 +554,9 @@ function UncontrolledFormInput(props: UncontrolledFormInputProps) {
 
         <Input
           id={inputId}
-          value={value === undefined ? undefined : toDisplayValue(value, format)}
+          value={
+            value === undefined ? undefined : toDisplayValue(value, format)
+          }
           defaultValue={
             defaultValue === undefined
               ? undefined
@@ -566,6 +568,7 @@ function UncontrolledFormInput(props: UncontrolledFormInputProps) {
               : event.target.value;
             onChange?.(nextValue);
           }}
+          onFocus={(e) => e.target.select()}
           type={
             isPassword
               ? showPassword
@@ -773,6 +776,7 @@ function DateField({
               commit();
               field.onBlur();
             }}
+            onFocus={(e) => e.target.select()}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
@@ -885,6 +889,7 @@ function MoneyField({
         lastEmitted.current = api;
         field.onChange(api);
       }}
+      onFocus={(e) => e.target.select()}
       onBlur={() => {
         const padded = padMoneyApiValue(lastEmitted.current ?? "");
         lastEmitted.current = padded;
