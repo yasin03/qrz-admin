@@ -15,6 +15,11 @@ const queryTypes = {
     `[Bordro_SETByIDSubePersonel] '${params.IDSube}','${params.IDSubePersonelList}','${params.Yil}','${params.Ay}'`,
   ONAYLA_BORDRO: (params) =>
     `[BordroOnay_UpdateByIDSube] '${params.IDSube}','','${params.Yil}','${params.Ay}','${params.IDSubePersonelList}','${params.OnayDurum}'`,
+
+  SELECT_BORDRORAPOR: (params) =>
+    `[Bordro_SELECTByIDBordro] '${params.IDBordro}'`,
+  SELECT_BORDROLOG: (params) =>
+    `[Bordro_LogSelect] '${params.IDSubePersonel}', '${params.Yil}', '${params.Ay}'`,
 };
 
 // Personelin kendi verisini okuduğu tipler → gereken yetki bayrağı.
@@ -33,6 +38,8 @@ export const POST = withSession(async (request, session) => {
       IDBolum: payload.IDBolum,
       IDSubePersonelList: payload.IDSubePersonelList,
       IDSubePersonel: payload.IDSubePersonel,
+      IDBordro: payload.IDBordro,
+      
       Yil: payload.Yil,
       Ay: payload.Ay,
       Adi: payload.Adi,

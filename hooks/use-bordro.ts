@@ -5,6 +5,10 @@ import {
   BordroHesapSilRequestType,
   BordroOnayRequestType,
   BordroSelectByIdRequestType,
+  BordroRaporRequestType,
+  BordroLogRequestType,
+  BordroLogType,
+  BordroResponseType,
 } from "@/types/bordro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -48,6 +52,40 @@ export function useBordroById(
     },
     enabled,
     staleTime: 5 * 60 * 1000, // 5 dakika
+  });
+}
+
+// QUERY_KEY altında: hesapla/temizle/onay sonrası rapor da tazelenir.
+export function useBordroRapor(
+  params: BordroRaporRequestType,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [QUERY_KEY, "rapor", params.IDBordro],
+    queryFn: async () => {
+      const { data } = await api.post<BordroResponseType[]>(ENDPOINT, {
+        type: "SELECT_BORDRORAPOR",
+        ...params,
+      });
+      return data?.[0] ?? null;
+    },
+    enabled: enabled && Boolean(Number(params.IDBordro)),
+  });
+}
+
+export function useBordroLog(params: BordroLogRequestType, enabled = true) {
+  return useQuery({
+    queryKey: [QUERY_KEY, "log", params.IDSubePersonel, params.Yil, params.Ay],
+    queryFn: async () => {
+      const { data } = await api.post<BordroLogType[]>(ENDPOINT, {
+        type: "SELECT_BORDROLOG",
+        ...params,
+      });
+      return data ?? [];
+    },
+    enabled: enabled && Boolean(params.IDSubePersonel),
+    // Yeniden hesaplamadan sonra güncel log görünsün
+    staleTime: 0,
   });
 }
 

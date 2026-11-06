@@ -311,3 +311,18 @@ export type BordroOnayRequestType = {
   Ay: string;
   OnayDurum: boolean;
 };
+
+export type BordroRaporRequestType = {
+  IDBordro: string | number;
+};
+
+export type BordroLogRequestType = {
+  IDSubePersonel: string | number;
+  Yil: string;
+  Ay: string;
+};
+
+/** Logs: "<br/>" ile ayrılmış HTML metin */
+export type BordroLogType = {
+  Logs: string | null;
+};

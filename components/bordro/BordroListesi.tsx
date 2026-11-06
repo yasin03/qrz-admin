@@ -10,6 +10,7 @@ import {
   BrushCleaning,
   CalculatorIcon,
   CheckCircle2,
+  ReceiptText,
   XCircle,
   Search,
 } from "lucide-react";
@@ -28,10 +29,37 @@ import { cn } from "@/lib/utils";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { ExportMenu } from "../export/ExportMenu";
+import BordroRaporModal from "./rapor/BordroRaporModal";
 
 const ACTIONS_WIDTH = 50;
 const TC_WIDTH = 160;
 const ADSOYAD_WIDTH = 180;
+
+// Sabit (sticky) TC / Ad Soyad hücrelerinin durum rengi. Öncelik: onaylı →
+// hesaplanmamış → ödenecek tutarı negatif. Sticky hücrenin altı görünmesin
+// diye her durumda opak zemin veriliyor.
+function getBordroDurum(row: BordroResponseType) {
+  if (row.OnayTarihi != null) {
+    return {
+      label: "Onaylı",
+      className:
+        "bg-green-100 font-medium text-green-900 dark:bg-green-950 dark:text-green-200",
+    };
+  }
+  if (!row.HesaplamaTarihi) {
+    return {
+      label: "Hesaplanmadı",
+      className: "bg-red-100 text-foreground dark:bg-red-950",
+    };
+  }
+  if (typeof row.OdenecekTutar === "number" && row.OdenecekTutar < 0) {
+    return {
+      label: "Onaysız · Ödenecek tutar negatif",
+      className: "bg-purple-200 text-foreground dark:bg-purple-950",
+    };
+  }
+  return { label: "Onaysız", className: "bg-background" };
+}
 
 const BordroListesi = () => {
   const { data: savedContext } = useCurrentContext();
@@ -60,6 +88,9 @@ const BordroListesi = () => {
 
   const [searchText, setSearchText] = useState("");
   const [selectedRows, setSelectedRows] = useState<BordroResponseType[]>([]);
+  const [raporKayit, setRaporKayit] = useState<BordroResponseType | null>(
+    null,
+  );
   const [columnVisibility, setColumnVisibility] = useColumnVisibility(
     "bordro-kolonlar", // localStorage anahtarı, kalıcı olsun istiyorsanız
   );
@@ -304,11 +335,18 @@ const BordroListesi = () => {
             row={kayit}
             actions={[
               {
+                label: "Bordro Raporu",
+                icon: ReceiptText,
+                // Hesaplanmamış bordronun raporu yok
+                disabled: !Number(kayit.IDBordro),
+                onClick: () => setRaporKayit(kayit),
+              },
+              { divider: true },
+              {
                 label: "Hesapla",
                 icon: CalculatorIcon,
                 onClick: () => handleTekilHesapla(kayit),
               },
-              { divider: true },
               {
                 label: "Hesabı Temizle",
                 icon: BrushCleaning,
@@ -335,23 +373,15 @@ const BordroListesi = () => {
       meta: {
         stickyLeft: 40 + ACTIONS_WIDTH,
         headerClassName: "sticky z-40 bg-background border-r border-border",
-        cellClassName: "sticky z-30 p-0 border-r border-border", // bg-background kaldırıldı, p-0 eklendi
+        // Durum rengi td'ye veriliyor ki hücreyi boşluksuz doldursun
+        cellClassName: (row: BordroResponseType) =>
+          cn("sticky z-30 border-r border-border", getBordroDurum(row).className),
       },
-      cell: ({ row }) => {
-        const onayli = row.original.OnayTarihi != null;
-        return (
-          <div
-            className={cn(
-              "flex h-full items-center px-3 py-3",
-              onayli
-                ? "bg-emerald-50 dark:bg-emerald-900"
-                : "bg-red-50 dark:bg-red-900",
-            )}
-          >
-            {row.original.TcKimlikNo ?? "-"}
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <span title={getBordroDurum(row.original).label}>
+          {row.original.TcKimlikNo ?? "-"}
+        </span>
+      ),
     },
 
     {
@@ -362,25 +392,17 @@ const BordroListesi = () => {
         stickyLeft: 40 + ACTIONS_WIDTH + TC_WIDTH,
         headerClassName:
           "sticky z-40 bg-background border-r border-border shadow-[5px_0_8px_-6px_rgba(0,0,0,0.35)]",
-        cellClassName: cn(
-          "sticky z-30 p-0 border-r border-border shadow-[5px_0_8px_-6px_rgba(0,0,0,0.35)]",
-        ),
+        cellClassName: (row: BordroResponseType) =>
+          cn(
+            "sticky z-30 border-r border-border shadow-[5px_0_8px_-6px_rgba(0,0,0,0.35)]",
+            getBordroDurum(row).className,
+          ),
       },
-      cell: ({ row }) => {
-        const onayli = row.original.OnayTarihi != null;
-        return (
-          <div
-            className={cn(
-              "flex h-full items-center px-3 py-3",
-              onayli
-                ? "bg-emerald-50 dark:bg-emerald-900"
-                : "bg-red-50 dark:bg-red-900",
-            )}
-          >
-            {row.original.AdSoyad ?? "-"}
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <span title={getBordroDurum(row.original).label}>
+          {row.original.AdSoyad ?? "-"}
+        </span>
+      ),
     },
 
     {
@@ -796,6 +818,16 @@ const BordroListesi = () => {
             : "Bordro kaydı bulunamadı."
         }
       />
+
+      {raporKayit && (
+        <BordroRaporModal
+          open={Boolean(raporKayit)}
+          onOpenChange={(open) => !open && setRaporKayit(null)}
+          kayit={raporKayit}
+          yil={params.Yil}
+          ay={params.Ay}
+        />
+      )}
     </div>
   );
 };

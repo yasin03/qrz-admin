@@ -124,6 +124,19 @@ export type CustomDataTableProps<TData> = {
  *     expandedRowContent={(row) => <OrderDetails order={row.original} />}
  *   />
  */
+
+/**
+ * meta.cellClassName string ya da satıra göre class dönen fonksiyon olabilir
+ * (ör. duruma göre hücre zemini). Fonksiyon td'nin kendisine uygulanır, böylece
+ * renk hücreyi boşluksuz doldurur.
+ */
+function resolveCellClassName<TData>(
+  cellClassName: string | ((row: TData) => string | undefined) | undefined,
+  row: TData,
+) {
+  return typeof cellClassName === "function" ? cellClassName(row) : cellClassName;
+}
+
 export function CustomDataTable<TData>({
   data,
   columns,
@@ -661,7 +674,10 @@ export function CustomDataTable<TData>({
                           className={cn(
                             "align-middle border-b border-border has-[[role=checkbox]]:pr-0",
                             cellPadding,
-                            (cell.column.columnDef.meta as any)?.cellClassName,
+                            resolveCellClassName(
+                              (cell.column.columnDef.meta as any)?.cellClassName,
+                              row.original,
+                            ),
                           )}
                         >
                           {flexRender(
