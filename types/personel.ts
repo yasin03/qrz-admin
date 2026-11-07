@@ -107,20 +107,44 @@ export interface PersonelType {
   VardiyaliCalismaDurumu: boolean;
 }
 
-// Liste proc'unun (SubePersonel_SELECTByTarih) döndürdüğü, tabloda
-// kullandığımız daha dar alan seti. Gerçek kolonları paylaşırsan
-// kesinleştiririz — şimdilik Personel.tsx'teki columns tanımına göre.
+// Liste proc'unun (SubePersonel_SELECTByTarih) döndürdüğü satır.
 export interface PersonelListItem {
-  IDSubePersonel: string;
   SicilNo: string;
+  TcKimlikNo: string;
+  BolumAdi: string;
+  Telefon: string;
+  KullaniciAktif: boolean;
   AdSoyad: string;
-  CalismaDurumu: string;
+  AdSoyad2: string;
   Ucret: number;
   OdemeSekli: string;
   UcretTipi: string;
-  IseSonGirisTarihi: string | null;
+  SendikaDurumu: boolean;
+  DayanismaDurumu: boolean;
   Cinsiyet: string;
+  DogumTarihi: string;
+  IseSonGirisTarihi2: string;
+  CikisTarihi2: string | null;
+  IseSonGirisTarihi: string;
+  CikisTarihi: string | null;
+  PersonelKanunNo: string;
+  PersonelSgkBelgeTuru: string;
+  PersonelMeslekKodu: string;
+  MedeniDurum: string;
+  IstihdamDurumu: string;
+  IDSubePersonel: string;
+  IDSube: string;
+  IDBolum: string;
+  IDSirketPersonelGrup?: string | number | null;
+  PersonelGrubu?: string | null;
+  SgkDurumu: string;
+  CalismaDurumu: string;
+  AgiAlmazDurumu: boolean;
+  OzurlulukDerecesi: number;
   Durum: boolean;
+  Durum2: string;
+  SgkGirisDurum: string | null;
+  SgkCikisDurum: string | null;
 }
 
 export interface DeletePersonelRequest {

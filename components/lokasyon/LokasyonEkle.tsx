@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ function normalizeCoordinate(value: string): string {
   return value.trim().replace(",", ".");
 }
 
-function parseCoordinate(value: string): number | null {
+export function parseCoordinate(value: string): number | null {
   const normalized = normalizeCoordinate(value);
   if (!/^-?\d+(\.\d+)?$/.test(normalized)) return null;
 
@@ -30,7 +30,7 @@ function parseCoordinate(value: string): number | null {
   return numeric;
 }
 
-const lokasyonSchema = z.object({
+export const lokasyonSchema = z.object({
   IDBolum: z.string().min(1, "Bölüm seçiniz"),
   LokasyonAdi: z.string().trim().min(1, "Lokasyon adı zorunludur"),
   Enlem: z
@@ -58,7 +58,53 @@ const lokasyonSchema = z.object({
   Aktif: z.boolean(),
 });
 
-type LokasyonForm = z.infer<typeof lokasyonSchema>;
+export type LokasyonForm = z.infer<typeof lokasyonSchema>;
+
+/** Ekle/düzenle dialog'u ve detay drawer'ı tarafından paylaşılan form alanları. */
+export function LokasyonFormFields({
+  control,
+  bolumOptions,
+  disabled,
+}: {
+  control: Control<LokasyonForm>;
+  bolumOptions: Array<{ value: string; label: string }>;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="space-y-2 py-1">
+      <FormSelect
+        control={control}
+        name="IDBolum"
+        label="Bölüm"
+        options={bolumOptions}
+        valueKey="value"
+        labelKey="label"
+        placeholder="Bölüm seçiniz"
+        disabled={disabled || bolumOptions.length === 0}
+      />
+
+      <FormInput control={control} name="LokasyonAdi" label="Lokasyon Adı" />
+
+      <FormInput
+        control={control}
+        name="Enlem"
+        label="Enlem"
+        placeholder="Örn: 37.785834"
+        format="decimal"
+      />
+
+      <FormInput
+        control={control}
+        name="Boylam"
+        label="Boylam"
+        placeholder="Örn: -122.406417"
+        format="decimal"
+      />
+
+      <FormSwitch control={control} name="Aktif" label="Durum" />
+    </div>
+  );
+}
 
 const DEFAULT_VALUES: LokasyonForm = {
   IDBolum: "",
@@ -160,8 +206,6 @@ const LokasyonEkle = ({
     }
   };
 
-  const isBolumDisabled = isSaving || bolumOptions.length === 0;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
@@ -177,42 +221,11 @@ const LokasyonEkle = ({
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="space-y-2 py-1">
-            <FormSelect
-              control={form.control}
-              name="IDBolum"
-              label="Bölüm"
-              options={bolumOptions}
-              valueKey="value"
-              labelKey="label"
-              placeholder="Bölüm seçiniz"
-              disabled={isBolumDisabled}
-            />
-
-            <FormInput
-              control={form.control}
-              name="LokasyonAdi"
-              label="Lokasyon Adı"
-            />
-
-            <FormInput
-              control={form.control}
-              name="Enlem"
-              label="Enlem"
-              placeholder="Örn: 37.785834"
-              format="decimal"
-            />
-
-            <FormInput
-              control={form.control}
-              name="Boylam"
-              label="Boylam"
-              placeholder="Örn: -122.406417"
-              format="decimal"
-            />
-
-            <FormSwitch control={form.control} name="Aktif" label="Durum" />
-          </div>
+          <LokasyonFormFields
+            control={form.control}
+            bolumOptions={bolumOptions}
+            disabled={isSaving}
+          />
 
           <DialogFooter>
             <Button

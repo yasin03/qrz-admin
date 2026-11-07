@@ -113,12 +113,22 @@ export function FormSelect<T extends FieldValues>({
               />
             </SelectTrigger>
 
-            <SelectContent className="max-w-[calc(100vw-2rem)]">
+            {/* item-aligned modu uzun listelerde (örn. SGK belge türü)
+                ekranı kaplıyordu; trigger altında, trigger genişliğinde ve
+                sınırlı yükseklikte açılıp uzun metinleri alt satıra alıyoruz. */}
+            <SelectContent
+              position="popper"
+              className="max-h-[min(20rem,var(--radix-select-content-available-height))] w-(--radix-select-trigger-width) max-w-[calc(100vw-2rem)]"
+            >
               {options.map((item) => {
                 const itemValue = String(item[valueKey]);
                 const itemLabel = item[labelKey];
                 return (
-                  <SelectItem key={itemValue} value={itemValue} className="min-h-8">
+                  <SelectItem
+                    key={itemValue}
+                    value={itemValue}
+                    className="min-h-8 whitespace-normal wrap-anywhere"
+                  >
                     <span>{itemLabel}</span>
                   </SelectItem>
                 );

@@ -30,6 +30,7 @@ import {
   useSabitTanimlar,
 } from "@/hooks/use-sabit-tanimlar";
 import { formatDate, formatMoney } from "@/lib/format";
+import { CIKIS_NEDENLERI } from "./PersonelSgkDialog";
 
 type Props = {
   open: boolean;
@@ -59,7 +60,13 @@ function findLabel(options: Option[], value: unknown): string {
   if (value === null || value === undefined) return "-";
   const str = String(value).trim();
   if (str === "") return "-";
-  const match = options.find((option) => option.value === str);
+  // Kodlar bazen başında sıfırla ("01"), bazen sıfırsız ("1") geliyor.
+  const isNumeric = /^\d+$/.test(str);
+  const match = options.find(
+    (option) =>
+      option.value === str ||
+      (isNumeric && /^\d+$/.test(option.value) && Number(option.value) === Number(str)),
+  );
   return match ? match.label : str;
 }
 
@@ -78,7 +85,7 @@ function InfoItem({
   span?: boolean;
 }) {
   return (
-    <div className={span ? "space-y-0.5 sm:col-span-2 lg:col-span-3" : "space-y-0.5"}>
+    <div className={span ? "space-y-0.5 @sm:col-span-2 @3xl:col-span-3" : "space-y-0.5"}>
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="text-sm text-foreground wrap-break-word">{value || "-"}</p>
     </div>
@@ -110,26 +117,31 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border">
+    <section className="@container overflow-hidden rounded-lg border">
       <div className="flex items-center gap-2 border-b bg-cyan-100 px-3 py-2.5">
         <Icon className="size-4 shrink-0 text-foreground" />
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
       </div>
-      <div className="grid grid-cols-1 gap-x-4 gap-y-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-4 gap-y-3 p-4 @sm:grid-cols-2 @3xl:grid-cols-3">
         {children}
       </div>
     </section>
   );
 }
 
-export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
-  const isEditMode = Boolean(id);
+type ContentProps = {
+  id?: string | number | null;
+  /** Ad/sicil/durum özet kartını gizler (başlıkta zaten gösteriliyorsa). */
+  hideSummary?: boolean;
+};
 
+/** Personel detay bölümleri; detay dialog'u ve personel drawer'ı kullanır. */
+export function PersonelDetayContent({ id, hideSummary }: ContentProps) {
   const {
     data: personel,
     isLoading,
     isError,
-  } = usePersonelDetay(open && isEditMode ? (id ?? undefined) : undefined);
+  } = usePersonelDetay(id ?? undefined);
 
   const {
     sgkDurumlari,
@@ -159,8 +171,9 @@ export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
       ? (iller.find((il) => il.IlKodu === ilKodu)?.IlAdi ?? dash(ilKodu))
       : "-";
   const ilceAdi = personel?.IlceKodu
-    ? (ilceler.find((ilce) => ilce.IlceKodu === String(personel.IlceKodu))
-        ?.IlAdi ?? dash(personel.IlceKodu))
+    ? (ilceler.find(
+        (ilce) => Number(ilce.IlceKodu) === Number(personel.IlceKodu),
+      )?.IlceAdi ?? dash(personel.IlceKodu))
     : "-";
 
   const adSoyad = personel
@@ -168,13 +181,7 @@ export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
     : "";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Personel Detayı</DialogTitle>
-          <DialogDescription></DialogDescription>
-        </DialogHeader>
-
+    <>
         {isLoading ? (
           <div className="flex h-40 items-center justify-center text-muted-foreground">
             <Loader2 className="size-6 animate-spin" />
@@ -184,8 +191,9 @@ export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
             Personel bilgileri getirilemedi.
           </p>
         ) : (
-          <div className="space-y-4 -mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
+          <div className="space-y-4">
             {/* ---- Özet ---- */}
+            {!hideSummary && (
             <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 p-4">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <UserRound className="size-6" />
@@ -202,6 +210,7 @@ export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
                 {personel.Durum ? "Aktif" : "Pasif"}
               </Badge>
             </div>
+            )}
 
             {/* ---- Kimlik Bilgileri ---- */}
             <Section icon={IdCard} title="Kimlik Bilgileri">
@@ -287,7 +296,14 @@ export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
               />
               <InfoItem label="İşe Giriş Tarihi" value={formatDate(personel.IseSonGirisTarihi)} />
               <InfoItem label="Çıkış Tarihi" value={formatDate(personel.CikisTarihi)} />
-              <InfoItem label="Ayrılış Kodu" value={dashZero(personel.PersonelAyrilisKodu)} />
+              <InfoItem
+                label="Ayrılış Kodu"
+                value={
+                  EMPTY_SENTINELS.has(String(personel.PersonelAyrilisKodu ?? "").trim())
+                    ? "-"
+                    : findLabel(CIKIS_NEDENLERI, personel.PersonelAyrilisKodu)
+                }
+              />
               <InfoItem label="Az Çalışma Durumu" value={<BoolValue value={personel.AzCalismaDurumu} />} />
               <InfoItem
                 label="Az Çalışma Gün Sayısı"
@@ -419,6 +435,22 @@ export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
             </Section>
           </div>
         )}
+    </>
+  );
+}
+
+export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Personel Detayı</DialogTitle>
+          <DialogDescription></DialogDescription>
+        </DialogHeader>
+
+        <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
+          {open && id ? <PersonelDetayContent id={id} /> : null}
+        </div>
 
         <DialogFooter>
           <Button type="button" appearance="outline" onClick={() => onOpenChange(false)}>

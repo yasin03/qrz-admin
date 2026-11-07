@@ -12,6 +12,7 @@ import {
   UserCog,
   QrCode,
   Plus,
+  PanelRightOpen,
 } from "lucide-react";
 
 import { Input } from "../ui/input";
@@ -24,6 +25,9 @@ import LokasyonFiltre from "./LokasyonFiltre";
 import LokasyonEkle from "./LokasyonEkle";
 import { LokasyonQrData } from "@/lib/qr-utils";
 import { QrKodDialog } from "./QRKodDialog";
+import LokasyonDetayDrawer, {
+  type LokasyonDetayTab,
+} from "./LokasyonDetayDrawer";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext } from "@/hooks/use-context";
 import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
@@ -49,6 +53,8 @@ const Lokasyon = () => {
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<LokasyonQrData | null>(null);
+  const [detayId, setDetayId] = useState<string | null>(null);
+  const [detayTab, setDetayTab] = useState<LokasyonDetayTab>("bilgiler");
   const [columnVisibility, setColumnVisibility] = useColumnVisibility(
     "lokasyon-kolonlar", // localStorage anahtarı, kalıcı olsun istiyorsanız
   );
@@ -87,6 +93,22 @@ const Lokasyon = () => {
     [duzenlenecekId, lokasyonListesi],
   );
 
+  // Drawer, listeden güncel kaydı okur; güncelleme sonrası refetch ile tazelenir.
+  const detayLokasyon = useMemo(
+    () =>
+      detayId === null
+        ? null
+        : (lokasyonListesi.find(
+            (item) => String(item.IDBolumLokasyon) === detayId,
+          ) ?? null),
+    [detayId, lokasyonListesi],
+  );
+
+  const openDetay = (id: string, tab: LokasyonDetayTab = "bilgiler") => {
+    setDetayTab(tab);
+    setDetayId(String(id));
+  };
+
   const filteredLokasyonListesi = useMemo(() => {
     const query = searchText.trim().toLocaleLowerCase("tr-TR");
 
@@ -119,6 +141,7 @@ const Lokasyon = () => {
           refetchLokasyonListesi();
           setSearchText("");
           setSilinecekId(null);
+          setDetayId(null);
         },
         onError: () => {
           toast.error("Lokasyon silinemedi", {
@@ -187,7 +210,17 @@ const Lokasyon = () => {
     {
       accessorKey: "LokasyonAdi",
       header: "Lokasyon Adı",
-      cell: ({ row }) => <span className="">{row.original.LokasyonAdi}</span>,
+      cell: ({ row }) => (
+        <Button
+          variant="primary"
+          appearance="link"
+          className="h-auto justify-start px-0 underline text-blue-900 decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid cursor-pointer"
+          title="Detayları aç"
+          onClick={() => openDetay(row.original.IDBolumLokasyon)}
+        >
+          {row.original.LokasyonAdi}
+        </Button>
+      ),
     },
 
     {
@@ -219,9 +252,7 @@ const Lokasyon = () => {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold sm:text-2xl">
-            Lokasyon Yönetimi
-          </h1>
+          <h1 className="text-xl font-bold sm:text-2xl">Lokasyon Yönetimi</h1>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="w-full sm:w-48 sm:shrink-0">
@@ -257,7 +288,7 @@ const Lokasyon = () => {
               onClick={() => setOpenLokasyonEkle(true)}
             >
               <Plus className="size-4" />
-               Lokasyon Ekle
+              Lokasyon Ekle
             </Button>
             <ExportMenu
               data={filteredLokasyonListesi}
@@ -301,6 +332,18 @@ const Lokasyon = () => {
         lokasyon={seciliLokasyon}
         bolumOptions={bolumOptions}
         defaultIDBolum={filters.IDBolum}
+        onSuccess={() => {
+          refetchLokasyonListesi();
+        }}
+      />
+
+      <LokasyonDetayDrawer
+        lokasyon={detayLokasyon}
+        onOpenChange={(open) => !open && setDetayId(null)}
+        tab={detayTab}
+        onTabChange={setDetayTab}
+        bolumOptions={bolumOptions}
+        onDelete={setSilinecekId}
         onSuccess={() => {
           refetchLokasyonListesi();
         }}

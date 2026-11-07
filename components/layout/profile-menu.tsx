@@ -57,11 +57,9 @@ const ProfileMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" appearance="ghost" className="gap-2">
+        <Button variant="primary" appearance="outline" className="gap-2">
           <UserCircle2 className="size-5" />
-
           <span className="hidden sm:inline">{user?.Ad ?? "Kullanıcı"}</span>
-
           <ChevronDown className="size-4" />
         </Button>
       </DropdownMenuTrigger>

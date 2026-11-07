@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +46,12 @@ interface QrKodDialogProps {
 
 const PREVIEW_SIZE = 240;
 
-export function QrKodDialog({ open, onOpenChange, data }: QrKodDialogProps) {
+interface QrKodPanelProps {
+  data: LokasyonQrData | null;
+}
+
+/** QR önizleme + indirme menüsü. Dialog ve detay drawer'ında ortak kullanılır. */
+export function QrKodPanel({ data }: QrKodPanelProps) {
   // useRef değil state: Dialog içeriği Portal ile bir render SONRA DOM'a
   // ekleniyor; ref nesnesi effect anında henüz null oluyor ve değişince
   // effect'i tetiklemiyordu. Callback ref + state ile div eklendiği an
@@ -105,65 +109,70 @@ export function QrKodDialog({ open, onOpenChange, data }: QrKodDialogProps) {
   };
 
   return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col items-center gap-4 py-4">
+        <div
+          ref={setPreviewEl}
+          className="flex items-center justify-center rounded-2xl border bg-white p-3"
+          style={{ width: PREVIEW_SIZE + 26, height: PREVIEW_SIZE + 26 }}
+        />
+
+        <div className="text-sm text-muted-foreground text-center space-y-1">
+          <p className="text-xl">{data.LokasyonAdi}</p>
+          <p>{data.BolumAdi}</p>
+          <p>
+            Enlem: {data.Enlem} / Boylam: {data.Boylam}
+          </p>
+        </div>
+      </div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button className="w-full h-12" disabled={downloading !== null}>
+            {downloading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Download className="size-4" />
+            )}
+            {downloading ? "Hazırlanıyor..." : "İndir"}
+            <ChevronDown className="ml-auto size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-(--radix-dropdown-menu-trigger-width)"
+        >
+          <DropdownMenuLabel>QR Kod</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => handleDownload("png")}>
+            <ImageIcon className="size-4" />
+            Sadece QR (PNG)
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuLabel>A4 Sayfa</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => handleDownload("pdf")}>
+            <FileText className="size-4" />
+            A4 Sayfa (PDF)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleDownload("docx")}>
+            <FileText className="size-4" />
+            A4 Sayfa (Word)
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+export function QrKodDialog({ open, onOpenChange, data }: QrKodDialogProps) {
+  return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>QR Kod</DialogTitle>
         </DialogHeader>
-
-        <div className="flex flex-col items-center gap-4 py-4">
-          <div
-            ref={setPreviewEl}
-            className="flex items-center justify-center rounded-2xl border bg-white p-3"
-            style={{ width: PREVIEW_SIZE + 26, height: PREVIEW_SIZE + 26 }}
-          />
-
-          <div className="text-sm text-muted-foreground text-center space-y-1">
-            <p className="text-xl">{data.LokasyonAdi}</p>
-            <p>{data.BolumAdi}</p>
-            <p>
-              Enlem: {data.Enlem} / Boylam: {data.Boylam}
-            </p>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="w-full h-12" disabled={downloading !== null}>
-                {downloading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Download className="size-4" />
-                )}
-                {downloading ? "Hazırlanıyor..." : "İndir"}
-                <ChevronDown className="ml-auto size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-(--radix-dropdown-menu-trigger-width)"
-            >
-              <DropdownMenuLabel>QR Kod</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handleDownload("png")}>
-                <ImageIcon className="size-4" />
-                Sadece QR (PNG)
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuLabel>A4 Sayfa</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handleDownload("pdf")}>
-                <FileText className="size-4" />
-                A4 Sayfa (PDF)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDownload("docx")}>
-                <FileText className="size-4" />
-                A4 Sayfa (Word)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </DialogFooter>
+        <QrKodPanel data={data} />
       </DialogContent>
     </Dialog>
   );

@@ -45,7 +45,7 @@ type Props = {
   onSubmit: (payload: PersonelSgkIslemPayload) => Promise<void>;
 };
 
-const CIKIS_NEDENLERI = [
+export const CIKIS_NEDENLERI = [
   {
     value: "03",
     label: "03 - Belirsiz süreli iş sözleşmesinin işçi tarafından feshi",

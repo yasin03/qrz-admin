@@ -14,6 +14,7 @@ import {
   Smartphone,
   GamepadDirectional,
   ListChevronsUpDown,
+  PanelRightOpen,
 } from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
@@ -43,45 +44,10 @@ import type { ExportColumn } from "../export/types";
 import PersonelDetayDialog from "./PersonelDetayDialog";
 import PersonelImportDialog from "./PersonelImportDialog";
 import { usePersonelGrupList } from "@/hooks/use-personel-grup";
-import { format } from "date-fns";
+import type { PersonelListItem } from "@/types/personel";
+import PersonelDrawer from "./PersonelDrawer";
 
-type Personel = {
-  SicilNo: string;
-  TcKimlikNo: string;
-  BolumAdi: string;
-  Telefon: string;
-  KullaniciAktif: boolean;
-  AdSoyad: string;
-  AdSoyad2: string;
-  Ucret: number;
-  OdemeSekli: string;
-  UcretTipi: string;
-  SendikaDurumu: boolean;
-  DayanismaDurumu: boolean;
-  Cinsiyet: string;
-  DogumTarihi: string;
-  IseSonGirisTarihi2: string;
-  CikisTarihi2: string;
-  IseSonGirisTarihi: string;
-  CikisTarihi: string;
-  PersonelKanunNo: string;
-  PersonelSgkBelgeTuru: string;
-  PersonelMeslekKodu: string;
-  MedeniDurum: string;
-  IstihdamDurumu: string;
-  IDSubePersonel: string;
-  IDSube: string;
-  IDBolum: string;
-  IDSirketPersonelGrup?: string | number | null;
-  SgkDurumu: string;
-  CalismaDurumu: string;
-  AgiAlmazDurumu: boolean;
-  OzurlulukDerecesi: number;
-  Durum: boolean;
-  Durum2: string;
-  SgkGirisDurum: string | null;
-  SgkCikisDurum: string | null;
-};
+type Personel = PersonelListItem;
 
 type SgkDialogState = {
   personel: Personel;
@@ -102,6 +68,7 @@ const Personel = () => {
     tip: "duzenle" | "detay";
   } | null>(null);
   const [silinecekId, setSilinecekId] = useState<string | null>(null);
+  const [drawerId, setDrawerId] = useState<string | null>(null);
   const [columnVisibility, setColumnVisibility] =
     useColumnVisibility("personel-kolonlar");
   const [sgkDialog, setSgkDialog] = useState<SgkDialogState | null>(null);
@@ -141,6 +108,16 @@ const Personel = () => {
   );
   const getGrupAdi = (personel: Personel) =>
     grupAdlari.get(String(personel.IDSirketPersonelGrup ?? "")) ?? "";
+
+  const drawerPersonel = useMemo(
+    () =>
+      drawerId === null
+        ? null
+        : ((personelListesi as Personel[]).find(
+            (item) => String(item.IDSubePersonel) === drawerId,
+          ) ?? null),
+    [drawerId, personelListesi],
+  );
 
   const filteredPersonelListesi = useMemo(() => {
     const query = searchText.trim().toLocaleLowerCase("tr-TR");
@@ -210,6 +187,7 @@ const Personel = () => {
           refetchPersonelListesi();
           setSearchText("");
           setSilinecekId(null);
+          setDrawerId(null);
         },
         onError: () => {
           toast.error("Personel silinemedi", {
@@ -379,10 +357,16 @@ const Personel = () => {
       accessorKey: "AdSoyad",
       header: "Ad Soyad",
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-foreground">
+        <div className="flex flex-col items-start">
+          <Button
+            variant="primary"
+            appearance="link"
+            className="h-auto justify-start px-0 underline text-blue-900 cursor-pointer decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid"
+            title="Detayları aç"
+            onClick={() => setDrawerId(String(row.original.IDSubePersonel))}
+          >
             {row.original.AdSoyad}
-          </span>
+          </Button>
           <span className="text-xs text-muted-foreground">
             {row.original.SicilNo}
           </span>
@@ -463,53 +447,6 @@ const Personel = () => {
     },
   ];
 
-  const expandedRowContent = (row: Personel) => {
-    const personel = row;
-
-    return (
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3 p-4 md:grid-cols-4">
-        <div>
-          <p className="text-xs text-muted-foreground">TC Kimlik No</p>
-          <p className="font-medium">{personel.TcKimlikNo}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">Medeni Durum</p>
-          <p className="font-medium">{personel.MedeniDurum}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">SGK Durumu</p>
-          <p className="font-medium">{personel.SgkDurumu}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">Meslek Kodu</p>
-          <p className="font-medium">{personel.PersonelMeslekKodu}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">İstihdam Durumu</p>
-          <p className="font-medium">{personel.IstihdamDurumu}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">Doğum Tarihi</p>
-          <p className="font-medium">{personel.DogumTarihi}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">Çıkış Tarihi</p>
-          <p className="font-medium">{personel.CikisTarihi2 || "-"}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">İşe Giriş Tarihi</p>
-          <p className="font-medium">{format(personel.IseSonGirisTarihi, "dd.MM.yyyy") || "-"}</p>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -561,11 +498,13 @@ const Personel = () => {
         onColumnVisibilityValueChange={setColumnVisibility}
         pagination
         emptyMessage="Personel bulunamadı."
-        expandable
-        expandedRowContent={(row) => {
-          const personel = row.original;
-          return expandedRowContent(personel);
-        }}
+      />
+
+      <PersonelDrawer
+        personel={drawerPersonel}
+        grupAdi={drawerPersonel ? getGrupAdi(drawerPersonel) : undefined}
+        onOpenChange={(open) => !open && setDrawerId(null)}
+        onDelete={setSilinecekId}
       />
 
       <PersonelEkle

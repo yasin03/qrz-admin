@@ -185,6 +185,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Base UI Drawer: iOS Safari'de backdrop konumlandırması için gerekli. */
+    position: relative;
   }
   html {
     @apply font-sans;
