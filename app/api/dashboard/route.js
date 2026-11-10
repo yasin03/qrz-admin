@@ -6,6 +6,7 @@ import {
   differenceInMonths,
   format,
   isValid,
+  parse,
   parseISO,
   startOfYear,
   subMonths,
@@ -27,11 +28,17 @@ const id = (value) => {
 
 const ymd = (date) => format(date, "yyyy-MM-dd");
 
-// Backend boş tarihleri 1900-01-01 olarak dönüyor
+// Backend boş tarihleri 1900-01-01 olarak dönüyor. Bazı prosedürler tarihi
+// ISO yerine "06.08.2004" (dd.MM.yyyy) biçiminde döndürüyor.
 const toDate = (value) => {
   if (!value) return null;
+  const str = String(value);
   const date =
-    value instanceof Date ? value : parseISO(String(value).replace("Z", ""));
+    value instanceof Date
+      ? value
+      : /^\d{2}\.\d{2}\.\d{4}$/.test(str)
+        ? parse(str, "dd.MM.yyyy", new Date())
+        : parseISO(str.replace("Z", ""));
   return isValid(date) && date.getFullYear() > 1900 ? date : null;
 };
 
@@ -74,7 +81,54 @@ const dogumGunuKalan = (dogum, today) => {
   return differenceInCalendarDays(next, today);
 };
 
-const isPending = (talep) => talep.KabulRed === null || talep.KabulRed === undefined;
+// Talep listeleri KabulRed döndürmüyor; durum OnayDurum/RedDurum ile belli
+// (izin/avans talep listesi sayfalarıyla aynı kural).
+const isPending = (talep) => !talep.OnayDurum && !talep.RedDurum;
+
+const isAktif = (p) => p.Durum === true || p.Durum === 1 || p.Durum === "1";
+
+// "1-İdari Personeller" -> "İdari Personeller"
+// Grubu olmayan personel "Diğer" altında toplanır: harf içermeyen her değer
+// (null, "", "0", "-", "–", "0 -" vb.) grup adı sayılmaz.
+const grupAdi = (value) => {
+  const str = String(value ?? "").trim().replace(/^\d+\s*[-–]\s*/, "").trim();
+  return /\p{L}/u.test(str) ? str : "Diğer";
+};
+
+const cinsiyetAnahtari = (value) => {
+  const str = String(value ?? "").trim().toLocaleUpperCase("tr-TR");
+  if (str === "ERKEK") return "Erkek";
+  if (str === "KADIN") return "Kadin";
+  return "Belirtilmemis";
+};
+
+// Aktif personelin cinsiyet ve personel grubu dağılımı
+function personelDagilimi(liste) {
+  const toplam = { Erkek: 0, Kadin: 0, Belirtilmemis: 0 };
+  const gruplar = new Map();
+
+  for (const p of liste) {
+    const cinsiyet = cinsiyetAnahtari(p.Cinsiyet);
+    toplam[cinsiyet] += 1;
+
+    const ad = grupAdi(p.PersonelGrubu);
+    const grup = gruplar.get(ad) ?? { Grup: ad, Erkek: 0, Kadin: 0, Belirtilmemis: 0, Toplam: 0 };
+    grup[cinsiyet] += 1;
+    grup.Toplam += 1;
+    gruplar.set(ad, grup);
+  }
+
+  return {
+    Toplam: liste.length,
+    ...toplam,
+    // Kalabalıktan aza; "Diğer" her zaman en sonda
+    Gruplar: [...gruplar.values()].sort(
+      (a, b) => (a.Grup === "Diğer") - (b.Grup === "Diğer") || b.Toplam - a.Toplam,
+    ),
+  };
+}
+
+const isOnayli = (kayit) => !kayit.RedDurum && Boolean(kayit.OnayDurum);
 
 // ---- Personel özeti -----------------------------------------------------
 
@@ -162,12 +216,20 @@ async function personelOzet(p, IDSubePersonel) {
 
     section("avans", async () => {
       if (!IDSube) return null;
-      // Prosedür şube bazlı dönüyor; personelin kendi kayıtları sunucuda filtrelenir
-      const liste = (
-        await run(`[SubePersonelAvans_SELECTByIDSube] '${IDSube}','${yilBasi}','${bugun}'`)
-      ).filter((a) => String(a.IDSubePersonel) === String(IDSubePersonel));
+      // Prosedür şube bazlı dönüyor; personelin kendi kayıtları sunucuda filtrelenir.
+      // Liste talepleri de içeriyor, sadece onaylılar sayılır. Geçen yıl verilip
+      // taksiti süren avanslar aylık kesintiye girsin diye bir yıl geriye bakılır.
+      const onayli = (
+        await run(`[SubePersonelAvans_SELECTByIDSube] '${IDSube}','${birYilOnce}','${bugun}'`)
+      ).filter((a) => String(a.IDSubePersonel) === String(IDSubePersonel) && isOnayli(a));
 
-      const aylikKesinti = liste
+      const yilBasiTarih = startOfYear(today);
+      const liste = onayli.filter((a) => {
+        const tarih = toDate(a.Tarih) ?? toDate(a.OdemeBaslangicTarihi);
+        return tarih && tarih >= yilBasiTarih;
+      });
+
+      const aylikKesinti = onayli
         .filter((a) => {
           const bas = toDate(a.OdemeBaslangicTarihi);
           if (!bas) return false;
@@ -263,21 +325,25 @@ async function yoneticiOzet(IDSube, Yil, Ay) {
   const birYilOnce = ymd(addYears(today, -1));
   const birYilSonra = ymd(addYears(today, 1));
 
-  const personelListesi = await section("personelListesi", () =>
-    run(`[SubePersonel_SELECTByIDSube3] '${IDSube}', '','','${Yil}','${Ay}'`),
+  // Personel sayfasıyla aynı liste; sayılar sadece aktif (Durum = true) personelden
+  const personelListesi = await section("personelListesi", async () =>
+    (await run(`[SubePersonel_SELECTByTarih] '${IDSube}','','',''`)).filter(isAktif),
   );
 
   const [bugunIzinde, bekleyenTalepler, bordro, pdksGelen] = await Promise.all([
     section("bugunIzinde", async () => {
+      // Prosedür başlangıç tarihi aralıkta olan izinleri döndürüyor; bugünden
+      // önce başlayıp devam edenleri de almak için geriye doğru geniş aralık
+      // istenir, bugünü kapsayanlar aşağıda süzülür.
       const liste = (
-        await run(`[IzinGenel_SELECTByIDSubePersonel] '${IDSube}','0','${bugun}','${bugun}',''`)
+        await run(`[IzinGenel_SELECTByIDSubePersonel] '${IDSube}','0','${birYilOnce}','${bugun}',''`)
       ).filter((i) => {
         const bas = toDate(i.BaslangicTarihi);
         const bit = toDate(i.BitisTarihi) ?? bas;
         return bas && differenceInCalendarDays(today, bas) >= 0 && differenceInCalendarDays(bit, today) >= 0;
       });
       return {
-        Sayi: liste.length,
+        Sayi: new Set(liste.map((i) => String(i.IDSubePersonel))).size,
         Liste: liste.map((i) => ({
           IDSubePersonel: String(i.IDSubePersonel),
           AdSoyad: [i.Ad, i.Soyad].filter(Boolean).join(" ").trim(),
@@ -310,7 +376,7 @@ async function yoneticiOzet(IDSube, Yil, Ay) {
 
     section("pdksBugun", async () => {
       const kayitlar = await run(
-        `[SubePersonelSaat_SelectByIDSubeBolum] '${IDSube}','0','${bugun}','${bugun}'`,
+        `[SubePersonelSaat_SelectByIDSubeBolum] '${IDSube}','0','${bugun}'`,
       );
       return new Set(kayitlar.filter((k) => k.Giris).map((k) => String(k.IDSubePersonel))).size;
     }),
@@ -346,7 +412,17 @@ async function yoneticiOzet(IDSube, Yil, Ay) {
               : Math.max(0, personelSayisi - pdksGelen - (bugunIzinde?.Sayi ?? 0)),
         };
 
-  return { personelSayisi, bugunIzinde, bekleyenTalepler, bordro, pdksBugun, dogumGunleri };
+  const personelDagilim = personelListesi ? personelDagilimi(personelListesi) : null;
+
+  return {
+    personelSayisi,
+    personelDagilim,
+    bugunIzinde,
+    bekleyenTalepler,
+    bordro,
+    pdksBugun,
+    dogumGunleri,
+  };
 }
 
 // ---- Route --------------------------------------------------------------

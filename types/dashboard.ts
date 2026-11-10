@@ -76,8 +76,23 @@ export type PersonelDashboard = {
   } | null;
 };
 
+export type CinsiyetSayilari = {
+  Erkek: number;
+  Kadin: number;
+  /** Cinsiyeti boş/tanımsız gelenler */
+  Belirtilmemis: number;
+};
+
 export type YoneticiDashboard = {
+  /** Aktif (Durum = true) personel sayısı */
   personelSayisi: number | null;
+
+  /** Aktif personelin cinsiyet ve personel grubu dağılımı */
+  personelDagilim: (CinsiyetSayilari & {
+    Toplam: number;
+    /** Grubu olmayanlar "Diğer" altında, listenin sonunda */
+    Gruplar: (CinsiyetSayilari & { Grup: string; Toplam: number })[];
+  }) | null;
 
   bugunIzinde: {
     Sayi: number;
