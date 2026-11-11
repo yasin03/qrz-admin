@@ -26,8 +26,8 @@ import {
   KidemIhbarInsertRequestType,
   KidemIhbarType,
 } from "@/types/sistem/sgk-bordro";
-import { useYilOptions } from "../YilSecici";
-import { toAyValue } from "../katsayi-oranlari/katsayi-oran-options";
+import { useYilOptions } from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
+import { toAyValue } from "@/components/sistem/sgk-bordro-parametreleri/katsayi-oranlari/katsayi-oran-options";
 import { TIP_OPTIONS, toTipValue } from "./kidem-ihbar-options";
 
 type Props = {

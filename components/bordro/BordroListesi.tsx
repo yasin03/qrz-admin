@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import { useMemo as useMemoAlias } from "react"; // (gereksiz, kaldırıldı aşağıda)
 import { useBordroList } from "@/hooks/use-bordro";
 import { useCurrentContext } from "@/hooks/use-context";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { Input } from "../ui/input";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { Input } from "@/components/ui/input";
 import {
   BrushCleaning,
   CalculatorIcon,
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { BordroResponseType } from "@/types/bordro";
-import { RowActions } from "../customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import { formatMoney } from "@/lib/format";
 import {
   useHesaplaBordro,
@@ -26,9 +26,9 @@ import {
 import { toast } from "sonner";
 import BordroTopluIslemMenu from "./BordroTopluIslemMenu";
 import { cn } from "@/lib/utils";
-import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
-import { ExportMenu } from "../export/ExportMenu";
+import { ExportMenu } from "@/components/export/ExportMenu";
 import BordroRaporModal from "./rapor/BordroRaporModal";
 
 const ACTIONS_WIDTH = 50;

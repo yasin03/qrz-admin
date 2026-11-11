@@ -1,9 +1,9 @@
 "use client";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { Button } from "../ui/button";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { RowActions } from "../customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import {
   UserPlus,
   Pencil,
@@ -15,10 +15,10 @@ import {
   PanelRightOpen,
 } from "lucide-react";
 
-import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
+import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { useDeleteLokasyon, useLokasyonList } from "@/hooks/use-lokasyon";
 import { LokasyonFilters, LokasyonType } from "@/types/lokasyon";
 import LokasyonFiltre from "./LokasyonFiltre";
@@ -30,9 +30,9 @@ import LokasyonDetayDrawer, {
 } from "./LokasyonDetayDrawer";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext } from "@/hooks/use-context";
-import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
-import { ExportMenu } from "../export/ExportMenu";
+import { ExportMenu } from "@/components/export/ExportMenu";
 
 const INITIAL_FILTERS: LokasyonFilters = {
   IDBolum: "",

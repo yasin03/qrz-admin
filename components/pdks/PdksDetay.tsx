@@ -4,9 +4,9 @@ import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { usePdksDetay } from "@/hooks/use-pdks";
 import { formatDate } from "@/lib/format";
 import { PDKSDetaySelectResponseType } from "@/types/pdks";

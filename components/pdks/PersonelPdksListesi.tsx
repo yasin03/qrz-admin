@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { CustomDateNavigator } from "../customs/CustomDateNavigator";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { CustomDateNavigator } from "@/components/customs/CustomDateNavigator";
 import PdksDetay from "./PdksDetay";
 import { usePdksKendi } from "@/hooks/use-pdks";
 import { PDKSKendiSelectResponseType } from "@/types/pdks";

@@ -7,11 +7,11 @@ import { format } from "date-fns";
 import { Filter } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Button } from "../ui/button";
-import { FormSelect } from "../forms";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { FormSelect } from "@/components/forms";
 import { IzinFilters, IzinTipi } from "@/types/izin";
-import { CustomDatePicker } from "../customs/CustomDatePicker";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 
 type FormValues = {

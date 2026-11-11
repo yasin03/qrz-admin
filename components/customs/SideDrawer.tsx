@@ -10,8 +10,8 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from "../ui/drawer";
-import { Button } from "../ui/button";
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type Props = {

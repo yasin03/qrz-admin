@@ -10,9 +10,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { FormInput, FormSelect, FormSwitch } from "../forms";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { FormInput, FormSelect, FormSwitch } from "@/components/forms";
 import { useCreateLokasyon, useUpdateLokasyon } from "@/hooks/use-lokasyon";
 import { LokasyonType } from "@/types/lokasyon";
 

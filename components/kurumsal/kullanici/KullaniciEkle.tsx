@@ -10,9 +10,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
-import { Button } from "../../ui/button";
-import { FormInput, FormSwitch } from "../../forms";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { FormInput, FormSwitch } from "@/components/forms";
 import { useCreateKullanici, useUpdateKullanici } from "@/hooks/use-kullanici";
 import { SelectKullaniciResponseType } from "@/types/kullanici";
 import KullaniciYetkileri from "./KullaniciYetkileri";

@@ -7,20 +7,20 @@ import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { RowActions } from "../customs/RowActions";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { RowActions } from "@/components/customs/RowActions";
+import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { useIzinList, useDeleteIzin } from "@/hooks/use-izin";
 import { IzinFilters, IzinSelectParams, IzinType } from "@/types/izin";
 import { useHasRole, useUser } from "@/stores/auth-store";
 import { KULLANICI_TIPI } from "@/lib/roles";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import IzinFiltre from "./IzinFiltre";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import IzinEkle from "./IzinEkle";
-import { ExportMenu } from "../export/ExportMenu";
-import { ExportColumn } from "../export/types";
-import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
+import { ExportMenu } from "@/components/export/ExportMenu";
+import { ExportColumn } from "@/components/export/types";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 
 function getDefaultDateRange() {

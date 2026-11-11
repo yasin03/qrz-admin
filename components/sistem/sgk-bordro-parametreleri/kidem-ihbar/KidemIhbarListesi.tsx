@@ -23,12 +23,12 @@ import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { useCurrentContext } from "@/hooks/use-context";
 import { formatMoney } from "@/lib/format";
 import { KidemIhbarFilters, KidemIhbarType } from "@/types/sistem/sgk-bordro";
-import { getAyAdi } from "../katsayi-oranlari/katsayi-oran-options";
+import { getAyAdi } from "@/components/sistem/sgk-bordro-parametreleri/katsayi-oranlari/katsayi-oran-options";
 import { toTipValue } from "./kidem-ihbar-options";
 import KidemIhbarFiltre from "./KidemIhbarFiltre";
 import KidemIhbarEkle from "./KidemIhbarEkle";
-import YilSecici from "../YilSecici";
-import SonrakiYilaAktar from "../SonrakiYilaAktar";
+import YilSecici from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
+import SonrakiYilaAktar from "@/components/sistem/sgk-bordro-parametreleri/SonrakiYilaAktar";
 
 const INITIAL_FILTERS: KidemIhbarFilters = { Tip: "ALL" };
 

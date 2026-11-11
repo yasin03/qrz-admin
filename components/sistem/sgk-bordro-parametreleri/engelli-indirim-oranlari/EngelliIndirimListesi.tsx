@@ -27,8 +27,8 @@ import {
 } from "@/types/sistem/sgk-bordro";
 import EngelliIndirimFiltre from "./EngelliIndirimFiltre";
 import EngelliIndirimEkle from "./EngelliIndirimEkle";
-import YilSecici from "../YilSecici";
-import SonrakiYilaAktar from "../SonrakiYilaAktar";
+import YilSecici from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
+import SonrakiYilaAktar from "@/components/sistem/sgk-bordro-parametreleri/SonrakiYilaAktar";
 
 const INITIAL_FILTERS: EngelliIndirimFilters = { Derece: "ALL" };
 

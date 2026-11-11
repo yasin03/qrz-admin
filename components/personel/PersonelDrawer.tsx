@@ -1,9 +1,9 @@
 "use client";
 import { Trash2 } from "lucide-react";
 
-import { SideDrawer, useLastDefined } from "../customs/SideDrawer";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { SideDrawer, useLastDefined } from "@/components/customs/SideDrawer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { PersonelListItem } from "@/types/personel";
 import { PersonelDetayContent } from "./PersonelDetayDialog";
 

@@ -1,7 +1,7 @@
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
-import { Button } from "../../ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { Filter } from "lucide-react";
-import { FormSelect } from "../../forms";
+import { FormSelect } from "@/components/forms";
 import { useForm } from "react-hook-form";
 import { useEffect, useMemo } from "react";
 import { GrupFilters } from "@/types/kurumsal/grup";

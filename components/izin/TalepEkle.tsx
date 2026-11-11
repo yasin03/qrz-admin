@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 import z from "zod";
 import { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
@@ -20,11 +20,11 @@ import { Paperclip, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { User } from "@/stores/auth-store";
-import { CustomDatePicker } from "../customs/CustomDatePicker";
-import { FormInput, FormSelect } from "../forms";
-import { Field } from "../ui/field";
-import { Label } from "../ui/label";
-import { Button } from "../ui/button";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
+import { FormInput, FormSelect } from "@/components/forms";
+import { Field } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useInsertTalep, useIzinSure } from "@/hooks/use-izin";
 import { clampNumberString } from "@/lib/format";
 

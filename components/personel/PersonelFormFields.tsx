@@ -15,7 +15,7 @@ import {
   FormSwitch,
 } from "@/components/forms";
 import { Switch } from "@/components/ui/switch";
-import { FormMultiSelect } from "../forms/form-multi-select";
+import { FormMultiSelect } from "@/components/forms/form-multi-select";
 import { cn, normalize } from "@/lib/utils";
 import {
   Accordion,

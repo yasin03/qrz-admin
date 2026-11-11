@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Plus, ShieldUser, Trash2 } from "lucide-react";
-import { Button } from "../../ui/button";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { FormInput, FormSelect } from "@/components/forms";
 import {

@@ -3,11 +3,11 @@
 import { useBordroById } from "@/hooks/use-bordro";
 import { useUser } from "@/stores/auth-store";
 import { useState, type ComponentType } from "react";
-import { Button } from "../ui/button";
-import { Switch } from "../ui/switch";
-import { Label } from "../ui/label";
-import { Spinner } from "../ui/spinner";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Briefcase,
   CircleCheck,
@@ -22,7 +22,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { AY_DATA } from "@/constants/data";
-import { CustomDateNavigator } from "../customs/CustomDateNavigator";
+import { CustomDateNavigator } from "@/components/customs/CustomDateNavigator";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 

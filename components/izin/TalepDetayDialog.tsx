@@ -12,18 +12,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { useIzinSure, useUpdateTalep } from "@/hooks/use-izin";
 import { User } from "@/stores/auth-store";
 import { IzinTalepType } from "@/types/izin";
-import { Label } from "../ui/label";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
-import { Textarea } from "../ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
+import { Textarea } from "@/components/ui/textarea";
 
 const YILLIK_IZIN_KODU_ETIKET = "YI"; // Aciklama alanı "YI-Yillik Izin" olarak geldiği için başlangıç eşleşmesi kullanılıyor
 

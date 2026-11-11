@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Filter } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Button } from "../ui/button";
-import { FormSelect, FormSwitch } from "../forms";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { FormSelect, FormSwitch } from "@/components/forms";
 import { useCurrentContext } from "@/hooks/use-context";
 import { useBolumler } from "@/hooks/use-kurumsal-data";
 import { PDKSSelectRequestType } from "@/types/pdks";

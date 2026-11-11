@@ -25,8 +25,8 @@ import { VergiOranFilters, VergiOranType } from "@/types/sistem/sgk-bordro";
 import { formatYuzde } from "./vergi-oran-options";
 import VergiOranFiltre from "./VergiOranFiltre";
 import VergiOranEkle from "./VergiOranEkle";
-import YilSecici from "../YilSecici";
-import SonrakiYilaAktar from "../SonrakiYilaAktar";
+import YilSecici from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
+import SonrakiYilaAktar from "@/components/sistem/sgk-bordro-parametreleri/SonrakiYilaAktar";
 
 const INITIAL_FILTERS: VergiOranFilters = { Yuzde: "ALL" };
 

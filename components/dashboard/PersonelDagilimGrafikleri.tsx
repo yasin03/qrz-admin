@@ -22,8 +22,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "../ui/chart";
-import { Skeleton } from "../ui/skeleton";
+} from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { YoneticiDashboard } from "@/types/dashboard";
 
 type Dagilim = NonNullable<YoneticiDashboard["personelDagilim"]>;

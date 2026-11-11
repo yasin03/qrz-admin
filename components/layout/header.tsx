@@ -7,8 +7,8 @@ import { ThemeToggle } from "./theme-toggle";
 import { useState } from "react";
 import { useAuthHasHydrated, useHasRole } from "@/stores/auth-store";
 import { KULLANICI_TIPI } from "@/lib/roles";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 type HeaderProps = {
   onToggleSidebar: () => void;

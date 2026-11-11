@@ -26,7 +26,7 @@ import {
   KatsayiOranInsertRequestType,
   KatsayiOranType,
 } from "@/types/sistem/sgk-bordro";
-import { useYilOptions } from "../YilSecici";
+import { useYilOptions } from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
 import { KATSAYI_ALANLARI, toAyValue } from "./katsayi-oran-options";
 
 type Props = {

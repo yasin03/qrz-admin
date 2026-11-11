@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 import { months } from "@/utils/data";
 import { Building2Icon } from "lucide-react";
 import {
@@ -18,7 +18,7 @@ import {
   useSubeler,
 } from "@/hooks/use-kurumsal-data";
 import { useCurrentContext, useSaveContext } from "@/hooks/use-context";
-import { FormLabel, FormSelect } from "../forms";
+import { FormLabel, FormSelect } from "@/components/forms";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 

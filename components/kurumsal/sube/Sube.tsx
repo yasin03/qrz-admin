@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { normalize } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import SubeEkle from "./SubeEkle";
-import Bolum from "../bolum/Bolum";
+import Bolum from "@/components/kurumsal/bolum/Bolum";
 
 type SubeProps = {
   idSirket: number;

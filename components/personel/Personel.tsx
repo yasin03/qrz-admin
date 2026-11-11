@@ -1,9 +1,9 @@
 "use client";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { Button } from "../ui/button";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { RowActions } from "../customs/RowActions";
+import { RowActions } from "@/components/customs/RowActions";
 import {
   UserPlus,
   Pencil,
@@ -15,7 +15,7 @@ import {
   ListChevronsUpDown,
 } from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import {
   useDeletePersonel,
   usePersonelSgkIslem,
@@ -24,11 +24,11 @@ import {
   type PersonelFilters,
 } from "@/hooks/use-personel";
 import PersonelFiltre from "./PersonelFiltre";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { useCurrentContext } from "@/hooks/use-context";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
+import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import PersonelSgkDialog from "./PersonelSgkDialog";
 import PersonelSettingsDialog, {
   PersonelSettingsPersonel,
@@ -36,9 +36,9 @@ import PersonelSettingsDialog, {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api, { ApiClientError } from "@/lib/axios";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
-import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
-import { ExportMenu } from "../export/ExportMenu";
-import type { ExportColumn } from "../export/types";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
+import { ExportMenu } from "@/components/export/ExportMenu";
+import type { ExportColumn } from "@/components/export/types";
 import PersonelDetayDialog from "./PersonelDetayDialog";
 import PersonelImportDialog from "./PersonelImportDialog";
 import { usePersonelGrupList } from "@/hooks/use-personel-grup";

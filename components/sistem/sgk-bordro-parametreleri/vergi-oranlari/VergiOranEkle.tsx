@@ -25,7 +25,7 @@ import {
   VergiOranInsertRequestType,
   VergiOranType,
 } from "@/types/sistem/sgk-bordro";
-import { useYilOptions } from "../YilSecici";
+import { useYilOptions } from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
 
 type Props = {
   open: boolean;

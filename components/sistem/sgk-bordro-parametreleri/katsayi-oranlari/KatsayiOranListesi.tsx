@@ -32,8 +32,8 @@ import {
 } from "./katsayi-oran-options";
 import KatsayiOranFiltre from "./KatsayiOranFiltre";
 import KatsayiOranEkle from "./KatsayiOranEkle";
-import YilSecici from "../YilSecici";
-import SonrakiYilaAktar from "../SonrakiYilaAktar";
+import YilSecici from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
+import SonrakiYilaAktar from "@/components/sistem/sgk-bordro-parametreleri/SonrakiYilaAktar";
 
 const INITIAL_FILTERS: KatsayiOranFilters = { Ay: "ALL" };
 

@@ -8,16 +8,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { User } from "@/stores/auth-store";
-import { CustomDatePicker } from "../customs/CustomDatePicker";
-import { FormInput } from "../forms";
-import { Button } from "../ui/button";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
+import { FormInput } from "@/components/forms";
+import { Button } from "@/components/ui/button";
 import { useInsertTalep } from "@/hooks/use-avans";
 import { clampNumberString } from "@/lib/format";
 

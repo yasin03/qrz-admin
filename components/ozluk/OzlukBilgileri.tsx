@@ -29,15 +29,15 @@ import {
 } from "@/hooks/use-sabit-tanimlar";
 import { formatDate, formatMoney } from "@/lib/format";
 import { cn, formatIban, formatPhone, text } from "@/lib/utils";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Spinner } from "../ui/spinner";
-import { Switch } from "../ui/switch";
-import { SectionExportMenu } from "../export/SectionExportMenu";
-import type { SectionExportDocument } from "../export/section-types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { SectionExportMenu } from "@/components/export/SectionExportMenu";
+import type { SectionExportDocument } from "@/components/export/section-types";
 
 type Props = {
   idSubePersonel: string | number;

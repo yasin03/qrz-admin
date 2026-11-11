@@ -5,10 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Pencil, QrCode, Trash2 } from "lucide-react";
 
-import { SideDrawer, useLastDefined } from "../customs/SideDrawer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
+import { SideDrawer, useLastDefined } from "@/components/customs/SideDrawer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useUpdateLokasyon } from "@/hooks/use-lokasyon";
 import { LokasyonType } from "@/types/lokasyon";
 import {

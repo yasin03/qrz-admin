@@ -37,8 +37,8 @@ import { ExportMenu } from "@/components/export/ExportMenu";
 import type { ExportColumn } from "@/components/export/types";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import Filtre from "./Filtre";
-import SirketEkle from "../sirket/SirketEkle";
-import Sirket from "../sirket/Sirket";
+import SirketEkle from "@/components/kurumsal/sirket/SirketEkle";
+import Sirket from "@/components/kurumsal/sirket/Sirket";
 
 const INITIAL_FILTERS: GrupFilters = {
   Durum: null,

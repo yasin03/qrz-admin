@@ -11,8 +11,8 @@ import {
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { RowActions } from "../customs/RowActions";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { RowActions } from "@/components/customs/RowActions";
 import TalepDetayDialog from "./TalepDetayDialog";
 import { useTalepList } from "@/hooks/use-izin";
 import {
@@ -22,17 +22,17 @@ import {
 } from "@/types/izin";
 import { formatDate } from "@/lib/format";
 import { useHasRole, useUser } from "@/stores/auth-store";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { KULLANICI_TIPI } from "@/lib/roles";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import IzinFiltre from "./IzinFiltre";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { useCurrentContext } from "@/hooks/use-context";
 import TalepEkle from "./TalepEkle";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
-import { ExportMenu } from "../export/ExportMenu";
-import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
-import { ExportColumn } from "../export/types";
+import { ExportMenu } from "@/components/export/ExportMenu";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
+import { ExportColumn } from "@/components/export/types";
 
 function getDurumInfo(talep: IzinTalepType): {
   label: string;

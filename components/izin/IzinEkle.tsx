@@ -15,17 +15,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Field } from "../ui/field";
-import { Label } from "../ui/label";
-import { FormSelect } from "../forms/form-select";
-import { FormMultiSelect } from "../forms/form-multi-select";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { FormSelect } from "@/components/forms/form-select";
+import { FormMultiSelect } from "@/components/forms/form-multi-select";
 
 import { useAktifPersonelListesi } from "@/hooks/use-personel";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 import { useInsertIzin } from "@/hooks/use-izin";
-import { CustomDatePicker } from "../customs/CustomDatePicker";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
 
 type Props = {
   open: boolean;

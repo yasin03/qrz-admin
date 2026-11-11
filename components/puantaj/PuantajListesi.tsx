@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
 import { TEMIZLE_CODE, type AktifPuantajAraci } from "./PuantajToolbar";
 import {
   PuantajSelectRequestType,
@@ -19,14 +19,14 @@ import {
 import { cn } from "@/lib/utils";
 import { HAFTA_DATA } from "@/constants/data";
 import { getPuantajBadge } from "./puantaj-helpers";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import PuantajToolbar from "./PuantajToolbar";
 import { usePersonelSabitTanimlar } from "@/hooks/use-sabit-tanimlar";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
-import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
-import { ExportColumn } from "../export/types";
-import { ExportMenu } from "../export/ExportMenu";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
+import { ExportColumn } from "@/components/export/types";
+import { ExportMenu } from "@/components/export/ExportMenu";
 import PuantajTopluIslemMenu from "./PuantajTopluIslemMenu";
 import PuantajTopluGirisModal from "./PuantajTopluGirisModal";
 

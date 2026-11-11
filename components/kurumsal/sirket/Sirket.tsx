@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { normalize } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import Sube from "../sube/Sube";
+import Sube from "@/components/kurumsal/sube/Sube";
 type SirketProps = {
   idGurup: number;
 };

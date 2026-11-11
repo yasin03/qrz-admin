@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Download, FileText, FolderOpen, Search } from "lucide-react";
 
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 
 const BELGE_DATA = [
   { key: "AileYardimiBildirimi", label: "Aile Yardım Bildirimi", type: "file" },

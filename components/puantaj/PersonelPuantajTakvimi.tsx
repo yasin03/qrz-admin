@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { CustomDateNavigator } from "../customs/CustomDateNavigator";
+import { CustomDateNavigator } from "@/components/customs/CustomDateNavigator";
 import { usePuantajById } from "@/hooks/use-puantaj";
 import { HAFTA_DATA } from "@/constants/data";
 import { cn } from "@/lib/utils";

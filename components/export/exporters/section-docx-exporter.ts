@@ -17,14 +17,14 @@ import {
   WidthType,
 } from "docx";
 import { getCompanyInfo, getLogoArrayBuffer } from "@/lib/company";
-import { downloadBlob } from "../types";
+import { downloadBlob } from "@/components/export/types";
 import {
   SectionExportDocument,
   SectionExportField,
   chunkSectionFields,
   formatSectionValue,
   getExportDateLabel,
-} from "../section-types";
+} from "@/components/export/section-types";
 
 const PRIMARY = "1F4E79";
 const PRIMARY_SOFT = "EAF1F8";

@@ -21,7 +21,7 @@ import { TatilFilters, TatilType } from "@/types/sistem/sgk-bordro";
 import { getGunAdi, toDurumValue } from "./tatil-options";
 import TatilFiltre from "./TatilFiltre";
 import TatilEkle from "./TatilEkle";
-import YilSecici from "../YilSecici";
+import YilSecici from "@/components/sistem/sgk-bordro-parametreleri/YilSecici";
 
 const INITIAL_FILTERS: TatilFilters = { Durum: "ALL", ResmiDini: "ALL" };
 

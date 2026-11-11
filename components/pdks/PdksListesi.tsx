@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { addDays, format, parse } from "date-fns";
-import { ConfirmDialog } from "../customs/ConfirmDialog";
-import { CustomDataTable } from "../customs/CustomDataTable";
-import { CustomDateNavigator } from "../customs/CustomDateNavigator";
-import { RowActions } from "../customs/RowActions";
+import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { CustomDateNavigator } from "@/components/customs/CustomDateNavigator";
+import { RowActions } from "@/components/customs/RowActions";
 import {
   useDeletePdks,
   usePdksList,
@@ -22,18 +22,18 @@ import {
   PDKSUpdateInput,
   PdksYon,
 } from "@/types/pdks";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { normalize } from "@/lib/utils";
 import PdksFiltre, { PdksFiltreValues } from "./PdksFiltre";
 import PdksDetay from "./PdksDetay";
 import SaatSecici from "./SaatSecici";
 import PuantajaAktar from "./PuantajaAktar";
-import { ExportMenu } from "../export/ExportMenu";
-import { CustomColumnVisibility } from "../customs/CustomColumnVisibility";
-import { ExportColumn } from "../export/types";
+import { ExportMenu } from "@/components/export/ExportMenu";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
+import { ExportColumn } from "@/components/export/types";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   enabled: boolean;

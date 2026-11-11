@@ -5,7 +5,7 @@ import type { ComponentType, ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type IconType = ComponentType<{ className?: string; style?: React.CSSProperties }>;
 

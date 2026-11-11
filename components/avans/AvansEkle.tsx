@@ -14,14 +14,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { FormInput } from "../forms";
-import { FormMultiSelect } from "../forms/form-multi-select";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { FormInput } from "@/components/forms";
+import { FormMultiSelect } from "@/components/forms/form-multi-select";
 
 import { useAktifPersonelListesi } from "@/hooks/use-personel";
 import { useInsertAvans } from "@/hooks/use-avans";
-import { CustomDatePicker } from "../customs/CustomDatePicker";
+import { CustomDatePicker } from "@/components/customs/CustomDatePicker";
 import { clampNumberString } from "@/lib/format";
 
 type Props = {
