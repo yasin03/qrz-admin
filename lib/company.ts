@@ -1,4 +1,4 @@
-import { fetchContext } from "@/hooks/use-context";
+import { fetchContext } from "@/modules/core/hooks/use-context";
 
 export interface CompanyInfo {
   name: string;

@@ -12,7 +12,7 @@ import { Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
-import { login } from "@/services/auth";
+import { login } from "@/modules/core/services/auth";
 import { useAuthStore, User } from "@/stores/auth-store";
 import { FormInput, FormSwitch } from "@/components/forms";
 

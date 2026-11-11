@@ -4,20 +4,26 @@ import { SidebarProvider, SidebarInset, useSidebar } from "@/components/ui/sideb
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AppSidebar } from "./app-sidebar";
+import { ActiveModuleProvider } from "@/hooks/use-active-module";
+import type { ModuleId } from "@/modules/registry";
 
 type DashboardShellProps = {
   children: React.ReactNode;
   defaultSidebarOpen?: boolean;
+  lastModule?: ModuleId;
 };
 
 export function DashboardShell({
   children,
   defaultSidebarOpen = true,
+  lastModule,
 }: DashboardShellProps) {
   return (
-    <SidebarProvider defaultOpen={defaultSidebarOpen}>
-      <DashboardShellInner>{children}</DashboardShellInner>
-    </SidebarProvider>
+    <ActiveModuleProvider lastModule={lastModule}>
+      <SidebarProvider defaultOpen={defaultSidebarOpen}>
+        <DashboardShellInner>{children}</DashboardShellInner>
+      </SidebarProvider>
+    </ActiveModuleProvider>
   );
 }
 

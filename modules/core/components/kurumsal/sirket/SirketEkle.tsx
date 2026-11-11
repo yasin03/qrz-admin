@@ -1,0 +1,205 @@
+"use client";
+
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import { Button } from "@/components/ui/button";
+import { FormSubmitButton } from "@/components/forms";
+
+import { useCreateSirket, useUpdateSirket } from "@/modules/core/hooks/use-kurumsal-data";
+import { sirketSchema, SirketForm } from "@/modules/core/schemas/kurumsal/sirket.schema";
+import { SirketType } from "@/modules/core/types/kurumsal/sirket";
+import { SirketFormFields } from "./SirketFormFields";
+import { format } from "date-fns";
+
+const DEFAULT_VALUES: SirketForm = {
+  SirketAdi: "",
+  YetkiliKisi: "",
+  Adi: "",
+  Soyadi: "",
+  TcKimlikNo: "",
+  VergiDairesi: "",
+  VergiNo: "",
+  Tel: "",
+  CepTel: "",
+  Fax: "",
+  EpostaAdresi: "",
+  WebAdresi: "",
+  SirketAdresi: "",
+  Ulke: "Türkiye",
+  IlKodu: "",
+  IlceKodu: "",
+  PostaKodu: "",
+  IsyeriSgkSicilNumarasi: "",
+  IsyeriSgkIsKoluKodu: "",
+  TicaretSicilNumarasi: "",
+  MersisNumarasi: "",
+  IskurSubesi: "",
+  IskurNumarasi: "",
+  IsyeriAcilisTarihi: "",
+  IsyeriKapanisTarihi: "",
+  Durum: true,
+  MulkiyetTuru: "",
+  TicaretSicilMudurluk: "",
+  IsyeriFaaliyetKodu: "",
+  AdresKodu: "",
+  SirketTip: "",
+  ServisPassword: "",
+  ServisAktif: false,
+};
+
+type Props = {
+  open: boolean;
+  onOpenChange: (value: boolean) => void;
+  /** Yeni şirketin bağlanacağı grup — düzenleme modunda sirket.IDGurup kullanılır. */
+  idGurup: number;
+  /**
+   * Verilirse düzenleme modu. NOT: Artık asıl düzenleme akışı satıra
+   * tıklayınca açılan /kurumsal/sirketler/[idSirket] sayfası — burası
+   * hâlâ çalışıyor ama liste/grup satırından hızlı düzenleme istemiyorsan
+   * bu prop'u hiç kullanmayabilirsin.
+   */
+  sirket?: SirketType | null;
+};
+
+export default function SirketEkle({
+  open,
+  onOpenChange,
+  idGurup,
+  sirket,
+}: Props) {
+  const isEditMode = !!sirket;
+
+  const form = useForm<SirketForm>({
+    resolver: zodResolver(sirketSchema),
+    defaultValues: DEFAULT_VALUES,
+  });
+
+  const { mutateAsync: createSirket, isPending: isCreating } =
+    useCreateSirket();
+  const { mutateAsync: updateSirket, isPending: isUpdating } =
+    useUpdateSirket();
+  const isPending = isEditMode ? isUpdating : isCreating;
+
+  useEffect(() => {
+    if (!open) {
+      form.reset(DEFAULT_VALUES);
+      return;
+    }
+
+    if (sirket) {
+      form.reset({
+        SirketAdi: sirket.SirketAdi,
+        YetkiliKisi: sirket.YetkiliKisi ?? "",
+        Adi: sirket.Adi ?? "",
+        Soyadi: sirket.Soyadi ?? "",
+        TcKimlikNo: sirket.TcKimlikNo ?? "",
+        VergiDairesi: String(sirket.VergiDairesi ?? ""),
+        VergiNo: sirket.VergiNo ?? "",
+        Tel: sirket.Tel ?? "",
+        CepTel: sirket.CepTel ?? "",
+        Fax: sirket.Fax ?? "",
+        EpostaAdresi: sirket.EpostaAdresi ?? "",
+        WebAdresi: sirket.WebAdresi ?? "",
+        SirketAdresi: sirket.SirketAdresi ?? "",
+        Ulke: sirket.Ulke ?? "Türkiye",
+        IlKodu: String(sirket.IlKodu ?? ""),
+        IlceKodu: String(sirket.IlceKodu ?? ""),
+        PostaKodu: sirket.PostaKodu ?? "",
+        IsyeriSgkSicilNumarasi: sirket.IsyeriSgkSicilNumarasi ?? "",
+        IsyeriSgkIsKoluKodu: sirket.IsyeriSgkIsKoluKodu ?? "",
+        TicaretSicilNumarasi: sirket.TicaretSicilNumarasi ?? "",
+        MersisNumarasi: sirket.MersisNumarasi ?? "",
+        IskurSubesi: sirket.IskurSubesi ?? "",
+        IskurNumarasi: sirket.IskurNumarasi ?? "",
+        IsyeriAcilisTarihi: sirket.IsyeriAcilisTarihi ?? new Date(),
+        IsyeriKapanisTarihi: sirket.IsyeriKapanisTarihi ?? "",
+        Durum: Boolean(sirket.Durum),
+        MulkiyetTuru: String(sirket.MulkiyetTuru ?? ""),
+        TicaretSicilMudurluk: sirket.TicaretSicilMudurluk ?? "",
+        IsyeriFaaliyetKodu: sirket.IsyeriFaaliyetKodu ?? "",
+        AdresKodu: sirket.AdresKodu ?? "",
+        SirketTip: String(sirket.SirketTip ?? ""),
+        ServisPassword: sirket.ServisPassword ?? "",
+        ServisAktif: Boolean(sirket.ServisAktif),
+      });
+    } else {
+      form.reset({
+        ...DEFAULT_VALUES,
+        IsyeriAcilisTarihi: format(new Date(), "yyyy-MM-dd"),
+      });
+    }
+  }, [open, sirket, form]);
+
+  const onSubmit = async (values: SirketForm) => {
+    try {
+      const payload = {
+        ...values,
+        Durum: values.Durum ? 1 : 0,
+        ServisAktif: values.ServisAktif ? 1 : 0,
+      };
+
+      if (isEditMode && sirket) {
+        await updateSirket({
+          IDSirket: sirket.IDSirket,
+          IDGurup: sirket.IDGurup,
+          ...payload,
+        });
+        toast.success("Şirket başarıyla güncellendi.");
+      } else {
+        await createSirket({
+          IDGurup: idGurup,
+          ...payload,
+        });
+        toast.success("Şirket başarıyla oluşturuldu.");
+      }
+
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error(
+        error?.message ||
+          (isEditMode ? "Şirket güncellenemedi." : "Şirket oluşturulamadı."),
+      );
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditMode ? "Şirketi Düzenle" : "Yeni Şirket"}
+          </DialogTitle>
+          <DialogDescription>Şirket bilgilerini giriniz.</DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <SirketFormFields control={form.control} setValue={form.setValue} />
+
+          <DialogFooter>
+            <Button
+              type="button"
+              appearance="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              İptal
+            </Button>
+
+            <FormSubmitButton loading={isPending} />
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

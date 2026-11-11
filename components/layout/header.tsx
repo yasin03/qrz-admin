@@ -3,6 +3,7 @@ import { CalendarDays, Menu, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HeaderCompany from "./header-company";
 import ProfileMenu from "./profile-menu";
+import { ModuleSwitcher } from "./module-switcher";
 import { ThemeToggle } from "./theme-toggle";
 import { useState } from "react";
 import { useAuthHasHydrated, useHasRole } from "@/stores/auth-store";
@@ -53,6 +54,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           </PopoverContent>
         </Popover>
         <ThemeToggle />
+        <ModuleSwitcher />
         <ProfileMenu />
       </div>
     </header>

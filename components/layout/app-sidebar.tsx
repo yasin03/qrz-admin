@@ -3,23 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  CalendarRange,
-  ChartColumn,
-  ChevronRight,
-  ContactRound,
-  FileText,
-  FileUser,
-  Fingerprint,
-  GitMergeConflict,
-  HandCoins,
-  Loader2,
-  LogOut,
-  MapPinned,
-  Parasol,
-  Settings,
-  Users,
-} from "lucide-react";
+import { ChevronRight, Loader2, LogOut } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -38,103 +22,12 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { logout } from "@/services/auth";
+import { logout } from "@/modules/core/services/auth";
 import { useAuthStore } from "@/stores/auth-store";
-import { KULLANICI_TIPI, type KullaniciTipi } from "@/lib/roles";
-import type { PerYetkiKey } from "@/lib/per-yetki";
-import { usePersonelYetki } from "@/hooks/use-per-yetki";
-
-type MenuItem = {
-  href: string;
-  label: string;
-  icon: typeof Users;
-  /** Bu menüyü görebilecek kullanıcı tipleri. */
-  roles: KullaniciTipi[];
-  /**
-   * Personel için bu menüyü açan yetki bayrağı (Yetki Ayarları ekranından).
-   * Admin/Yönetici'yi etkilemez.
-   */
-  yetki?: PerYetkiKey;
-  /** true ise alt yollarda da (href/...) aktif görünür. */
-  matchNested?: boolean;
-  /**
-   * Verilirse öğe link değil, tıklanınca açılıp kapanan bir grup olur;
-   * alt öğeler altında listelenir.
-   */
-  children?: SubMenuItem[];
-};
-
-type SubMenuItem = {
-  href: string;
-  label: string;
-  roles: KullaniciTipi[];
-};
-
-const { ADMIN, YONETICI, PERSONEL } = KULLANICI_TIPI;
-const TUMU: KullaniciTipi[] = [ADMIN, YONETICI, PERSONEL];
-
-const MENU_ITEMS: MenuItem[] = [
-  {
-    href: "/personel",
-    label: "Personel",
-    icon: Users,
-    roles: [ADMIN, YONETICI],
-  },
-  {
-    href: "/lokasyon",
-    label: "Lokasyon",
-    icon: MapPinned,
-    roles: [ADMIN, YONETICI],
-  },
-  { href: "/ozluk", label: "Özlük", icon: FileUser, roles: TUMU },
-  { href: "/izin", label: "İzin", icon: Parasol, roles: TUMU },
-  { href: "/avans", label: "Avans", icon: HandCoins, roles: TUMU },
-  {
-    href: "/bordro/parametre",
-    label: "Eklenti & Kesinti",
-    icon: GitMergeConflict,
-    roles: TUMU,
-  },
-  {
-    href: "/pdks",
-    label: "PDKS",
-    icon: Fingerprint,
-    roles: TUMU,
-    yetki: "PersonelPdksGorur",
-  },
-  {
-    href: "/puantaj",
-    label: "Puantaj",
-    icon: CalendarRange,
-    roles: TUMU,
-    yetki: "PersonelPuantajGorur",
-  },
-  {
-    href: "/bordro",
-    label: "Bordro",
-    icon: ContactRound,
-    roles: TUMU,
-    yetki: "PersonelBordroGorur",
-  },
-  { href: "/belgeler", label: "Belgeler", icon: FileText, roles: TUMU },
-  {
-    href: "/raporlar",
-    label: "Raporlar",
-    icon: ChartColumn,
-    roles: [ADMIN, YONETICI],
-    // Alt sayfalar (PDKS raporu vb.) Raporlar'ın kendi iç menüsünde.
-    matchNested: true,
-  },
-  {
-    href: "/ayarlar",
-    label: "Ayarlar",
-    icon: Settings,
-    roles: [ADMIN, YONETICI],
-    // Alt sayfalar (şirket bilgileri, yetkiler, tanımlamalar) Ayarlar'ın
-    // kendi iç menüsünde; ana sidebar'da tek öğe olarak seçili kalsın.
-    matchNested: true,
-  },
-];
+import type { KullaniciTipi } from "@/lib/roles";
+import type { MenuItem } from "@/types/navigation";
+import { usePersonelYetki } from "@/modules/core/hooks/use-per-yetki";
+import { useActiveModule } from "@/hooks/use-active-module";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -157,6 +50,8 @@ export function AppSidebar() {
     }
   }, [pathname, pendingHref]);
 
+  const { activeModule } = useActiveModule();
+
   const userTip = user?.IDKullaniciTip as KullaniciTipi | undefined;
   const { can, isLoading: isLoadingYetki } = usePersonelYetki();
   // Yetkiler yüklenirken yetkiye bağlı menüleri gizli tut; yasak menü
@@ -164,7 +59,7 @@ export function AppSidebar() {
   const hasYetki = (item: MenuItem) =>
     !item.yetki || (!isLoadingYetki && can(item.yetki));
   const menuItems = userTip
-    ? MENU_ITEMS.filter(
+    ? activeModule.nav.filter(
         (item) => item.roles.includes(userTip) && hasYetki(item),
       ).map((item) => ({
         ...item,

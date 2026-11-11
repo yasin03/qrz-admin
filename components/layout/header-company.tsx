@@ -16,8 +16,8 @@ import {
   useKurumsalData,
   useSirketler,
   useSubeler,
-} from "@/hooks/use-kurumsal-data";
-import { useCurrentContext, useSaveContext } from "@/hooks/use-context";
+} from "@/modules/core/hooks/use-kurumsal-data";
+import { useCurrentContext, useSaveContext } from "@/modules/core/hooks/use-context";
 import { FormLabel, FormSelect } from "@/components/forms";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
