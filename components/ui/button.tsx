@@ -74,12 +74,13 @@ const buttonVariants = cva(
       {
         variant: "primary",
         appearance: "outline",
-        class: "border-primary/40 text-primary hover:bg-primary/10",
+        class:
+          "border-primary/40 text-blue-800 hover:bg-blue-700/10 dark:text-primary dark:hover:bg-primary/10",
       },
       {
         variant: "secondary",
         appearance: "outline",
-        class: "border-border text-secondary-foreground hover:bg-secondary",
+        class: "border-primary/40 text-secondary-foreground hover:bg-secondary",
       },
       {
         variant: "success",

@@ -1,12 +1,9 @@
-const CrmHome = () => {
+const CrmDashboard = () => {
   return (
-    <div className="space-y-2">
-      <h1 className="mb-0 text-xl font-bold sm:text-2xl">
-        Müşteri İşleri Yönetimi
-      </h1>
-      <p className="text-muted-foreground">CRM modülü yakında burada olacak.</p>
+    <div className="space-y-4">
+      <h1 className="mb-0 text-xl font-bold sm:text-2xl">Dashboard</h1>
     </div>
   );
 };
 
-export default CrmHome;
+export default CrmDashboard;

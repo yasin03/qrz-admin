@@ -31,14 +31,16 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <div className="relative flex min-h-screen w-full bg-[radial-gradient(circle_at_top_right,oklch(0.985_0.01_230),transparent_40%),radial-gradient(circle_at_bottom_left,oklch(0.97_0.015_250),transparent_45%)]">
+    // Shell ekran yüksekliğine sabit: header ve footer yerinde kalır,
+    // yalnızca <main> kendi içinde kayar.
+    <div className="relative flex h-svh w-full overflow-hidden bg-[radial-gradient(circle_at_top_right,oklch(0.985_0.01_230),transparent_40%),radial-gradient(circle_at_bottom_left,oklch(0.97_0.015_250),transparent_45%)]">
       <AppSidebar />
 
-      <SidebarInset className="min-w-0">
+      <SidebarInset className="h-svh min-w-0 overflow-hidden">
         <Header onToggleSidebar={toggleSidebar} />
 
-        <main className="flex-1 p-4 lg:p-6">
-          <section className="h-full min-h-100 rounded-xl border border-border/80 bg-card/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300">
+        <main className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
+          <section className="min-h-full rounded-xl border border-border/80 bg-card/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300">
             {children}
           </section>
         </main>

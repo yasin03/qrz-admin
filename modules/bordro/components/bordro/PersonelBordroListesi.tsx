@@ -478,9 +478,8 @@ const PersonelBordroListesi = ({ initialYil, initialAy }: Props) => {
           <Popover>
             <PopoverTrigger asChild>
               <Button
-                type="button"
-                appearance="outline"
                 variant="secondary"
+                appearance="outline"
                 aria-label="Görünüm filtresi"
               >
                 <Filter className="size-4" />

@@ -1,7 +1,7 @@
-import CrmHome from "@/modules/crm/components/CrmHome";
+import CrmDashboard from "@/modules/crm/components/dashboard/CrmDashboard";
 
 const Page = () => {
-  return <CrmHome />;
+  return <CrmDashboard />;
 };
 
 export default Page;

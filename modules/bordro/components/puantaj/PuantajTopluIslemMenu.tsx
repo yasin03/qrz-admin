@@ -34,8 +34,7 @@ export default function PuantajTopluIslemMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          type="button"
-          color="danger"
+          variant="secondary"
           appearance="outline"
           className="gap-1.5"
         >

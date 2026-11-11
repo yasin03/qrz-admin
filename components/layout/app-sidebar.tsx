@@ -110,7 +110,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="items-center py-5">
         <Link
-          href="/"
+          href={activeModule.homeHref}
           aria-label="Ana sayfa"
           className="relative block h-16 w-full max-w-60 transition-all duration-300 group-data-[collapsible=icon]:max-w-9"
         >

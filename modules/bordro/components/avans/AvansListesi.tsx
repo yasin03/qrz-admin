@@ -219,8 +219,6 @@ const AvansListesi = ({ enabled }: Props) => {
 
           {!isPersonel && (
             <Button
-              type="button"
-              size="sm"
               onClick={() => setOpenAvansEkle(true)}
             >
               <Plus className="size-4" />

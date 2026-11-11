@@ -78,6 +78,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  // CRM yalnızca Admin ve Bayi'ye açık (modules/registry.ts'teki CRM rolleri
+  // ile aynı tutulmalı; registry ikon/menü import ettiği için burada kullanılmıyor)
+  if (
+    (pathname === "/crm" || pathname.startsWith("/crm/")) &&
+    session?.IDKullaniciTip !== KULLANICI_TIPI.ADMIN &&
+    session?.IDKullaniciTip !== KULLANICI_TIPI.BAYI
+  ) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   // Örnek: role-bazlı koruma — yalnızca Admin girebilsin
   // if (pathname.startsWith("/kurumsal-ayarlar") && session?.KullaniciTipi !== "Admin") {
   //   return NextResponse.redirect(new URL("/", request.url));

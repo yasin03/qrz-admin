@@ -40,7 +40,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
-            <Button appearance="outline" size="icon">
+            <Button variant="secondary" appearance="outline" size="icon">
               <CalendarDays />
             </Button>
           </PopoverTrigger>

@@ -92,10 +92,8 @@ const KatsayiFiltre = ({
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          type="button"
           variant="secondary"
           appearance="outline"
-          size="sm"
         >
           <Filter className="size-4" />
           Filtre

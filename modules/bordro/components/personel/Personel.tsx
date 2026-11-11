@@ -362,7 +362,16 @@ const Personel = () => {
 
     {
       accessorKey: "AdSoyad",
-      header: "Ad Soyad",
+      header: () => (
+        <div className="flex flex-col items-start leading-tight">
+          <span>Ad Soyad</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            (Sicil No)
+          </span>
+        </div>
+      ),
+      // header JSX olunca sütun gizleme menüsü adı buradan alır
+      meta: { label: "Ad Soyad (Sicil No)" },
       cell: ({ row }) => (
         <div className="flex flex-col items-start">
           <Button

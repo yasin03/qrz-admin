@@ -18,6 +18,7 @@ export function ThemeToggle() {
 
   return (
     <Button
+      variant="secondary"
       appearance="outline"
       size="icon"
       aria-label={isDark ? "Açık moda geç" : "Koyu moda geç"}

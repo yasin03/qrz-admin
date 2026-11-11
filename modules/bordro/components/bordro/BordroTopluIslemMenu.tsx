@@ -46,8 +46,7 @@ export default function BordroTopluIslemMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          type="button"
-          color="secondary"
+          variant="secondary"
           appearance="outline"
           className="gap-1.5"
         >

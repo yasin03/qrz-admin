@@ -72,8 +72,7 @@ export function CustomColumnVisibility<TData>({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          type="button"
-          color="secondary"
+          variant="secondary"
           appearance="outline"
           className="gap-1.5"
         >

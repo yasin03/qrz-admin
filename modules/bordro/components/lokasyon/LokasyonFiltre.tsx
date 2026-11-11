@@ -82,7 +82,7 @@ const LokasyonFiltre = ({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button type="button" color="secondary" appearance="outline" size="sm">
+        <Button variant="secondary" appearance="outline">
           <Filter className="size-4" />
           Filtre
         </Button>

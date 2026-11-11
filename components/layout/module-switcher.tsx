@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useActiveModule } from "@/hooks/use-active-module";
-import { MODULES } from "@/modules/registry";
+import { MODULES, MODULE_SWITCHER_ROLES } from "@/modules/registry";
 import { useAuthStore } from "@/stores/auth-store";
 import type { KullaniciTipi } from "@/lib/roles";
 
@@ -22,22 +22,19 @@ export function ModuleSwitcher() {
     | KullaniciTipi
     | undefined;
 
-  const modules = userTip
-    ? MODULES.filter((m) => m.roles.includes(userTip))
-    : [];
+  if (!userTip || !MODULE_SWITCHER_ROLES.includes(userTip)) return null;
 
-  // Tek modül görebilen kullanıcıya (ör. Personel) seçici gösterme
-  if (modules.length <= 1) return null;
+  const modules = MODULES.filter((m) => m.roles.includes(userTip));
 
   const ActiveIcon = activeModule.icon;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button appearance="outline" className="gap-2">
+        <Button variant="primary" appearance="outline" className="gap-2 md:w-32">
           <ActiveIcon className="size-5" />
-          <span className="hidden max-w-56 truncate md:inline">
-            {activeModule.label}
+          <span className="hidden flex-1 truncate text-left md:inline">
+            {activeModule.shortLabel}
           </span>
           <ChevronDown className="size-4" />
         </Button>

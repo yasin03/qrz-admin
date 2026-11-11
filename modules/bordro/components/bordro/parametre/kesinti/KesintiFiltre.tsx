@@ -77,10 +77,8 @@ const KesintiFiltre = ({ filters, onChange, onReset }: KesintiFiltreProps) => {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          type="button"
           variant="secondary"
           appearance="outline"
-          size="sm"
         >
           <Filter className="size-4" />
           Filtre

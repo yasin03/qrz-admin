@@ -5,7 +5,7 @@ import type { MenuItem } from "@/types/navigation";
 import { BORDRO_NAV } from "@/modules/bordro/navigation";
 import { CRM_NAV } from "@/modules/crm/navigation";
 
-const { ADMIN, YONETICI, PERSONEL } = KULLANICI_TIPI;
+const { ADMIN, YONETICI, PERSONEL, BAYI, DESTEK } = KULLANICI_TIPI;
 
 export const MODULE_IDS = ["bordro", "crm"] as const;
 export type ModuleId = (typeof MODULE_IDS)[number];
@@ -13,6 +13,8 @@ export type ModuleId = (typeof MODULE_IDS)[number];
 export type AppModule = {
   id: ModuleId;
   label: string;
+  /** Header'daki seçici butonunda görünen kısa ad. */
+  shortLabel: string;
   icon: LucideIcon;
   /**
    * Modülün URL prefix'i (ör. "/crm"). Bordro kökte durduğu için yok;
@@ -31,6 +33,7 @@ export const MODULES: AppModule[] = [
   {
     id: "bordro",
     label: "Bordro Yönetimi",
+    shortLabel: "Bordro",
     icon: BriefcaseBusiness,
     homeHref: "/",
     roles: [ADMIN, YONETICI, PERSONEL],
@@ -39,15 +42,19 @@ export const MODULES: AppModule[] = [
   {
     id: "crm",
     label: "Müşteri İşleri Yönetimi (CRM)",
+    shortLabel: "CRM",
     icon: Handshake,
     basePath: "/crm",
     homeHref: "/crm",
-    roles: [ADMIN, YONETICI],
+    roles: [ADMIN, BAYI],
     nav: CRM_NAV,
   },
 ];
 
 export const DEFAULT_MODULE_ID: ModuleId = "bordro";
+
+/** Header'daki modül seçiciyi görebilen kullanıcı tipleri. */
+export const MODULE_SWITCHER_ROLES: KullaniciTipi[] = [ADMIN, BAYI];
 
 /** Son seçilen modülü tutan cookie (ortak sayfalarda sidebar'ı korumak için). */
 export const ACTIVE_MODULE_COOKIE = "active_module";

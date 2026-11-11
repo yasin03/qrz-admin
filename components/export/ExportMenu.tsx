@@ -96,7 +96,7 @@ export function ExportMenu<T>({
     <div className="shrink-0">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button" appearance="outline" size="sm" disabled={isExporting}>
+          <Button variant="secondary" appearance="outline" disabled={isExporting}>
             {isExporting ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (

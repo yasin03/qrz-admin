@@ -78,7 +78,7 @@ export function SectionExportMenu({ getDocument, fileName, description }: Props)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" appearance="outline" disabled={isExporting}>
+        <Button variant="secondary" appearance="outline" disabled={isExporting}>
           {isExporting ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (

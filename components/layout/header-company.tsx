@@ -278,9 +278,9 @@ const HeaderCompany = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          color="secondary"
+          variant="secondary"
           appearance="outline"
-          className="py-2"
+          className="py-2 text-foreground"
           title={title}
         >
           <Building2Icon />

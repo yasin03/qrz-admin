@@ -1,16 +1,36 @@
-import { LayoutDashboard } from "lucide-react";
+import {
+  ChartColumn,
+  FileText,
+  HandCoins,
+  ListTodo,
+  Settings,
+  Users,
+} from "lucide-react";
 
-import { KULLANICI_TIPI } from "@/lib/roles";
+import { KULLANICI_TIPI, type KullaniciTipi } from "@/lib/roles";
 import type { MenuItem } from "@/types/navigation";
 
-const { ADMIN, YONETICI } = KULLANICI_TIPI;
+const { ADMIN, BAYI } = KULLANICI_TIPI;
+const TUMU: KullaniciTipi[] = [ADMIN, BAYI];
 
-// CRM sayfaları eklendikçe buraya yeni öğeler gelecek (/crm/musteriler vb.).
+// CRM dashboard'u (/crm) menüde yok; sidebar logosu oraya gider.
 export const CRM_NAV: MenuItem[] = [
+  { href: "/crm/kisiler", label: "Kişiler", icon: Users, roles: TUMU },
+  { href: "/crm/satislar", label: "Satışlar", icon: HandCoins, roles: TUMU },
+  { href: "/crm/teklifler", label: "Teklifler", icon: FileText, roles: TUMU },
+  { href: "/crm/gorevler", label: "Görevler", icon: ListTodo, roles: TUMU },
   {
-    href: "/crm",
-    label: "Genel Bakış",
-    icon: LayoutDashboard,
-    roles: [ADMIN, YONETICI],
+    href: "/crm/raporlar",
+    label: "Raporlar",
+    icon: ChartColumn,
+    roles: TUMU,
+    matchNested: true,
+  },
+  {
+    href: "/crm/ayarlar",
+    label: "Ayarlar",
+    icon: Settings,
+    roles: TUMU,
+    matchNested: true,
   },
 ];
