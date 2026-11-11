@@ -119,7 +119,7 @@ function CinsiyetGrafigi({ dagilim }: { dagilim: Dagilim }) {
         {dilimler.map((d) => (
           <li key={d.key} className="flex items-center gap-2 text-sm">
             <span
-              className="size-2.5 shrink-0 rounded-[2px]"
+              className="size-2.5 shrink-0 rounded-xs"
               style={{ backgroundColor: `var(--color-${d.key})` }}
             />
             <span className="flex-1 text-muted-foreground">

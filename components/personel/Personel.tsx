@@ -12,9 +12,7 @@ import {
   Hospital,
   UserCog,
   Smartphone,
-  GamepadDirectional,
   ListChevronsUpDown,
-  PanelRightOpen,
 } from "lucide-react";
 import PersonelEkle from "./PersonelEkle";
 import { Input } from "../ui/input";
@@ -119,6 +117,15 @@ const Personel = () => {
     [drawerId, personelListesi],
   );
 
+  // Aktif (Durum = true) personel başta, pasifler sonda; grup içinde API sırası korunur
+  const siraliPersonelListesi = useMemo(
+    () =>
+      [...(personelListesi as Personel[])].sort(
+        (a, b) => Number(Boolean(b.Durum)) - Number(Boolean(a.Durum)),
+      ),
+    [personelListesi],
+  );
+
   const filteredPersonelListesi = useMemo(() => {
     const query = searchText.trim().toLocaleLowerCase("tr-TR");
     const selectedUcretTipi = filters?.UcretTipi || "";
@@ -137,10 +144,10 @@ const Personel = () => {
     );
 
     if (!hasTextFilter && !hasSelectFilter) {
-      return personelListesi;
+      return siraliPersonelListesi;
     }
 
-    return personelListesi.filter((personel: Personel) => {
+    return siraliPersonelListesi.filter((personel: Personel) => {
       const sicilNo = String(personel.SicilNo ?? "").toLocaleLowerCase("tr-TR");
       const tcKimlikNo = String(personel.TcKimlikNo ?? "").toLocaleLowerCase(
         "tr-TR",
@@ -174,7 +181,7 @@ const Personel = () => {
         grupMatch
       );
     });
-  }, [personelListesi, searchText, filters]);
+  }, [siraliPersonelListesi, searchText, filters]);
 
   const handleDeleteConfirm = () => {
     if (!silinecekId) return;

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarRange,
+  ChartColumn,
   ChevronRight,
   ContactRound,
   FileText,
@@ -116,6 +117,14 @@ const MENU_ITEMS: MenuItem[] = [
     yetki: "PersonelBordroGorur",
   },
   { href: "/belgeler", label: "Belgeler", icon: FileText, roles: TUMU },
+  {
+    href: "/raporlar",
+    label: "Raporlar",
+    icon: ChartColumn,
+    roles: [ADMIN, YONETICI],
+    // Alt sayfalar (PDKS raporu vb.) Raporlar'ın kendi iç menüsünde.
+    matchNested: true,
+  },
   {
     href: "/ayarlar",
     label: "Ayarlar",
