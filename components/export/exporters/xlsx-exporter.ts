@@ -7,7 +7,7 @@ import {
   getExportMoneyValue,
   getExportValue,
   getRecordCountLabel,
-} from "../types";
+} from "@/components/export/types";
 
 // Sayı olarak kalır (toplama/sıralama yapılabilir), Türkçe Excel'de "3.500,00 ₺" görünür
 const MONEY_NUM_FMT = '#,##0.00 "₺"';

@@ -1,4 +1,4 @@
-import { ExportColumn, ExportMeta, getExportValue } from "../types";
+import { ExportColumn, ExportMeta, getExportValue } from "@/components/export/types";
 
 /**
  * Yer tutucu: "Rapor" formatı şimdilik dosya üretmiyor, seçilen veriyi (export

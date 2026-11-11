@@ -1,7 +1,7 @@
 import { Document, Image, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 import { CompanyInfo, getCompanyInfo, getLogoDataUri } from "@/lib/company";
-import { downloadBlob } from "../types";
-import { getExportDateLabel } from "../section-types";
+import { downloadBlob } from "@/components/export/types";
+import { getExportDateLabel } from "@/components/export/section-types";
 import { PDF_FONT_FAMILY, registerPdfFont } from "./pdf-exporter";
 
 // Log gibi satır satır düz metinlerin PDF'i. Başlık bloğu section-pdf-exporter ile aynı.

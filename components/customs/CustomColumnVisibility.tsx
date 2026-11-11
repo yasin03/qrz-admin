@@ -3,7 +3,7 @@
 import { Columns3 } from "lucide-react";
 import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
 
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
 type Props<TData> = {
   columns: ColumnDef<TData, any>[];

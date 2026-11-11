@@ -1,0 +1,288 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import {
+  MoreHorizontal,
+  FileSearch,
+  Info,
+  Search,
+  UserPlus,
+} from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+
+import { Badge } from "@/components/ui/badge";
+import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { RowActions } from "@/components/customs/RowActions";
+import TalepDetayDialog from "./TalepDetayDialog";
+import { useTalepList } from "@/modules/bordro/hooks/use-izin";
+import {
+  IzinFilters,
+  IzinTalepSelectParams,
+  IzinTalepType,
+} from "@/modules/bordro/types/izin";
+import { formatDate } from "@/lib/format";
+import { useHasRole, useUser } from "@/stores/auth-store";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { KULLANICI_TIPI } from "@/lib/roles";
+import { Input } from "@/components/ui/input";
+import IzinFiltre from "./IzinFiltre";
+import { Button } from "@/components/ui/button";
+import { useCurrentContext } from "@/modules/core/hooks/use-context";
+import TalepEkle from "./TalepEkle";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import { ExportMenu } from "@/components/export/ExportMenu";
+import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
+import { ExportColumn } from "@/components/export/types";
+
+function getDurumInfo(talep: IzinTalepType): {
+  label: string;
+  variant: "secondary" | "success" | "danger";
+} {
+  if (talep.RedDurum) return { label: "Reddedildi", variant: "danger" };
+  if (talep.OnayDurum) return { label: "Onaylandı", variant: "success" };
+  return { label: "Beklemede", variant: "secondary" };
+}
+function getDefaultDateRange() {
+  const now = new Date();
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+  return {
+    BaslangicTarihi: formatDate(yearStart, "yyyy-MM-dd"),
+    BitisTarihi: formatDate(now, "yyyy-MM-dd"),
+  };
+}
+function getYearBounds() {
+  const year = new Date().getFullYear();
+  return {
+    BaslangicTarihi: `${year}-01-01`,
+    BitisTarihi: `${year}-12-31`,
+  };
+}
+
+type Props = {
+  enabled: boolean;
+};
+
+const TalepListesi = ({ enabled }: Props) => {
+  const user = useUser();
+  const isPersonel = useHasRole(KULLANICI_TIPI.PERSONEL);
+  const { data: savedContext, isLoading: isLoadingContext } =
+    useCurrentContext();
+  const [detayTalep, setDetayTalep] = useState<IzinTalepType | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [openTalepEkle, setOpenTalepEkle] = useState(false);
+  const [columnVisibility, setColumnVisibility] =
+    useColumnVisibility("talep-kolonlar");
+  const [filters, setFilters] = useState<IzinFilters>(() => ({
+    ...getDefaultDateRange(),
+    Aciklama: "",
+  }));
+  const selectParams = useMemo(
+    () => ({
+      IDSube: isPersonel ? "0" : String(savedContext?.IDSube ?? "0"),
+      IDSubePersonel: isPersonel ? String(user?.IDSubePersonel ?? "0") : "0",
+      ...getYearBounds(),
+    }),
+    [isPersonel, user?.IDSube, user?.IDSubePersonel, savedContext?.IDSube],
+  );
+  const { data: talepListesi = [], isLoading } = useTalepList(
+    selectParams,
+    enabled,
+  );
+
+  const filteredTalepListesi = useMemo(() => {
+    if (isPersonel) return talepListesi;
+    const query = searchText.trim().toLocaleLowerCase("tr-TR");
+    if (!query) return talepListesi;
+
+    return talepListesi.filter((talep) => {
+      return (
+        talep.AdSoyad?.toLocaleLowerCase("tr-TR").includes(query) ||
+        talep.SicilNo?.toLocaleLowerCase("tr-TR").includes(query) ||
+        talep.SubeAdi?.toLocaleLowerCase("tr-TR").includes(query)
+      );
+    });
+  }, [talepListesi, searchText, isPersonel]);
+
+  const exportColumns: ExportColumn<IzinTalepType>[] = [
+  { header: "Sicil No", accessorKey: "SicilNo" },
+  { header: "Ad Soyad", accessorKey: "AdSoyad" },
+  { header: "Şube", accessorKey: "SubeAdi" },
+  { header: "Başlangıç Tarihi", accessorKey: (row) => formatDate(row.BaslangicTarihi) },
+  { header: "Bitiş Tarihi", accessorKey: (row) => formatDate(row.BitisTarihi) },
+  { header: "Gün", accessorKey: "Gun" },
+  { header: "Açıklama", accessorKey: "Aciklama" },
+  { header: "Ait Olduğu Yıl", accessorKey: "AitOlduguYil" },
+  { header: "Talep Tarihi", accessorKey: (row) => formatDate(row.Tarih) },
+  { header: "Adres", accessorKey: "Adres" },
+  { header: "Telefon", accessorKey: "Telefon" },
+  { header: "Mesaj", accessorKey: "Mesaj" },
+  { header: "Onay Durumu", accessorKey: (row) => (row.OnayDurum ? "Onaylandı" : "Bekliyor") },
+  { header: "Red Durumu", accessorKey: (row) => (row.RedDurum ? "Reddedildi" : "-") },
+  { header: "Red Açıklaması", accessorKey: "RedAciklama" },
+  ];
+
+  const columns: ColumnDef<IzinTalepType>[] = useMemo(() => {
+    // Sadece admin/yönetici talebi onaylayıp reddedebilir.
+    const actionColumn: ColumnDef<IzinTalepType> = {
+      id: "actions",
+      size: 50,
+      header: "",
+      enableSorting: false,
+      cell: ({ row }) => {
+        return (
+          <RowActions
+            row={row.original}
+            actions={[
+              {
+                label: "Talep Detayları",
+                icon: FileSearch,
+                onClick: (r) => setDetayTalep(r),
+              },
+            ]}
+          />
+        );
+      },
+    };
+
+    const personelBilgiColumns: ColumnDef<IzinTalepType>[] = [
+      { accessorKey: "SicilNo", header: "Sicil No" },
+      { accessorKey: "AdSoyad", header: "Ad Soyad" },
+      { accessorKey: "SubeAdi", header: "Şube" },
+    ];
+
+    const ortakColumns: ColumnDef<IzinTalepType>[] = [
+      {
+        accessorKey: "BaslangicTarihi",
+        header: "Başlangıç",
+        cell: ({ row }) => formatDate(row.original.BaslangicTarihi),
+      },
+      {
+        accessorKey: "BitisTarihi",
+        header: "Bitiş",
+        cell: ({ row }) => formatDate(row.original.BitisTarihi),
+      },
+      { accessorKey: "Gun", header: "Gün" },
+      {
+        accessorKey: "Aciklama",
+        header: "İzin Tipi",
+        cell: ({ row }) => (
+          <Badge variant="secondary">{row.original.Aciklama}</Badge>
+        ),
+      },
+      {
+        id: "durum",
+        header: "Durum",
+        cell: ({ row }) => {
+          const { label, variant } = getDurumInfo(row.original);
+          const redAciklama = row.original.RedAciklama;
+
+          return (
+            <div className="flex items-center gap-1.5">
+              <Badge variant={variant}>{label}</Badge>
+
+              {row.original.RedDurum && redAciklama && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label="Red açıklamasını göster"
+                    >
+                      <Info className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-64">
+                    <p className="text-sm">{redAciklama}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          );
+        },
+      },
+    ];
+
+    // Personel kendi talebini onaylayamaz/reddedemez, action kolonu yok.
+    return isPersonel
+      ? ortakColumns
+      : [actionColumn, ...personelBilgiColumns, ...ortakColumns];
+  }, [isPersonel]);
+
+  return (
+    <div className="min-w-0 space-y-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        {!isPersonel && (
+          <div className="w-full sm:w-48 sm:shrink-0">
+            <Input
+              startIcon={<Search className="h-4 w-4" />}
+              placeholder="Ara..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <IzinFiltre
+            filters={filters}
+            onChange={setFilters}
+            onReset={() =>
+              setFilters({ ...getDefaultDateRange(), Aciklama: "" })
+            }
+          />
+
+          {isPersonel && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setOpenTalepEkle(true)}
+            >
+              <UserPlus className="size-4" />
+              Talep Ekle
+            </Button>
+          )}
+          <ExportMenu
+            data={filteredTalepListesi}
+            exportColumns={exportColumns}
+            title="İzin Listesi"
+            fileName="izin-listesi"
+            showImport
+            onImport={(rows) => {
+              // rows: Record<string, unknown>[] — Excel'den okunan ham satırlar
+              // burada kendi doğrulama + toplu ekleme API çağrını yapabilirsin
+              console.log("İçe aktarılan izin:", rows);
+            }}
+          />
+          <CustomColumnVisibility
+            columns={columns}
+            value={columnVisibility}
+            onChange={setColumnVisibility}
+          />
+        </div>
+      </div>
+      <CustomDataTable
+        data={filteredTalepListesi}
+        columns={columns}
+        loading={isLoading}
+        columnVisibilityValue={columnVisibility}
+        onColumnVisibilityValueChange={setColumnVisibility}
+      />
+
+      <TalepDetayDialog
+        open={!!detayTalep}
+        onOpenChange={(open) => !open && setDetayTalep(null)}
+        talep={detayTalep}
+        currentUser={user}
+      />
+      {openTalepEkle && (
+        <TalepEkle
+          open={openTalepEkle}
+          onOpenChange={setOpenTalepEkle}
+          user={user}
+        />
+      )}
+    </div>
+  );
+};
+
+export default TalepListesi;

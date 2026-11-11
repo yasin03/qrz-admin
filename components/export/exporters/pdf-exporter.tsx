@@ -6,7 +6,7 @@ import {
   downloadBlob,
   getExportValue,
   getRecordCountLabel,
-} from "../types";
+} from "@/components/export/types";
 
 // react-pdf'in gömülü Helvetica fontu Türkçe karakterleri (Ş, ğ, ı, İ...) ve ₺
 // simgesini içermiyor; bu yüzden public/fonts altındaki Roboto kaydediliyor.

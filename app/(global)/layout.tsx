@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { YASAL } from "@/constants/yasal";
 
-// (global) altındaki sayfalar login gerektirmez; her yeni sayfanın yolu proxy.ts ve app-shell.tsx PUBLIC_PATHS listesine eklenmeli
+// (global) altındaki sayfalar login gerektirmez; her yeni sayfanın yolu proxy.ts PUBLIC_PATHS listesine eklenmeli
 // Arka plan login sayfasıyla aynı: ışık lekeleri + nokta deseni
 export default function GlobalLayout({
   children,

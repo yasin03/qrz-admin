@@ -3,9 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/providers/react-query-provider";
 import { Toaster } from "sonner";
-import { AppShell } from "@/components/layout/app-shell";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { cookies } from "next/headers";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
@@ -26,15 +24,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const defaultSidebarOpen =
-    cookieStore.get("sidebar_state")?.value !== "false";
-
   return (
     <html
       lang="en"
@@ -50,9 +44,7 @@ export default async function RootLayout({
         >
           <TooltipProvider>
             <ReactQueryProvider>
-              <AppShell defaultSidebarOpen={defaultSidebarOpen}>
-                {children}
-              </AppShell>
+              {children}
               <Toaster richColors position="top-right" />
             </ReactQueryProvider>
           </TooltipProvider>

@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { logout } from "@/services/auth";
+import { logout } from "@/modules/core/services/auth";
 import { useAuthStore, useHasRole } from "@/stores/auth-store";
 import { KULLANICI_TIPI } from "@/lib/roles";
 

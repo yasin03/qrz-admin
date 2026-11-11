@@ -1,12 +1,12 @@
 import ExcelJS from "exceljs";
 import { getCompanyInfo, getLogoArrayBuffer } from "@/lib/company";
-import { downloadBlob } from "../types";
+import { downloadBlob } from "@/components/export/types";
 import {
   SectionExportDocument,
   chunkSectionFields,
   formatSectionValue,
   getExportDateLabel,
-} from "../section-types";
+} from "@/components/export/section-types";
 
 const PRIMARY = "FF1F4E79";
 const PRIMARY_SOFT = "FFEAF1F8";

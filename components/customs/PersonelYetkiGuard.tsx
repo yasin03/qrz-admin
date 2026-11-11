@@ -2,7 +2,7 @@
 
 import { Loader2, ShieldOff } from "lucide-react";
 
-import { usePersonelYetki } from "@/hooks/use-per-yetki";
+import { usePersonelYetki } from "@/modules/core/hooks/use-per-yetki";
 import type { PerYetkiKey } from "@/lib/per-yetki";
 
 type PersonelYetkiGuardProps = {

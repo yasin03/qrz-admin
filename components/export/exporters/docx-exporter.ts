@@ -21,7 +21,7 @@ import {
   downloadBlob,
   getExportValue,
   getRecordCountLabel,
-} from "../types";
+} from "@/components/export/types";
 
 const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
 const NO_BORDERS = {

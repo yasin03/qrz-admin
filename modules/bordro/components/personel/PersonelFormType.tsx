@@ -1,0 +1,340 @@
+import { PersonelType } from "@/modules/bordro/types/personel";
+
+export type PersonelForm = {
+  // Personel Bilgileri
+  IDBolum: string;
+  IDSirketPersonelGrup: string;
+  SicilNo: string;
+  TcKimlikNo: string;
+  Ad: string;
+  Soyad: string;
+  IlkSoyad: string;
+  Cinsiyet: string;
+  DogumTarihi: string;
+  DogumYeri: string;
+  MedeniDurum: string;
+  Uyruk: string;
+  KanGurubu: string;
+  OgrenimDurumu: string;
+  MezuniyetYili: string;
+  MezuniyetBolumu: string;
+  Boy: string;
+  Kilo: string;
+  Yas: string;
+  KimlikKartiSeriNo: string;
+  KimlikKartiDuzenlemeTarihi: string;
+  KimlikKartiBitisTarihi: string;
+  OzurluDurumu: boolean;
+  OzurlulukDerecesi: string;
+  Aciklama: string;
+
+  // Giriş/Çıkış Bilgileri
+  IseIlkGirisTarihi: string;
+  IseSonGirisTarihi: string;
+  CikisTarihi: string;
+  Durum: boolean;
+  SgkDurumu: string;
+  IstihdamDurumu: string;
+  CalismaDurumu: string;
+  PersonelAyrilisKodu: string;
+  IDPersonelIstisnaDurum: string;
+  IstisnaDurumBilgi: string;
+  IstisnaDurumTarih: string;
+  IskurKayit: boolean;
+  IskurKayitNo: string;
+  AzCalismaDurumu: boolean;
+  AzCalismaDurumuGun: boolean;
+  AzCalismaDurumuGunSayisi: string;
+  EskiHukumluDurumu: boolean;
+  SendikaDurumu: boolean;
+  SendikaBaslangicTarihi: string;
+  DayanismaDurumu: boolean;
+  DayanismaBaslangicTarihi: string;
+  GecmistenKalanIzinGun: string;
+
+  // Bordro Bilgileri
+  Ucret: string;
+  MaasParaBirimi: string;
+  OdemeSekli: string;
+  UcretTipi: string;
+  GunlukUcret: string;
+  SaatlikUcret: string;
+  SozlesmeUcret: string;
+  SozlesmeOdemeSekli: string;
+  SozlesmeUcret2: string;
+  SozlesmeOdemeSekli2: string;
+  Ucret2: string;
+  GunlukUcret2: string;
+  SaatlikUcret2: string;
+  NetUcret: string;
+  AgiAlmazDurumu: boolean;
+  AgiOrani: string;
+  AgiOranID: string;
+  BesKesilmezDurumu: boolean;
+  BesOrani: string;
+  DevredenSgkMatrahi: string;
+  KumulatifSgkMatrahi: string;
+  AuKumulatifVergiMatrahi: string;
+  TesvikOrani: string;
+  VergidenMuaf: boolean;
+  YardimHaric: boolean;
+  AgiHaric: boolean;
+  MaliMesuliyet: boolean;
+  CocukYardimiAlamaz: boolean;
+  BordroIstisnaUygulama: boolean;
+  UcretOtomatikIsle: boolean;
+  UcretOdemeGun: string;
+  HastalikRiskPrimDurumu: boolean;
+  AsgeriUcretli: boolean;
+  HaftaTatilGunu: string;
+  IDBanka: string;
+  BankaSubeKodu: string;
+  BankaHesapNo: string;
+  BankaIbanNo: string;
+  PersonelMeslekKodu: string;
+  PersonelSgkBelgeTuru: string;
+  PersonelKanunNo: string;
+  PersonelGorevKodu: string;
+  PersonelSigortaKolu: string;
+  GorevAdi: string;
+  UnvanAdi: string;
+  OzelKod: string;
+  OzelKod2: string;
+  VardiyaliCalismaDurumu: boolean;
+  // Adres Bilgileri
+  Adres: string;
+  Telefon: string;
+  IlKodu: string;
+  IlceKodu: string;
+  IDLokasyon: string;
+  Koordinatorluk: string;
+  CalismaAlani: string;
+};
+
+export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
+  IDBolum: "0",
+  IDSirketPersonelGrup: "0",
+  SicilNo: "",
+  TcKimlikNo: "",
+  Ad: "",
+  Soyad: "",
+  IlkSoyad: "",
+  Cinsiyet: "",
+  DogumTarihi: "",
+  DogumYeri: "",
+  MedeniDurum: "",
+  Uyruk: "42",
+  KanGurubu: "",
+  OgrenimDurumu: "51",
+  MezuniyetYili: "",
+  MezuniyetBolumu: "",
+  Boy: "",
+  Kilo: "",
+  Yas: "",
+  KimlikKartiSeriNo: "",
+  KimlikKartiDuzenlemeTarihi: "",
+  KimlikKartiBitisTarihi: "",
+  OzurluDurumu: false,
+  OzurlulukDerecesi: "",
+  Aciklama: "",
+
+  IseIlkGirisTarihi: "",
+  IseSonGirisTarihi: "",
+  CikisTarihi: "",
+  Durum: true,
+  SgkDurumu: "1",
+  IstihdamDurumu: "5",
+  CalismaDurumu: "17",
+  PersonelAyrilisKodu: "",
+  IDPersonelIstisnaDurum: "",
+  IstisnaDurumBilgi: "",
+  IstisnaDurumTarih: "",
+  IskurKayit: false,
+  IskurKayitNo: "",
+  AzCalismaDurumu: false,
+  AzCalismaDurumuGun: false,
+  AzCalismaDurumuGunSayisi: "",
+  EskiHukumluDurumu: false,
+  SendikaDurumu: false,
+  SendikaBaslangicTarihi: "",
+  DayanismaDurumu: false,
+  DayanismaBaslangicTarihi: "",
+  GecmistenKalanIzinGun: "",
+
+  Ucret: "",
+  MaasParaBirimi: "14",
+  OdemeSekli: "11",
+  UcretTipi: "10",
+  GunlukUcret: "",
+  SaatlikUcret: "",
+  SozlesmeUcret: "",
+  SozlesmeOdemeSekli: "11",
+  SozlesmeUcret2: "",
+  SozlesmeOdemeSekli2: "11",
+  Ucret2: "",
+  GunlukUcret2: "",
+  SaatlikUcret2: "",
+  NetUcret: "",
+  AgiAlmazDurumu: false,
+  AgiOrani: "",
+  AgiOranID: "",
+  BesKesilmezDurumu: false,
+  BesOrani: "",
+  DevredenSgkMatrahi: "",
+  KumulatifSgkMatrahi: "",
+  AuKumulatifVergiMatrahi: "",
+  TesvikOrani: "",
+  VergidenMuaf: false,
+  YardimHaric: false,
+  AgiHaric: false,
+  MaliMesuliyet: false,
+  CocukYardimiAlamaz: false,
+  BordroIstisnaUygulama: false,
+  UcretOtomatikIsle: false,
+  UcretOdemeGun: "",
+  HastalikRiskPrimDurumu: false,
+  AsgeriUcretli: false,
+  HaftaTatilGunu: "", // Hafta tatili yok; seçilirse "7" veya "5-7" (HAFTA_DATA değerleri, "-" ile)
+  IDBanka: "",
+  BankaSubeKodu: "",
+  BankaHesapNo: "",
+  BankaIbanNo: "",
+  PersonelMeslekKodu: "",
+  PersonelSgkBelgeTuru: "1",
+  PersonelKanunNo: "1",
+  PersonelGorevKodu: "",
+  PersonelSigortaKolu: "0",
+  GorevAdi: "",
+  UnvanAdi: "",
+  OzelKod: "",
+  OzelKod2: "",
+  VardiyaliCalismaDurumu: false,
+
+  Adres: "",
+  Telefon: "",
+  IlKodu: "",
+  IlceKodu: "",
+  IDLokasyon: "",
+  Koordinatorluk: "",
+  CalismaAlani: "",
+};
+
+/** API'den gelen ham personel objesini forma yazılabilir hâle çevirir. */
+export function mapPersonelToForm(personel: PersonelType): PersonelForm {
+  const dateOnly = (value: unknown) =>
+    typeof value === "string" && value ? value.slice(0, 10) : "";
+
+  const str = (value: unknown) =>
+    value === null || value === undefined ? "" : String(value);
+
+  return {
+    IDBolum: str(personel.IDBolum) || "0",
+    IDSirketPersonelGrup: str(personel.IDSirketPersonelGrup) || "0",
+    SicilNo: str(personel.SicilNo),
+    TcKimlikNo: str(personel.TcKimlikNo),
+    Ad: str(personel.Ad),
+    Soyad: str(personel.Soyad),
+    IlkSoyad: str(personel.IlkSoyad),
+    Cinsiyet: str(personel.Cinsiyet),
+    DogumTarihi: dateOnly(personel.DogumTarihi),
+    DogumYeri: str(personel.DogumYeri),
+    MedeniDurum: str(personel.MedeniDurum),
+    Uyruk: str(personel.Uyruk),
+    KanGurubu: str(personel.KanGurubu),
+    OgrenimDurumu: str(personel.OgrenimDurumu),
+    MezuniyetYili: str(personel.MezuniyetYili),
+    MezuniyetBolumu: str(personel.MezuniyetBolumu),
+    Boy: str(personel.Boy),
+    Kilo: str(personel.Kilo),
+    Yas: str(personel.Yas),
+    Telefon: str(personel.Telefon),
+    KimlikKartiSeriNo: str(personel.KimlikKartiSeriNo),
+    KimlikKartiDuzenlemeTarihi: dateOnly(personel.KimlikKartiDuzenlemeTarihi),
+    KimlikKartiBitisTarihi: dateOnly(personel.KimlikKartiBitisTarihi),
+    OzelKod: str(personel.OzelKod),
+    OzelKod2: str(personel.OzelKod2),
+    Aciklama: str(personel.Aciklama),
+
+    IseIlkGirisTarihi: dateOnly(personel.IseIlkGirisTarihi),
+    IseSonGirisTarihi: dateOnly(personel.IseSonGirisTarihi),
+    CikisTarihi: dateOnly(personel.CikisTarihi),
+    PersonelAyrilisKodu: str(personel.PersonelAyrilisKodu),
+    SgkDurumu: str(personel.SgkDurumu),
+    IstihdamDurumu: str(personel.IstihdamDurumu),
+    CalismaDurumu: str(personel.CalismaDurumu),
+    PersonelSgkBelgeTuru: str(personel.PersonelSgkBelgeTuru),
+    PersonelKanunNo: str(personel.PersonelKanunNo),
+    PersonelMeslekKodu: str(personel.PersonelMeslekKodu),
+    PersonelGorevKodu: str(personel.PersonelGorevKodu),
+    GorevAdi: str(personel.GorevAdi),
+    UnvanAdi: str(personel.UnvanAdi),
+    IDPersonelIstisnaDurum: str(personel.IDPersonelIstisnaDurum),
+    IstisnaDurumBilgi: str(personel.IstisnaDurumBilgi),
+    IstisnaDurumTarih: dateOnly(personel.IstisnaDurumTarih),
+    PersonelSigortaKolu: str(personel.PersonelSigortaKolu),
+    IskurKayitNo: str(personel.IskurKayitNo),
+    IskurKayit: Boolean(personel.IskurKayit),
+    Durum: Boolean(personel.Durum),
+
+    Ucret: str(personel.Ucret),
+    Ucret2: str(personel.Ucret2),
+    GunlukUcret: str(personel.GunlukUcret),
+    GunlukUcret2: str(personel.GunlukUcret2),
+    SaatlikUcret: str(personel.SaatlikUcret),
+    SaatlikUcret2: str(personel.SaatlikUcret2),
+    NetUcret: str(personel.NetUcret),
+    SozlesmeUcret: str(personel.SozlesmeUcret),
+    SozlesmeUcret2: str(personel.SozlesmeUcret2),
+    MaasParaBirimi: str(personel.MaasParaBirimi),
+    OdemeSekli: str(personel.OdemeSekli),
+    SozlesmeOdemeSekli: str(personel.SozlesmeOdemeSekli),
+    SozlesmeOdemeSekli2: str(personel.SozlesmeOdemeSekli2),
+    UcretTipi: str(personel.UcretTipi),
+    AgiOranID: str(personel.AgiOranID),
+    AgiOrani: str(personel.AgiOrani),
+    BesOrani: str(personel.BesOrani),
+    TesvikOrani: str(personel.TesvikOrani),
+    DevredenSgkMatrahi: str(personel.DevredenSgkMatrahi),
+    KumulatifSgkMatrahi: str(personel.KumulatifSgkMatrahi),
+    AuKumulatifVergiMatrahi: str(personel.AuKumulatifVergiMatrahi),
+    UcretOdemeGun: str(personel.UcretOdemeGun),
+    GecmistenKalanIzinGun: str(personel.GecmistenKalanIzinGun),
+    IDBanka: str(personel.IDBanka),
+    BankaSubeKodu: str(personel.BankaSubeKodu),
+    BankaHesapNo: str(personel.BankaHesapNo),
+    BankaIbanNo: str(personel.BankaIbanNo),
+    SendikaBaslangicTarihi: dateOnly(personel.SendikaBaslangicTarihi),
+    DayanismaBaslangicTarihi: dateOnly(personel.DayanismaBaslangicTarihi),
+    OzurlulukDerecesi: str(personel.OzurlulukDerecesi),
+    AzCalismaDurumuGunSayisi: str(personel.AzCalismaDurumuGunSayisi),
+    AgiAlmazDurumu: Boolean(personel.AgiAlmazDurumu),
+    BesKesilmezDurumu: Boolean(personel.BesKesilmezDurumu),
+    DayanismaDurumu: Boolean(personel.DayanismaDurumu),
+    AsgeriUcretli: Boolean(personel.AsgeriUcretli),
+    HaftaTatilGunu:
+      personel.HaftaTatilGunu && String(personel.HaftaTatilGunu) !== "0"
+        ? String(personel.HaftaTatilGunu)
+        : "",
+    HastalikRiskPrimDurumu: Boolean(personel.HastalikRiskPrimDurumu),
+    VergidenMuaf: Boolean(personel.VergidenMuaf),
+    YardimHaric: Boolean(personel.YardimHaric),
+    AgiHaric: Boolean(personel.AgiHaric),
+    MaliMesuliyet: Boolean(personel.MaliMesuliyet),
+    CocukYardimiAlamaz: Boolean(personel.CocukYardimiAlamaz),
+    BordroIstisnaUygulama: Boolean(personel.BordroIstisnaUygulama),
+    UcretOtomatikIsle: Boolean(personel.UcretOtomatikIsle),
+    SendikaDurumu: Boolean(personel.SendikaDurumu),
+    EskiHukumluDurumu: Boolean(personel.EskiHukumluDurumu),
+    OzurluDurumu: Boolean(personel.OzurluDurumu),
+    AzCalismaDurumu: Boolean(personel.AzCalismaDurumu),
+    AzCalismaDurumuGun: Boolean(personel.AzCalismaDurumuGun),
+    VardiyaliCalismaDurumu: Boolean(personel.VardiyaliCalismaDurumu),
+
+    Adres: str(personel.Adres),
+    IlKodu: str(personel.IlKodu),
+    IlceKodu: str(personel.IlceKodu),
+    IDLokasyon: str(personel.IDLokasyon),
+    CalismaAlani: str(personel.CalismaAlani),
+    Koordinatorluk: str(personel.Koordinatorluk),
+  };
+}

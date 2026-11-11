@@ -1,12 +1,12 @@
 import { Document, Image, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 import { CompanyInfo, getCompanyInfo, getLogoDataUri } from "@/lib/company";
-import { downloadBlob } from "../types";
+import { downloadBlob } from "@/components/export/types";
 import {
   SectionExportDocument,
   chunkSectionFields,
   formatSectionValue,
   getExportDateLabel,
-} from "../section-types";
+} from "@/components/export/section-types";
 import { PDF_FONT_FAMILY, registerPdfFont } from "./pdf-exporter";
 
 const PRIMARY = "#1F4E79";
