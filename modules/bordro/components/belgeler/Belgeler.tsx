@@ -135,7 +135,7 @@ const Belgeler = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <p
-                  className="line-clamp-2 text-sm font-medium leading-snug"
+                  className="line-clamp-2 text-sm/snug font-medium"
                   title={belge.label}
                 >
                   {belge.label}

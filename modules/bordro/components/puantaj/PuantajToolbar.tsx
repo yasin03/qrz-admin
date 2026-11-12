@@ -246,7 +246,7 @@ export default function PuantajToolbar({
           </div>
         ) : (
           <Command>
-            <div className="flex items-center gap-1 border-b border-border px-1 py-1">
+            <div className="flex items-center gap-1 border-b border-border p-1">
               <Button
                 size="icon-sm"
                 variant="secondary"

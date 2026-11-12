@@ -202,7 +202,7 @@ export default function Sube({ idSirket }: SubeProps) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         <div className="w-full sm:w-48 sm:shrink-0">
           <Input
-            startIcon={<Search className="h-4 w-4" />}
+            startIcon={<Search className="size-4" />}
             placeholder="Şube Ara..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}

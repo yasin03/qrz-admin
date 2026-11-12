@@ -229,7 +229,7 @@ function MesajBalonu({ satir }: { satir: MesajSatiri }) {
         )}
 
         {dosyalar.length > 0 && (
-          <div className="mt-1 mb-1 flex flex-col gap-1">
+          <div className="my-1 flex flex-col gap-1">
             {dosyalar.map((dosya, i) => (
               <button
                 key={`${dosya.fileName}-${i}`}
@@ -263,7 +263,7 @@ function MesajBalonu({ satir }: { satir: MesajSatiri }) {
         <p
           className={cn(
             "wrap-break-word whitespace-pre-wrap",
-            isBuyukEmoji && "text-4xl leading-tight",
+            isBuyukEmoji && "text-4xl/tight",
           )}
         >
           {mesaj.Mesaj}

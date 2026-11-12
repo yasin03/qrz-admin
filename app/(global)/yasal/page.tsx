@@ -174,7 +174,7 @@ export default function GizlilikPolitikasiPage() {
             {VERI_KATEGORILERI.map((satir) => (
               <div
                 key={satir.kategori}
-                className="grid gap-1 px-4 py-3 sm:grid-cols-[11rem_1fr] sm:gap-0 sm:px-0 sm:py-0"
+                className="grid gap-1 px-4 py-3 sm:grid-cols-[11rem_1fr] sm:gap-0 sm:p-0"
               >
                 <dt className="font-semibold sm:px-4 sm:py-2.5">
                   {satir.kategori}

@@ -10,6 +10,7 @@ import {
   PuantajSelectRequestType,
   PuantajUpdateRequestType,
 } from "@/modules/bordro/types/puantaj";
+import { MESAI_QUERY_KEY } from "@/modules/bordro/hooks/use-bordro-parametre";
 
 const ENDPOINT = "/api/puantaj";
 const QUERY_KEY = "puantaj-list";
@@ -107,6 +108,8 @@ export function useAktarPuantaj() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      // Aktarım mesai kayıtlarını da oluşturuyor; mesai listesi de yenilensin.
+      queryClient.invalidateQueries({ queryKey: [MESAI_QUERY_KEY] });
     },
   });
 }

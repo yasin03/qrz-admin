@@ -374,7 +374,7 @@ function IzinStat({ label, value, highlight }: IzinStatProps) {
       <p className="text-[11px] leading-tight text-muted-foreground">{label}</p>
       <p
         className={cn(
-          "text-base font-semibold leading-tight",
+          "text-base/tight font-semibold",
           highlight ? "text-primary" : "text-foreground",
         )}
       >

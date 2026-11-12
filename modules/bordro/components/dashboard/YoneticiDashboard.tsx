@@ -114,6 +114,7 @@ export default function YoneticiDashboard() {
       <BolumBaslik title="Bugün" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatKart
+          layout="inline"
           icon={Users}
           color="#052346"
           title="Aktif Personel"
@@ -122,6 +123,7 @@ export default function YoneticiDashboard() {
           href="/personel"
         />
         <StatKart
+          layout="inline"
           icon={UserCheck}
           color="#059669"
           title="Bugün Gelen"
@@ -131,6 +133,7 @@ export default function YoneticiDashboard() {
           href="/pdks"
         />
         <StatKart
+          layout="inline"
           icon={Plane}
           color="#2563EB"
           title="Bugün İzinde"
@@ -139,6 +142,7 @@ export default function YoneticiDashboard() {
           href="/izin"
         />
         <StatKart
+          layout="inline"
           icon={Hourglass}
           color="#D97706"
           title="Onay Bekleyen"

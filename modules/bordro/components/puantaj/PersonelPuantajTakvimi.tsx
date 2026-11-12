@@ -193,7 +193,7 @@ export default function PersonelPuantajTakvimi({
                 <div className="min-w-0">
                   <div
                     className={cn(
-                      "text-xl leading-tight font-semibold",
+                      "text-xl/tight font-semibold",
                       isEmpty ? "text-muted-foreground" : "text-foreground",
                     )}
                   >

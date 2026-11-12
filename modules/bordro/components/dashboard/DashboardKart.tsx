@@ -19,6 +19,11 @@ type StatKartProps = {
   loading?: boolean;
   className?: string;
   right?: ReactNode;
+  /**
+   * stacked: ikon + başlık üstte, değer altında (varsayılan).
+   * inline: büyük ikon solda, başlık/alt metin ortada, büyük değer en sağda.
+   */
+  layout?: "stacked" | "inline";
 };
 
 // Dashboard'daki tekil özet kartı. href verilirse ilgili sayfaya gider.
@@ -32,8 +37,40 @@ export function StatKart({
   loading,
   className,
   right,
+  layout = "stacked",
 }: StatKartProps) {
-  const content = (
+  const inlineContent = (
+    <div className="flex items-center gap-3">
+      <div
+        className="flex size-12 shrink-0 items-center justify-center rounded-xl"
+        style={{ backgroundColor: `${color}1A` }}
+      >
+        <Icon className="size-6" style={{ color }} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-medium text-muted-foreground">
+          {title}
+        </div>
+        {loading ? (
+          <Skeleton className="mt-1.5 h-3 w-3/4" />
+        ) : sub ? (
+          <div className="mt-0.5 truncate text-xs text-muted-foreground">
+            {sub}
+          </div>
+        ) : null}
+      </div>
+      {loading ? (
+        <Skeleton className="h-8 w-12 shrink-0" />
+      ) : (
+        <div className="shrink-0 text-3xl font-bold tabular-nums text-foreground">
+          {value}
+        </div>
+      )}
+      {right}
+    </div>
+  );
+
+  const stackedContent = (
     <>
       <div className="flex items-center gap-2">
         <div
@@ -67,6 +104,8 @@ export function StatKart({
       )}
     </>
   );
+
+  const content = layout === "inline" ? inlineContent : stackedContent;
 
   const base = cn(
     "rounded-xl border border-border bg-card p-4 transition-shadow",

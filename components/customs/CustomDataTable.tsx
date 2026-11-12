@@ -403,7 +403,7 @@ export function CustomDataTable<TData>({
 
   const rows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
-  const cellPadding = dense ? "px-3 py-1.5" : "px-3 py-3";
+  const cellPadding = dense ? "px-3 py-1.5" : "p-3";
 
   return (
     <div className={cn("space-y-3", className)}>

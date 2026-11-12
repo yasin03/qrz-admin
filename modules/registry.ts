@@ -60,10 +60,16 @@ export const MODULE_SWITCHER_ROLES: KullaniciTipi[] = [ADMIN, BAYI];
 export const ACTIVE_MODULE_COOKIE = "active_module";
 
 /**
- * Hiçbir modüle ait olmayan ortak sayfalar (profil, kurumsal, sistem, destek).
+ * Hiçbir modüle ait olmayan ortak sayfalar (profil, kurumsal, sistem, destek, takvim).
  * Bu sayfalarda sidebar son seçilen modülün menüsünü göstermeye devam eder.
  */
-export const SHARED_PATHS = ["/profile", "/kurumsal", "/sistem", "/destek"];
+export const SHARED_PATHS = [
+  "/profile",
+  "/kurumsal",
+  "/sistem",
+  "/destek",
+  "/takvim",
+];
 
 export function isModuleId(value: unknown): value is ModuleId {
   return MODULE_IDS.includes(value as ModuleId);

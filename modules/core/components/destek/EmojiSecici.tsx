@@ -117,7 +117,7 @@ export function EmojiSecici({ onSelect, disabled }: Props) {
               data-kategori={kategori.baslik}
               className="mb-2 last:mb-0"
             >
-              <p className="sticky top-0 z-10 bg-popover px-1 py-1 text-xs font-medium text-muted-foreground">
+              <p className="sticky top-0 z-10 bg-popover p-1 text-xs font-medium text-muted-foreground">
                 {kategori.baslik}
               </p>
               <div className="grid grid-cols-8 gap-0.5">
