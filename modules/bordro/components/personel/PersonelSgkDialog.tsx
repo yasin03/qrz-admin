@@ -137,7 +137,7 @@ export default function PersonelSgkDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Personel SGK {modeLabel} İşlemi</DialogTitle>
           <DialogDescription>
@@ -197,8 +197,7 @@ export default function PersonelSgkDialog({
                 SGK Çıkış Onayla
               </Button>
               <Button
-                type="button"
-                color="secondary"
+                variant="secondary"
                 disabled={isSubmitting}
                 onClick={() => runSubmit("MANUEL_CIKIS")}
               >
@@ -215,8 +214,7 @@ export default function PersonelSgkDialog({
                 SGK Giriş Onayla
               </Button>
               <Button
-                type="button"
-                color="secondary"
+                variant="secondary"
                 disabled={isSubmitting}
                 onClick={() => runSubmit("MANUEL_GIRIS")}
               >
@@ -225,8 +223,7 @@ export default function PersonelSgkDialog({
             </>
           )}
           <Button
-            type="button"
-            color="secondary"
+            variant="secondary"
             appearance="outline"
             disabled={isSubmitting}
             onClick={() => onOpenChange(false)}

@@ -154,8 +154,7 @@ export default function PersonelSettingsDialog({
             Kaydet
           </Button>
           <Button
-            type="button"
-            color="secondary"
+            variant="secondary"
             appearance="outline"
             disabled={isPending}
             onClick={() => onOpenChange(false)}

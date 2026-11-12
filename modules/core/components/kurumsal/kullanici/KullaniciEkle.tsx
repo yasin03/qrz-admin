@@ -16,7 +16,6 @@ import { FormInput, FormSwitch } from "@/components/forms";
 import { useCreateKullanici, useUpdateKullanici } from "@/modules/core/hooks/use-kullanici";
 import { SelectKullaniciResponseType } from "@/modules/core/types/kullanici";
 import KullaniciYetkileri from "./KullaniciYetkileri";
-import { cn } from "@/lib/utils";
 import { Card, CardHeader } from "@/components/ui/card";
 import { UserShield } from "lucide-react";
 
@@ -195,12 +194,7 @@ const KullaniciEkle = ({ open, onOpenChange, kullanici, onSuccess }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={cn(
-          "max-h-[85vh] overflow-y-auto",
-          "sm:max-w-2xl md:max-w-4xl",
-        )}
-      >
+      <DialogContent className="sm:max-w-2xl md:max-w-4xl">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Kullanıcıyı Düzenle" : "Yeni Kullanıcı Ekle"}
@@ -213,10 +207,7 @@ const KullaniciEkle = ({ open, onOpenChange, kullanici, onSuccess }: Props) => {
         </DialogHeader>
 
         {/* Kullanıcı bilgileri — footer'daki Kaydet bu forma "form" id'si ile bağlı */}
-        {/* relative: Radix Select'in gizli (position: absolute) native
-            <select>'leri bu scroll alanının içinde kalsın — yoksa dialog'u
-            taşırıp footer'ın altında boşluk oluşturuyorlar. */}
-        <div className="relative -mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
+        <div>
           <Card className="shadow-lg p-0 my-3">
             <CardHeader className="bg-gray-100 dark:bg-gray-700 p-2 px-4">
               <UserShield />

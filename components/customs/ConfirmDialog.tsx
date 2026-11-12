@@ -127,8 +127,7 @@ export function ConfirmDialog({
 
           <div className="mt-6 flex justify-end gap-2">
             <Button
-              type="button"
-              color="secondary"
+              variant="secondary"
               appearance="outline"
               disabled={isLoading}
               onClick={() => onOpenChange(false)}

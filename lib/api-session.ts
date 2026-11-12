@@ -53,7 +53,7 @@ export async function getSession(request: NextRequest): Promise<Session> {
 
   const sidToken = request.cookies.get("sid")?.value;
   const sid = sidToken ? await joseDecrypt(sidToken) : null;
-
+console.log("Session SID:", sid); // Debugging line to check the value of sid
   if (!sid) {
     return {
       authenticated: false,

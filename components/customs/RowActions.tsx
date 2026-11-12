@@ -113,8 +113,7 @@ export function RowActions<TData = void>({
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <Button
-            type="button"
-            color="secondary"
+            variant="secondary"
             appearance="ghost"
             size="icon-sm"
             aria-label={triggerLabel}

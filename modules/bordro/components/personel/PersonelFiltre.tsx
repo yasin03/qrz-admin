@@ -247,8 +247,7 @@ export default function PersonelFiltre({ onApply }: Props) {
 
         <div className="flex justify-end gap-2 border-t border-border pt-3">
           <Button
-            type="button"
-            color="secondary"
+            variant="secondary"
             appearance="outline"
             size="sm"
             onClick={handleReset}

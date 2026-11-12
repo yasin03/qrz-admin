@@ -127,8 +127,7 @@ export function FormMultiSelect<T extends FieldValues>({
           <Popover modal open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
-                type="button"
-                color="secondary"
+                variant="secondary"
                 appearance="outline"
                 disabled={disabled}
                 className={cn(

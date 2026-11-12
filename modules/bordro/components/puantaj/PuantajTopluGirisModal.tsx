@@ -91,7 +91,7 @@ export default function PuantajTopluGirisModal({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Toplu Puantaj Girişi</DialogTitle>
           <DialogDescription>
