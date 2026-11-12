@@ -170,7 +170,7 @@ const EklentiEkle = ({ open, onOpenChange, IDSube, eklenti }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Eklenti Düzenle" : "Yeni Eklenti Ekle"}

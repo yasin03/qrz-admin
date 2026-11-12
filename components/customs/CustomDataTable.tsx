@@ -447,8 +447,7 @@ export function CustomDataTable<TData>({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    type="button"
-                    color="secondary"
+                    variant="secondary"
                     appearance="outline"
                     className="gap-1.5"
                   >
@@ -711,7 +710,6 @@ export function CustomDataTable<TData>({
                     <span>{emptyMessage}</span>
                     {onRetry && !loading && (
                       <Button
-                        type="button"
                         variant="secondary"
                         appearance="outline"
                         size="sm"
@@ -770,8 +768,7 @@ export function CustomDataTable<TData>({
 
             <div className="flex items-center gap-1">
               <Button
-                type="button"
-                color="secondary"
+                variant="secondary"
                 appearance="outline"
                 size="icon-sm"
                 aria-label="İlk sayfa"
@@ -781,8 +778,7 @@ export function CustomDataTable<TData>({
                 <ChevronsLeft className="size-4" />
               </Button>
               <Button
-                type="button"
-                color="secondary"
+                variant="secondary"
                 appearance="outline"
                 size="icon-sm"
                 aria-label="Önceki sayfa"
@@ -792,8 +788,7 @@ export function CustomDataTable<TData>({
                 <ChevronLeft className="size-4" />
               </Button>
               <Button
-                type="button"
-                color="secondary"
+                variant="secondary"
                 appearance="outline"
                 size="icon-sm"
                 aria-label="Sonraki sayfa"
@@ -803,8 +798,7 @@ export function CustomDataTable<TData>({
                 <ChevronRight className="size-4" />
               </Button>
               <Button
-                type="button"
-                color="secondary"
+                variant="secondary"
                 appearance="outline"
                 size="icon-sm"
                 aria-label="Son sayfa"

@@ -176,7 +176,7 @@ export default function SirketEkle({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Şirketi Düzenle" : "Yeni Şirket"}

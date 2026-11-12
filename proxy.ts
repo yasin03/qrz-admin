@@ -88,6 +88,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  // Yardım & Destek Personel'e kapalı (profile-menu'deki görünürlük ile
+  // aynı tutulmalı)
+  if (
+    (pathname === "/destek" || pathname.startsWith("/destek/")) &&
+    session?.IDKullaniciTip === KULLANICI_TIPI.PERSONEL
+  ) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   // Örnek: role-bazlı koruma — yalnızca Admin girebilsin
   // if (pathname.startsWith("/kurumsal-ayarlar") && session?.KullaniciTipi !== "Admin") {
   //   return NextResponse.redirect(new URL("/", request.url));

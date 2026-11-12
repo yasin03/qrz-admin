@@ -272,7 +272,7 @@ const ProfileData = () => {
           <div className="flex justify-end gap-2 border-t border-border pt-4">
             <Button
               type="button"
-              color="secondary"
+              variant="secondary"
               appearance="ghost"
               disabled={!isProfileDirty}
               onClick={() =>

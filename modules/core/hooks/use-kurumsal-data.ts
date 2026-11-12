@@ -120,9 +120,10 @@ export const kurumsalKeys = {
 // SEVİYE 1 — GRUPLAR
 // ============================================================================
 
-export function useGruplar() {
+export function useGruplar(options?: UseSirketlerOptions) {
   return useQuery({
     queryKey: kurumsalKeys.gruplar(),
+    enabled: options?.enabled ?? true,
 
     queryFn: () =>
       callKurumsalApi<ApiListResponse<GrupType>>("/api/kurumsal/grup", {

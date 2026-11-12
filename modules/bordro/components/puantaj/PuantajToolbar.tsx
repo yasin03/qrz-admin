@@ -248,9 +248,8 @@ export default function PuantajToolbar({
           <Command>
             <div className="flex items-center gap-1 border-b border-border px-1 py-1">
               <Button
-                type="button"
                 size="icon-sm"
-                color="secondary"
+                variant="secondary"
                 appearance="ghost"
                 onClick={() => setView("main")}
                 aria-label="Geri"

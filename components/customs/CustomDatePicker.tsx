@@ -174,7 +174,7 @@ export function CustomDatePicker<T extends FieldValues>({
             <PopoverTrigger asChild>
               <Button
                 type="button"
-                color="secondary"
+                variant="secondary"
                 appearance="outline"
                 disabled={disabled}
                 className={cn(

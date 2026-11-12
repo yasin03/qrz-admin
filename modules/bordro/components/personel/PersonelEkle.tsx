@@ -327,7 +327,7 @@ export default function PersonelEkle({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Personel Detayı" : "Yeni Personel Ekle"}

@@ -170,7 +170,7 @@ const KatsayiOranEkle = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Katsayı Düzenle" : "Yeni Katsayı Ekle"}

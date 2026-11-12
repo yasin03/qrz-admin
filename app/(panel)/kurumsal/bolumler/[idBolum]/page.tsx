@@ -17,8 +17,7 @@ export default function BolumDetayPage() {
       </p>
 
       <Button
-        type="button"
-        color="secondary"
+        variant="secondary"
         appearance="ghost"
         size="sm"
         onClick={() => router.back()}

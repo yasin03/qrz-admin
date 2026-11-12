@@ -143,7 +143,7 @@ const VergiOranEkle = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Vergi Oranı Düzenle" : "Yeni Vergi Oranı Ekle"}

@@ -157,7 +157,7 @@ export function FormSearchSelect<T extends FieldValues>({
               <Button
                 id={name}
                 type="button"
-                color="secondary"
+                variant="secondary"
                 appearance="outline"
                 disabled={disabled}
                 aria-invalid={Boolean(fieldState.error)}

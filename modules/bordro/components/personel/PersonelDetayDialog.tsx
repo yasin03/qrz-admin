@@ -442,13 +442,13 @@ export function PersonelDetayContent({ id, hideSummary }: ContentProps) {
 export default function PersonelDetayDialog({ open, onOpenChange, id }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Personel Detayı</DialogTitle>
           <DialogDescription></DialogDescription>
         </DialogHeader>
 
-        <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
+        <div>
           {open && id ? <PersonelDetayContent id={id} /> : null}
         </div>
 

@@ -112,7 +112,7 @@ const MeslekKoduEkle = ({ open, onOpenChange, meslekKodu }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Meslek Kodu Düzenle" : "Yeni Meslek Kodu Ekle"}

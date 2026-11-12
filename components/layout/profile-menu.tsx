@@ -6,7 +6,9 @@ import {
   Building2,
   ChevronDown,
   ContactRound,
+  LifeBuoy,
   LogOut,
+  MessageCircleQuestion,
   SlidersHorizontal,
   User,
   UserCircle2,
@@ -92,11 +94,23 @@ const ProfileMenu = () => {
             Sistem Parametreleri
           </DropdownMenuItem>
         )}
+        {!isPersonel && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="info"
+              onClick={() => router.push("/destek")}
+            >
+              <MessageCircleQuestion />
+              Yardım & Destek
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuSeparator />
-
         <DropdownMenuItem
           variant="destructive"
+          className="bg-destructive/10 font-medium focus:bg-destructive/15 dark:bg-destructive/15 dark:focus:bg-destructive/25"
           disabled={isLoggingOut}
           onClick={handleLogout}
         >
