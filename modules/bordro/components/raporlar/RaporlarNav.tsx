@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fingerprint } from "lucide-react";
+import { ContactRound, Fingerprint, HandCoins, Parasol } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Tooltip,
@@ -17,6 +17,21 @@ const NAV_ITEMS = [
     href: "/raporlar/pdks-raporu",
     label: "PDKS Raporu",
     icon: Fingerprint,
+  },
+  {
+    href: "/raporlar/izin-raporu",
+    label: "İzin Raporları",
+    icon: Parasol,
+  },
+  {
+    href: "/raporlar/avans-raporu",
+    label: "Avans Raporları",
+    icon: HandCoins,
+  },
+  {
+    href: "/raporlar/bordro-raporu",
+    label: "Bordro Raporları",
+    icon: ContactRound,
   },
 ];
 
