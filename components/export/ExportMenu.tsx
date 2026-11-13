@@ -24,7 +24,12 @@ import {
 } from "lucide-react";
 // Projede kullanılan toast kütüphanesi neyse onunla değiştirin (sonner örnek olarak kullanıldı)
 import { toast } from "sonner";
-import { ExportFormat, ExportMenuProps, ExportOrientation } from "./types";
+import {
+  ExportFormat,
+  ExportMenuProps,
+  ExportOrientation,
+  withRowNumbers,
+} from "./types";
 import { exportToPdf } from "./exporters/pdf-exporter";
 import { exportToDocx } from "./exporters/docx-exporter";
 import { exportToXlsx } from "./exporters/xlsx-exporter";
@@ -56,19 +61,21 @@ export function ExportMenu<T>({
     }
 
     setIsExporting(true);
+    // Tüm raporlarda ilk kolon 1'den başlayan sıra no ("#")
+    const columns = withRowNumbers(data, exportColumns);
     try {
       switch (format) {
         case "pdf":
-          await exportToPdf(data, exportColumns, meta);
+          await exportToPdf(data, columns, meta);
           break;
         case "docx":
-          await exportToDocx(data, exportColumns, meta);
+          await exportToDocx(data, columns, meta);
           break;
         case "xlsx":
-          await exportToXlsx(data, exportColumns, meta);
+          await exportToXlsx(data, columns, meta);
           break;
         case "report":
-          exportToReport(data, exportColumns, meta);
+          exportToReport(data, columns, meta);
           break;
       }
     } catch (error) {

@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import { getCompanyInfo, getLogoArrayBuffer } from "@/lib/company";
+import { getCompanyInfo, getLogoArrayBuffer, getCompanyContactLine } from "@/lib/company";
 import { downloadBlob } from "@/components/export/types";
 import {
   SectionExportDocument,
@@ -62,7 +62,7 @@ export async function exportSectionsToXlsx(
   titleCell.alignment = { horizontal: "right" };
   rowIndex++;
 
-  for (const line of [company.address, company.phone].filter(Boolean)) {
+  for (const line of [company.address, getCompanyContactLine(company)].filter(Boolean)) {
     sheet.mergeCells(rowIndex, 1, rowIndex, 2);
     const cell = sheet.getCell(rowIndex, 1);
     cell.value = line;

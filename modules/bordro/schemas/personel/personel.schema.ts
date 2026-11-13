@@ -178,7 +178,7 @@ export const DEFAULT_PERSONEL_FORM: PersonelForm = {
   SendikaBaslangicTarihi: "",
   DayanismaDurumu: false,
   DayanismaBaslangicTarihi: "",
-  GecmistenKalanIzinGun: "",
+  GecmistenKalanIzinGun: "0",
 
   Ucret: "",
   MaasParaBirimi: "",

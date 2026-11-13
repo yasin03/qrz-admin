@@ -16,7 +16,7 @@ import {
   VerticalAlign,
   WidthType,
 } from "docx";
-import { getCompanyInfo, getLogoArrayBuffer } from "@/lib/company";
+import { getCompanyInfo, getLogoArrayBuffer, getCompanyContactLine } from "@/lib/company";
 import { downloadBlob } from "@/components/export/types";
 import {
   SectionExportDocument,
@@ -186,7 +186,7 @@ export async function exportSectionsToDocx(
                   }),
                 ],
               }),
-              ...[company.address, company.phone].filter(Boolean).map(
+              ...[company.address, getCompanyContactLine(company)].filter(Boolean).map(
                 (line) =>
                   new Paragraph({
                     children: [

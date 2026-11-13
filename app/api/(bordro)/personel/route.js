@@ -110,7 +110,8 @@ function buildPersonelParams(p) {
     sqlStr(p.AsgeriUcretli),
     sqlStr(p.UcretOtomatikIsle),
     sqlStr(p.UcretOdemeGun),
-    sqlNum(p.GecmistenKalanIzinGun),
+    // Girilmezse (boş) 0 gider
+    sqlNum(p.GecmistenKalanIzinGun || 0),
     sqlStr(p.HaftaTatilGunu), // "7" veya "5-7" gibi '-' ile ayrılmış günler; yoksa ""
     sqlNum(p.IDSirketPersonelGrup),
   ].join(",");

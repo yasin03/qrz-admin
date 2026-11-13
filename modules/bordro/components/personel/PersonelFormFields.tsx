@@ -138,6 +138,7 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
       "VardiyaliCalismaDurumu",
       "AzCalismaDurumu",
       "AzCalismaDurumuGunSayisi",
+      "GecmistenKalanIzinGun",
     ],
     bordro: [
       "IstihdamDurumu",
@@ -444,6 +445,13 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
               control={control}
               name="VardiyaliCalismaDurumu"
               label="Vardiyalı Çalışma Durumu"
+            />
+            <FormInput
+              control={control}
+              name="GecmistenKalanIzinGun"
+              label="Geçmişten Kalan İzin Gün"
+              format="number"
+              placeholder="0"
             />
             <FormLabel label="Az Çalışma Durumu ve Gün">
               <FormSwitch

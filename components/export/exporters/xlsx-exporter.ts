@@ -1,16 +1,25 @@
 import ExcelJS from "exceljs";
-import { getCompanyInfo, getLogoArrayBuffer } from "@/lib/company";
+import { getCompanyInfo, getLogoArrayBuffer, getCompanyContactLine } from "@/lib/company";
 import {
   ExportColumn,
   ExportMeta,
   downloadBlob,
   getExportMoneyValue,
   getExportRawValue,
+  getExportAlign,
   getExportTotals,
+  getTotalLabelIndex,
   getExportValue,
   getRecordCountLabel,
   isNumericExportColumn,
 } from "@/components/export/types";
+import { BORDER, MUTED, PRIMARY, PRIMARY_SOFT, ROW_ALT, argb } from "./export-theme";
+
+const solidFill = (color: string): ExcelJS.Fill => ({
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: argb(color) },
+});
 
 // Sayı olarak kalır (toplama/sıralama yapılabilir), Türkçe Excel'de "3.500,00 ₺" görünür
 const MONEY_NUM_FMT = '#,##0.00 "₺"';
@@ -38,25 +47,32 @@ export async function exportToXlsx<T>(
   const colCount = Math.max(columns.length, 4);
   // Sadece key/width tanımlıyoruz — `header` set etmediğimiz için exceljs 1. satıra
   // otomatik başlık yazmıyor, o satırı şirket bilgisi için boş bırakıyor.
-  sheet.columns = columns.map((col) => ({ key: col.header, width: 22 }));
+  // Genişlik içeriğe göre (başlık / en uzun değer), 8–40 karakter arası
+  sheet.columns = columns.map((col) => {
+    const longest = Math.max(
+      col.header.length,
+      ...data.slice(0, 300).map((row) => getExportValue(row, col).length),
+    );
+    return { key: col.header, width: Math.min(Math.max(longest + 2, 8), 40) };
+  });
 
   const infoColSpan = Math.max(colCount - 2, 1);
 
   // Şirket bilgisi — sol üst
   sheet.mergeCells(1, 1, 1, infoColSpan);
   sheet.getCell(1, 1).value = company.name;
-  sheet.getCell(1, 1).font = { bold: true, size: 13 };
+  sheet.getCell(1, 1).font = { bold: true, size: 13, color: { argb: argb(PRIMARY) } };
 
   if (company.address) {
     sheet.mergeCells(2, 1, 2, infoColSpan);
     sheet.getCell(2, 1).value = company.address;
-    sheet.getCell(2, 1).font = { size: 10, color: { argb: "FF555555" } };
+    sheet.getCell(2, 1).font = { size: 10, color: { argb: argb(MUTED) } };
   }
 
-  if (company.phone) {
+  if (getCompanyContactLine(company)) {
     sheet.mergeCells(3, 1, 3, infoColSpan);
-    sheet.getCell(3, 1).value = company.phone;
-    sheet.getCell(3, 1).font = { size: 10, color: { argb: "FF555555" } };
+    sheet.getCell(3, 1).value = getCompanyContactLine(company);
+    sheet.getCell(3, 1).font = { size: 10, color: { argb: argb(MUTED) } };
   }
 
   // Logo — sağ üst (yüklenemezse export'u engellemeden devam et)
@@ -71,47 +87,52 @@ export async function exportToXlsx<T>(
     // logo yoksa sessizce geç
   }
 
-  const titleRowIndex = 5;
+  // Şirket bilgisinin altındaki lacivert çizgi (PDF ile aynı)
+  for (let c = 1; c <= colCount; c++) {
+    sheet.getCell(4, c).border = { bottom: { style: "medium", color: { argb: argb(PRIMARY) } } };
+  }
+
+  const titleRowIndex = 6;
   sheet.mergeCells(titleRowIndex, 1, titleRowIndex, colCount);
   const titleCell = sheet.getCell(titleRowIndex, 1);
   titleCell.value = meta.title ?? "Rapor";
   titleCell.font = { bold: true, size: 14 };
-  titleCell.alignment = { horizontal: "center" };
 
-  let infoRowIndex = titleRowIndex + 1;
-  if (meta.subtitle) {
-    sheet.mergeCells(infoRowIndex, 1, infoRowIndex, colCount);
-    const subtitleCell = sheet.getCell(infoRowIndex, 1);
-    subtitleCell.value = meta.subtitle;
-    subtitleCell.font = { size: 10, color: { argb: "FF555555" } };
-    subtitleCell.alignment = { horizontal: "center" };
-    infoRowIndex++;
-  }
+  // Alt başlık ve kayıt sayısı tek satırda: "01.01.2026 - 31.12.2026 · Tüm Şubeler · Toplam Kayıt: 40"
+  const infoRowIndex = titleRowIndex + 1;
+  sheet.mergeCells(infoRowIndex, 1, infoRowIndex, colCount);
+  const infoCell = sheet.getCell(infoRowIndex, 1);
+  infoCell.value = [meta.subtitle, getRecordCountLabel(data.length)]
+    .filter(Boolean)
+    .join(" · ");
+  infoCell.font = { size: 10, color: { argb: argb(PRIMARY) } };
 
-  const countCell = sheet.getCell(infoRowIndex, 1);
-  countCell.value = getRecordCountLabel(data.length);
-  countCell.font = { size: 10, color: { argb: "FF555555" } };
-
-  const headerRowIndex = infoRowIndex + 1;
+  const headerRowIndex = infoRowIndex + 2;
   const headerRow = sheet.getRow(headerRowIndex);
   columns.forEach((col, i) => {
     const cell = headerRow.getCell(i + 1);
     cell.value = col.header;
-    cell.font = { bold: true };
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FFF0F0F0" },
-    };
-    cell.border = { bottom: { style: "thin", color: { argb: "FF333333" } } };
+    cell.font = { bold: true, size: 10, color: { argb: argb(PRIMARY) } };
+    cell.fill = solidFill(PRIMARY_SOFT);
+    cell.border = { bottom: { style: "thin", color: { argb: argb(PRIMARY) } } };
     // Excel sayıları sağa yaslar; başlık da aynı hizada olsun
-    if (isNumericExportColumn(col)) cell.alignment = { horizontal: "right" };
+    cell.alignment = {
+      vertical: "middle",
+      wrapText: true,
+      horizontal: getExportAlign(col),
+    };
   });
 
   data.forEach((row, rowIndex) => {
     const excelRow = sheet.getRow(headerRowIndex + 1 + rowIndex);
     columns.forEach((col, colIndex) => {
       const cell = excelRow.getCell(colIndex + 1);
+      cell.font = { size: 10 };
+      cell.border = { bottom: { style: "hair", color: { argb: argb(BORDER) } } };
+      if (rowIndex % 2 === 1) cell.fill = solidFill(ROW_ALT);
+      // Açık hiza verilen kolonlar (örn. ortalı "#"); diğerlerinde Excel'in
+      // doğal hizası (sayı/tarih sağda, metin solda) korunur
+      if (col.align) cell.alignment = { horizontal: col.align };
       const numericValue = isNumericExportColumn(col)
         ? getExportMoneyValue(row, col)
         : null;
@@ -132,7 +153,7 @@ export async function exportToXlsx<T>(
   const totals = getExportTotals(data, columns);
   if (totals) {
     const totalRow = sheet.getRow(headerRowIndex + 1 + data.length);
-    const labelIndex = totals.findIndex((total) => total === null);
+    const labelIndex = getTotalLabelIndex(totals, columns);
     columns.forEach((col, colIndex) => {
       const cell = totalRow.getCell(colIndex + 1);
       const total = totals[colIndex];
@@ -142,8 +163,9 @@ export async function exportToXlsx<T>(
       } else if (colIndex === labelIndex) {
         cell.value = "Toplam";
       }
-      cell.font = { bold: true };
-      cell.border = { top: { style: "thin", color: { argb: "FF333333" } } };
+      cell.font = { bold: true, size: 10, color: { argb: argb(PRIMARY) } };
+      cell.fill = solidFill(PRIMARY_SOFT);
+      cell.border = { top: { style: "thin", color: { argb: argb(PRIMARY) } } };
     });
   }
 

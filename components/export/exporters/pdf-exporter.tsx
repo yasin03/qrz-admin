@@ -1,6 +1,7 @@
 import { Document, Font, Page, View, Text, Image, StyleSheet, pdf } from "@react-pdf/renderer";
-import { CompanyInfo, getCompanyInfo, getLogoDataUri } from "@/lib/company";
+import { CompanyInfo, getCompanyInfo, getLogoDataUri, getCompanyContactLine } from "@/lib/company";
 import {
+  ExportAlign,
   ExportColumn,
   ExportMeta,
   downloadBlob,
@@ -8,8 +9,11 @@ import {
   getExportTotals,
   getExportValue,
   getRecordCountLabel,
-  isNumericExportColumn,
+  getExportAlign,
+  measureExportColumns,
 } from "@/components/export/types";
+import { getExportDateLabel } from "@/components/export/section-types";
+import { BORDER, MUTED, PRIMARY, PRIMARY_SOFT, ROW_ALT, TEXT } from "./export-theme";
 
 // react-pdf'in gömülü Helvetica fontu Türkçe karakterleri (Ş, ğ, ı, İ...) ve ₺
 // simgesini içermiyor; bu yüzden public/fonts altındaki Roboto kaydediliyor.
@@ -31,60 +35,190 @@ export function registerPdfFont() {
   isFontRegistered = true;
 }
 
+// Bölümlü PDF (bordro raporu) ile aynı görsel dil; tablo yoğun veri
+// taşıdığı için yazılar daha küçük (7pt).
 const styles = StyleSheet.create({
-  page: { padding: 32, fontSize: 9, fontFamily: PDF_FONT_FAMILY },
+  page: {
+    paddingTop: 28,
+    paddingBottom: 40,
+    paddingHorizontal: 28,
+    fontSize: 7,
+    fontFamily: PDF_FONT_FAMILY,
+    color: TEXT,
+    backgroundColor: "#FFFFFF",
+  },
+  // Tek satırlık başlık: solda rapor bilgileri, sağda şirket
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "flex-end",
+    paddingBottom: 8,
     marginBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: PRIMARY,
   },
-  companyBlock: { maxWidth: "60%" },
-  companyName: { fontSize: 12, fontWeight: 700, marginBottom: 2 },
-  companyLine: { fontSize: 8, color: "#555555" },
-  logo: { width: 90, height: 42, objectFit: "contain" },
-  title: {
-    fontSize: 14,
-    fontWeight: 700,
-    textAlign: "center",
-    marginVertical: 12,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333333",
+  reportBlock: {
+    alignItems: "flex-start",
+    flexShrink: 1,
+    maxWidth: "50%",
+    paddingRight: 16,
   },
-  subtitle: { fontSize: 9, color: "#555555", textAlign: "center", marginTop: -6, marginBottom: 10 },
-  recordCount: { fontSize: 8, color: "#555555", marginBottom: 6 },
+  title: { fontSize: 15, fontWeight: 700 },
+  docDate: { fontSize: 7, color: MUTED, marginTop: 2 },
+  tagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 5,
+  },
+
+  companyBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+    maxWidth: "50%",
+  },
+  companyText: { flexShrink: 1, alignItems: "flex-end" },
+  companyName: { fontSize: 12, fontWeight: 700, color: PRIMARY },
+  companyLine: { fontSize: 7.5, color: MUTED, marginTop: 2, textAlign: "right" },
+  logo: { width: 64, height: 32, objectFit: "contain", marginLeft: 10 },
+  tag: {
+    fontSize: 7,
+    color: PRIMARY,
+    backgroundColor: PRIMARY_SOFT,
+    borderRadius: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    marginRight: 4,
+    marginBottom: 2,
+  },
+
   table: { width: "100%" },
   tableHeaderRow: {
     flexDirection: "row",
-    backgroundColor: "#F0F0F0",
+    alignItems: "flex-end",
+    backgroundColor: PRIMARY_SOFT,
     borderBottomWidth: 1,
-    borderBottomColor: "#333333",
+    borderBottomColor: PRIMARY,
   },
+  tableHeaderCell: {
+    paddingVertical: 5,
+    paddingHorizontal: 4,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  tableHeaderText: { fontSize: 7, fontWeight: 700, color: PRIMARY },
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
-    borderBottomColor: "#CCCCCC",
+    borderBottomColor: BORDER,
   },
-  tableHeaderCell: { flex: 1, padding: 4, fontSize: 8, fontWeight: 700 },
-  tableCell: { flex: 1, padding: 4, fontSize: 8 },
-  tableCellRight: { textAlign: "right" },
+  tableRowAlt: { backgroundColor: ROW_ALT },
+  tableCell: { paddingVertical: 3.5, paddingHorizontal: 4 },
+
   totalRow: {
     flexDirection: "row",
+    backgroundColor: PRIMARY_SOFT,
     borderTopWidth: 1,
-    borderTopColor: "#333333",
+    borderTopColor: PRIMARY,
   },
-  totalCell: { flex: 1, padding: 4, fontSize: 8, fontWeight: 700 },
+  totalCell: {
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    fontWeight: 700,
+    color: PRIMARY,
+  },
+
   footer: {
     position: "absolute",
     bottom: 16,
-    left: 32,
-    right: 32,
-    fontSize: 7,
-    color: "#888888",
-    textAlign: "center",
+    left: 28,
+    right: 28,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 4,
+    borderTopWidth: 0.5,
+    borderTopColor: BORDER,
+    fontSize: 6.5,
+    color: MUTED,
   },
 });
+
+// A4 (pt) eksi yatay sayfa boşlukları (2 × 28)
+const CONTENT_WIDTH = { portrait: 595.28 - 56, landscape: 841.89 - 56 };
+// Tablo yazı boyutu (pt) ve hücre yatay iç boşluğu (2 × 4)
+const TABLE_FONT_SIZE = 7;
+const CELL_PADDING_X = 8;
+
+/**
+ * minWidth: bölünemeyen en uzun kelime tek satıra sığsın (toplam sayfayı
+ * aşarsa orantılı küçültülür). flexGrow: kalan genişlik içerik oranında.
+ * Ölçüm kuralları: measureExportColumns.
+ */
+function getColumnLayout<T>(
+  data: T[],
+  columns: ExportColumn<T>[],
+  orientation: "portrait" | "landscape",
+) {
+  const measured = measureExportColumns(data, columns).map((m) => ({
+    minWidth: m.unbreakableEm * TABLE_FONT_SIZE + CELL_PADDING_X,
+    weight: m.weight,
+  }));
+
+  const totalMin = measured.reduce((sum, m) => sum + m.minWidth, 0);
+  const scale = Math.min(1, CONTENT_WIDTH[orientation] / totalMin);
+
+  return measured.map((m) => ({
+    flexGrow: m.weight,
+    flexBasis: 0,
+    minWidth: m.minWidth * scale,
+  }));
+}
+
+/**
+ * Metni kelime kelime ayrı Text olarak dizer; satır kaydırmayı flexWrap
+ * yapar. Böylece kelimeler alt satıra hiçbir zaman harften bölünerek inmez
+ * (tarayıcıda bazı kalın başlıklar "Personel G / rubu", "stihdam D / urumu"
+ * gibi bir karakter kayık bölünüyor, ilk harf kayboluyordu).
+ */
+type PdfStyle = (typeof styles)[keyof typeof styles];
+
+const JUSTIFY = {
+  left: "flex-start",
+  center: "center",
+  right: "flex-end",
+} as const;
+
+function WordWrap({
+  text,
+  style,
+  align = "left",
+}: {
+  text: string;
+  style: PdfStyle;
+  align?: ExportAlign;
+}) {
+  const words = text.split(/[ \t\r\n]+/).filter(Boolean);
+  const gap = ((style as { fontSize?: number }).fontSize ?? 7) * 0.28;
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: JUSTIFY[align],
+      }}
+    >
+      {words.map((word, i) => (
+        <Text
+          key={i}
+          style={[style, i < words.length - 1 ? { marginRight: gap } : {}]}
+        >
+          {word}
+        </Text>
+      ))}
+    </View>
+  );
+}
 
 function ExportPdfDocument<T>({
   data,
@@ -94,6 +228,7 @@ function ExportPdfDocument<T>({
   company,
   logoDataUri,
   orientation,
+  exportDate,
 }: {
   data: T[];
   columns: ExportColumn<T>[];
@@ -102,54 +237,82 @@ function ExportPdfDocument<T>({
   company: CompanyInfo;
   logoDataUri?: string;
   orientation: "portrait" | "landscape";
+  exportDate: string;
 }) {
   const totals = getExportTotals(data, columns);
-  const cellStyle = (col: ExportColumn<T>) =>
-    isNumericExportColumn(col)
-      ? [styles.tableCell, styles.tableCellRight]
-      : styles.tableCell;
+  const layout = getColumnLayout(data, columns, orientation);
+  const tags = [
+    ...(subtitle ? subtitle.split(" · ").filter(Boolean) : []),
+    getRecordCountLabel(data.length),
+  ];
+
+  const cellStyle = (index: number) => ({
+    ...layout[index],
+    textAlign: getExportAlign(columns[index]),
+  });
 
   return (
-    <Document>
+    <Document title={title}>
       <Page size="A4" orientation={orientation} style={styles.page}>
         <View style={styles.headerRow}>
-          <View style={styles.companyBlock}>
-            {company.name ? (
-              <Text style={styles.companyName}>{company.name}</Text>
-            ) : null}
-            {company.address ? (
-              <Text style={styles.companyLine}>{company.address}</Text>
-            ) : null}
-            {company.phone ? (
-              <Text style={styles.companyLine}>{company.phone}</Text>
-            ) : null}
+          <View style={styles.reportBlock}>
+            <WordWrap text={title} style={styles.title} />
+            <Text style={styles.docDate}>{exportDate}</Text>
+            <View style={styles.tagRow}>
+              {tags.map((tag) => (
+                <Text key={tag} style={styles.tag}>
+                  {tag}
+                </Text>
+              ))}
+            </View>
           </View>
-          {logoDataUri ? <Image src={logoDataUri} style={styles.logo} /> : null}
+          <View style={styles.companyBlock}>
+            <View style={styles.companyText}>
+              {company.name ? (
+                <WordWrap text={company.name} style={styles.companyName} align="right" />
+              ) : null}
+              {company.address ? (
+                <Text style={styles.companyLine}>{company.address}</Text>
+              ) : null}
+              {getCompanyContactLine(company) ? (
+                <Text style={styles.companyLine}>{getCompanyContactLine(company)}</Text>
+              ) : null}
+            </View>
+            {logoDataUri ? <Image src={logoDataUri} style={styles.logo} /> : null}
+          </View>
         </View>
-
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-        <Text style={styles.recordCount}>{getRecordCountLabel(data.length)}</Text>
 
         <View style={styles.table}>
           <View style={styles.tableHeaderRow} fixed>
-            {columns.map((col) => (
-              <Text
+            {columns.map((col, i) => (
+              <View
                 key={col.header}
-                style={
-                  isNumericExportColumn(col)
-                    ? [styles.tableHeaderCell, styles.tableCellRight]
-                    : styles.tableHeaderCell
-                }
+                style={[
+                  styles.tableHeaderCell,
+                  layout[i],
+                  { justifyContent: JUSTIFY[getExportAlign(col)] },
+                ]}
               >
-                {col.header}
-              </Text>
+                <WordWrap
+                  text={col.header}
+                  style={styles.tableHeaderText}
+                  align={getExportAlign(col)}
+                />
+              </View>
             ))}
           </View>
-          {data.map((row, index) => (
-            <View style={styles.tableRow} key={index} wrap={false}>
-              {columns.map((col) => (
-                <Text key={col.header} style={cellStyle(col)}>
+          {data.map((row, rowIndex) => (
+            <View
+              key={rowIndex}
+              wrap={false}
+              style={
+                rowIndex % 2 === 1
+                  ? [styles.tableRow, styles.tableRowAlt]
+                  : styles.tableRow
+              }
+            >
+              {columns.map((col, i) => (
+                <Text key={col.header} style={[styles.tableCell, cellStyle(i)]}>
                   {getExportValue(row, col)}
                 </Text>
               ))}
@@ -158,14 +321,7 @@ function ExportPdfDocument<T>({
           {totals ? (
             <View style={styles.totalRow} wrap={false}>
               {getExportTotalLabels(totals, columns).map((label, i) => (
-                <Text
-                  key={columns[i].header}
-                  style={
-                    isNumericExportColumn(columns[i])
-                      ? [styles.totalCell, styles.tableCellRight]
-                      : styles.totalCell
-                  }
-                >
+                <Text key={columns[i].header} style={[styles.totalCell, cellStyle(i)]}>
                   {label}
                 </Text>
               ))}
@@ -173,11 +329,12 @@ function ExportPdfDocument<T>({
           ) : null}
         </View>
 
-        <Text
-          style={styles.footer}
-          render={({ pageNumber, totalPages }) => `Sayfa ${pageNumber} / ${totalPages}`}
-          fixed
-        />
+        <View style={styles.footer} fixed>
+          <Text>{[title, company.name].filter(Boolean).join(" · ")}</Text>
+          <Text
+            render={({ pageNumber, totalPages }) => `Sayfa ${pageNumber} / ${totalPages}`}
+          />
+        </View>
       </Page>
     </Document>
   );
@@ -204,6 +361,7 @@ export async function exportToPdf<T>(
       company={company}
       logoDataUri={logoDataUri}
       orientation={orientation}
+      exportDate={getExportDateLabel()}
     />
   ).toBlob();
 

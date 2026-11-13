@@ -13,7 +13,11 @@ export interface ExportColumn<T> {
   format?: "money" | "number" | "date";
   /** true verilirse ("money"/"number" kolonlarında) tablonun sonuna toplam satırı eklenir */
   total?: boolean;
+  /** Hizalama; verilmezse sayı/para sağa, diğerleri sola (bkz. getExportAlign) */
+  align?: ExportAlign;
 }
+
+export type ExportAlign = "left" | "center" | "right";
 
 export type ExportFormat = "pdf" | "docx" | "xlsx" | "report";
 
@@ -75,6 +79,10 @@ export function getExportMoneyValue<T>(row: T, col: ExportColumn<T>): number | n
 export const isNumericExportColumn = <T,>(col: ExportColumn<T>) =>
   col.format === "money" || col.format === "number";
 
+/** Kolonun başlık + hücre hizası: align verilmişse o, yoksa sayılar sağa */
+export const getExportAlign = <T,>(col: ExportColumn<T>): ExportAlign =>
+  col.align ?? (isNumericExportColumn(col) ? "right" : "left");
+
 /**
  * `total: true` olan kolonların toplamını döner (kolon sırasıyla; toplamı
  * olmayan kolonlar null). Hiçbir kolonda total yoksa null döner.
@@ -88,6 +96,20 @@ export function getExportTotals<T>(data: T[], columns: ExportColumn<T>[]): (numb
   });
 }
 
+/**
+ * "Toplam" yazısının konacağı kolon: toplamı olmayan ilk metin kolonu
+ * (dar "#" sıra no kolonuna yazılmasın); yoksa toplamı olmayan ilk kolon.
+ */
+export function getTotalLabelIndex<T>(
+  totals: (number | null)[],
+  columns: ExportColumn<T>[],
+) {
+  const textIndex = totals.findIndex(
+    (total, i) => total === null && !isNumericExportColumn(columns[i]),
+  );
+  return textIndex !== -1 ? textIndex : totals.findIndex((total) => total === null);
+}
+
 /** Toplam satırının belgelerde (PDF/Word) görünecek metinleri; ilk boş hücreye "Toplam" yazılır */
 export function getExportTotalLabels<T>(
   totals: (number | null)[],
@@ -96,10 +118,10 @@ export function getExportTotalLabels<T>(
   const labels = totals.map((total, i) => {
     if (total === null) return "";
     return columns[i].format === "money"
-      ? `${formatMoney(total)} ₺`
+      ? `${formatMoney(total)}\u00A0₺`
       : total.toLocaleString("tr-TR");
   });
-  const labelIndex = labels.findIndex((label) => label === "");
+  const labelIndex = getTotalLabelIndex(totals, columns);
   if (labelIndex !== -1) labels[labelIndex] = "Toplam";
   return labels;
 }
@@ -134,7 +156,8 @@ export function getExportValue<T>(row: T, col: ExportColumn<T>): string {
   if (value === null || value === undefined) return "";
   if (col.format === "money") {
     const numeric = getExportMoneyValue(row, col);
-    return numeric === null ? String(value) : `${formatMoney(numeric)} ₺`;
+    // Bölünmez boşluk: "₺" tablolarda tutardan ayrılıp alt satıra kaymasın
+    return numeric === null ? String(value) : `${formatMoney(numeric)}\u00A0₺`;
   }
   if (typeof value === "boolean") return value ? "Evet" : "Hayır";
   if (value instanceof Date) {
@@ -142,6 +165,87 @@ export function getExportValue<T>(row: T, col: ExportColumn<T>): string {
   }
   if (typeof value === "string") return formatIsoDate(value) ?? value;
   return String(value);
+}
+
+const MAX_UNBREAKABLE = 14;
+
+/**
+ * Bir kelimenin yaklaşık genişliği (em). Büyük harfler rakam/küçük harften
+ * belirgin geniş; hepsini aynı saymak "ÇALISIYOR" gibi kelimeleri böldürüyordu.
+ */
+function wordWidthEm(word: string) {
+  let width = 0;
+  for (const char of word.slice(0, MAX_UNBREAKABLE)) {
+    if (/[.,:;'!|ıIil]/.test(char)) width += 0.3;
+    else if (char !== char.toLocaleLowerCase("tr-TR")) width += 0.7;
+    else width += 0.55;
+  }
+  return width;
+}
+
+// Yalnızca normal boşluktan bölünür; bölünmez boşluk (\u00A0, örn. "3.500,00 ₺")
+// kelimenin parçası sayılır — JS'teki \s onu da boşluk kabul ediyor.
+const splitWords = (text: string) => text.split(/[ \t\r\n]+/);
+
+const longestWord = (text: string) =>
+  Math.max(0, ...splitWords(text).map((word) => word.length));
+
+const widestWordEm = (text: string) =>
+  Math.max(0, ...splitWords(text).map(wordWidthEm));
+
+/**
+ * Kolon genişliklerini içeriğe göre hesaplamak için (PDF ve Word):
+ * - unbreakableEm: başlığın ve verinin bölünemeyen en geniş kelimesinin
+ *   genişliği (em; 14 karaktere kadar — TC, telefon, tarih, tutar tek
+ *   satıra sığsın). Yazı boyutuyla çarpılınca pt verir.
+ * - weight: kalan genişliğin paylaşım oranı; verinin tipik (90. yüzdelik)
+ *   uzunluğu. Uzun serbest metinler 32 ile sınırlanır, alt satıra kayar.
+ * Eşit genişlikte kolonlarda TC No gibi değerler yan hücreye taşıyordu.
+ */
+export function measureExportColumns<T>(data: T[], columns: ExportColumn<T>[]) {
+  const sample = data.slice(0, 300);
+
+  return columns.map((col) => {
+    const values = sample.map((row) => getExportValue(row, col));
+    const lengths = values.map((v) => v.length).sort((a, b) => a - b);
+    const typical = lengths.length
+      ? lengths[Math.min(lengths.length - 1, Math.floor(lengths.length * 0.9))]
+      : 0;
+    const unbreakable = Math.max(
+      longestWord(col.header),
+      Math.min(Math.max(0, ...values.map(longestWord)), MAX_UNBREAKABLE),
+    );
+    const unbreakableEm = Math.max(
+      widestWordEm(col.header),
+      ...values.map(widestWordEm),
+    );
+    return {
+      unbreakableEm,
+      weight: Math.min(Math.max(unbreakable, typical, 4), 32),
+    };
+  });
+}
+
+/**
+ * Kolonların başına 1'den başlayan sıra no ("#") kolonu ekler. Numara,
+ * export edilen (filtrelenmiş) listedeki sıraya göredir.
+ */
+export function withRowNumbers<T>(
+  data: T[],
+  columns: ExportColumn<T>[],
+): ExportColumn<T>[] {
+  const rowNumbers = new Map<T, number>();
+  data.forEach((row, index) => rowNumbers.set(row, index + 1));
+
+  return [
+    {
+      header: "#",
+      accessorKey: (row) => rowNumbers.get(row) ?? null,
+      format: "number",
+      align: "center",
+    },
+    ...columns,
+  ];
 }
 
 /** Export belgelerinin başlığın altına yazdığı kayıt sayısı metni */

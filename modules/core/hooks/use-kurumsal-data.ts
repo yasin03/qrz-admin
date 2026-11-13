@@ -93,6 +93,20 @@ function normalizeListResponse<T>(data: ApiListResponse<T>): T[] {
   return Array.isArray(first) ? first : (data as T[]);
 }
 
+/**
+ * Şirket/şube procedure'leri e-posta alanını "EPostaAdresi" (büyük P) olarak
+ * dönüyor; tipler, formlar ve kaydetme isteği "EpostaAdresi" kullanıyor.
+ * Okurken burada eşitleniyor — aksi halde düzenleme formlarında e-posta
+ * alanı boş geliyordu.
+ */
+function normalizeEposta<T extends { EpostaAdresi: string | null }>(row: T): T {
+  const raw = row as T & { EPostaAdresi?: string | null };
+  if (raw.EpostaAdresi == null && raw.EPostaAdresi != null) {
+    return { ...row, EpostaAdresi: raw.EPostaAdresi };
+  }
+  return row;
+}
+
 // ============================================================================
 // QUERY KEY FACTORY — tüm cache anahtarları tek yerde, invalidate ederken
 // yanlış key yazma riskini ortadan kaldırır.
@@ -222,7 +236,7 @@ export function useSirketler(idGurup: number, options?: UseSirketlerOptions) {
       }),
 
     enabled: !!idGurup && (options?.enabled ?? true),
-    select: (data) => normalizeListResponse(data),
+    select: (data) => normalizeListResponse(data).map(normalizeEposta),
     staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
@@ -236,7 +250,10 @@ export function useSirketDetay(idSirket: number) {
         IDSirket: idSirket,
       }),
     enabled: !!idSirket,
-    select: (data) => normalizeListResponse(data)[0] as SirketType | undefined,
+    select: (data) => {
+      const sirket = normalizeListResponse(data)[0] as SirketType | undefined;
+      return sirket && normalizeEposta(sirket);
+    },
     staleTime: 5 * 60 * 1000, // 5 dakika
   });
 }
@@ -352,7 +369,7 @@ export function useSubeler(idSirket: number, options?: UseSubelerOptions) {
 
     enabled: !!idSirket && (options?.enabled ?? true),
     staleTime: 5 * 60 * 1000, // 5 dakika
-    select: (data) => normalizeListResponse(data),
+    select: (data) => normalizeListResponse(data).map(normalizeEposta),
   });
 }
 
@@ -366,7 +383,10 @@ export function useSubeDetay(idSube: number) {
       }),
     enabled: !!idSube,
     staleTime: 5 * 60 * 1000, // 5 dakika
-    select: (data) => normalizeListResponse(data)[0] as SubeType | undefined,
+    select: (data) => {
+      const sube = normalizeListResponse(data)[0] as SubeType | undefined;
+      return sube && normalizeEposta(sube);
+    },
   });
 }
 

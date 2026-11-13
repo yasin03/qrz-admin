@@ -1,5 +1,5 @@
 import { Document, Image, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
-import { CompanyInfo, getCompanyInfo, getLogoDataUri } from "@/lib/company";
+import { CompanyInfo, getCompanyInfo, getLogoDataUri, getCompanyContactLine } from "@/lib/company";
 import { downloadBlob } from "@/components/export/types";
 import {
   SectionExportDocument,
@@ -8,11 +8,7 @@ import {
   getExportDateLabel,
 } from "@/components/export/section-types";
 import { PDF_FONT_FAMILY, registerPdfFont } from "./pdf-exporter";
-
-const PRIMARY = "#1F4E79";
-const PRIMARY_SOFT = "#EAF1F8";
-const BORDER = "#D9DEE5";
-const MUTED = "#6B7280";
+import { BORDER, MUTED, PRIMARY, PRIMARY_SOFT } from "./export-theme";
 
 const styles = StyleSheet.create({
   page: {
@@ -164,8 +160,8 @@ function SectionPdfDocument({
             {company.address ? (
               <Text style={styles.companyLine}>{company.address}</Text>
             ) : null}
-            {company.phone ? (
-              <Text style={styles.companyLine}>{company.phone}</Text>
+            {getCompanyContactLine(company) ? (
+              <Text style={styles.companyLine}>{getCompanyContactLine(company)}</Text>
             ) : null}
           </View>
           <View>

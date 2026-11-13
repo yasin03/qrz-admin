@@ -159,7 +159,7 @@ export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
   SendikaBaslangicTarihi: "",
   DayanismaDurumu: false,
   DayanismaBaslangicTarihi: "",
-  GecmistenKalanIzinGun: "",
+  GecmistenKalanIzinGun: "0",
 
   Ucret: "",
   MaasParaBirimi: "14",
@@ -298,7 +298,7 @@ export function mapPersonelToForm(personel: PersonelType): PersonelForm {
     KumulatifSgkMatrahi: str(personel.KumulatifSgkMatrahi),
     AuKumulatifVergiMatrahi: str(personel.AuKumulatifVergiMatrahi),
     UcretOdemeGun: str(personel.UcretOdemeGun),
-    GecmistenKalanIzinGun: str(personel.GecmistenKalanIzinGun),
+    GecmistenKalanIzinGun: str(personel.GecmistenKalanIzinGun) || "0",
     IDBanka: str(personel.IDBanka),
     BankaSubeKodu: str(personel.BankaSubeKodu),
     BankaHesapNo: str(personel.BankaHesapNo),
