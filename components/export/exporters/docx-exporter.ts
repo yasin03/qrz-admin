@@ -19,8 +19,11 @@ import {
   ExportColumn,
   ExportMeta,
   downloadBlob,
+  getExportTotalLabels,
+  getExportTotals,
   getExportValue,
   getRecordCountLabel,
+  isNumericExportColumn,
 } from "@/components/export/types";
 
 const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
@@ -98,6 +101,10 @@ export async function exportToDocx<T>(
     ],
   });
 
+  const totals = getExportTotals(data, columns);
+  const cellAlignment = (col: ExportColumn<T>) =>
+    isNumericExportColumn(col) ? AlignmentType.RIGHT : undefined;
+
   const dataTable = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     rows: [
@@ -108,7 +115,10 @@ export async function exportToDocx<T>(
             new TableCell({
               shading: { fill: "F0F0F0" },
               children: [
-                new Paragraph({ children: [new TextRun({ text: col.header, bold: true })] }),
+                new Paragraph({
+                  alignment: cellAlignment(col),
+                  children: [new TextRun({ text: col.header, bold: true })],
+                }),
               ],
             })
         ),
@@ -121,8 +131,7 @@ export async function exportToDocx<T>(
                 new TableCell({
                   children: [
                     new Paragraph({
-                      alignment:
-                        col.format === "money" ? AlignmentType.RIGHT : undefined,
+                      alignment: cellAlignment(col),
                       text: getExportValue(row, col),
                     }),
                   ],
@@ -130,6 +139,24 @@ export async function exportToDocx<T>(
             ),
           })
       ),
+      ...(totals
+        ? [
+            new TableRow({
+              children: getExportTotalLabels(totals, columns).map(
+                (label, i) =>
+                  new TableCell({
+                    shading: { fill: "F0F0F0" },
+                    children: [
+                      new Paragraph({
+                        alignment: cellAlignment(columns[i]),
+                        children: [new TextRun({ text: label, bold: true })],
+                      }),
+                    ],
+                  })
+              ),
+            }),
+          ]
+        : []),
     ],
   });
 
@@ -155,6 +182,17 @@ export async function exportToDocx<T>(
             spacing: { before: 300, after: 200 },
             children: [new TextRun({ text: meta.title ?? "Rapor", bold: true })],
           }),
+          ...(meta.subtitle
+            ? [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 160 },
+                  children: [
+                    new TextRun({ text: meta.subtitle, size: 18, color: "555555" }),
+                  ],
+                }),
+              ]
+            : []),
           new Paragraph({
             spacing: { after: 120 },
             children: [

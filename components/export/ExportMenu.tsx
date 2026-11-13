@@ -35,6 +35,7 @@ export function ExportMenu<T>({
   data,
   exportColumns,
   title,
+  subtitle,
   fileName,
   defaultOrientation,
   showImport = false,
@@ -46,7 +47,7 @@ export function ExportMenu<T>({
     defaultOrientation ?? (exportColumns.length > 6 ? "landscape" : "portrait")
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const meta = { title, fileName, orientation };
+  const meta = { title, subtitle, fileName, orientation };
 
   async function handleExport(format: ExportFormat) {
     if (data.length === 0) {

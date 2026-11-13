@@ -5,12 +5,21 @@ import {
   ExportMeta,
   downloadBlob,
   getExportMoneyValue,
+  getExportRawValue,
+  getExportTotals,
   getExportValue,
   getRecordCountLabel,
+  isNumericExportColumn,
 } from "@/components/export/types";
 
 // Sayı olarak kalır (toplama/sıralama yapılabilir), Türkçe Excel'de "3.500,00 ₺" görünür
 const MONEY_NUM_FMT = '#,##0.00 "₺"';
+const DATE_NUM_FMT = "dd.mm.yyyy";
+
+// exceljs Date'i UTC üzerinden seri numaraya çeviriyor; yerel gece yarısı
+// (örn. UTC+3) bir önceki güne kaymasın diye aynı günün UTC karşılığını yazıyoruz.
+const toExcelDate = (value: Date) =>
+  new Date(Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()));
 
 export async function exportToXlsx<T>(
   data: T[],
@@ -69,11 +78,21 @@ export async function exportToXlsx<T>(
   titleCell.font = { bold: true, size: 14 };
   titleCell.alignment = { horizontal: "center" };
 
-  const countCell = sheet.getCell(titleRowIndex + 1, 1);
+  let infoRowIndex = titleRowIndex + 1;
+  if (meta.subtitle) {
+    sheet.mergeCells(infoRowIndex, 1, infoRowIndex, colCount);
+    const subtitleCell = sheet.getCell(infoRowIndex, 1);
+    subtitleCell.value = meta.subtitle;
+    subtitleCell.font = { size: 10, color: { argb: "FF555555" } };
+    subtitleCell.alignment = { horizontal: "center" };
+    infoRowIndex++;
+  }
+
+  const countCell = sheet.getCell(infoRowIndex, 1);
   countCell.value = getRecordCountLabel(data.length);
   countCell.font = { size: 10, color: { argb: "FF555555" } };
 
-  const headerRowIndex = titleRowIndex + 2;
+  const headerRowIndex = infoRowIndex + 1;
   const headerRow = sheet.getRow(headerRowIndex);
   columns.forEach((col, i) => {
     const cell = headerRow.getCell(i + 1);
@@ -85,23 +104,48 @@ export async function exportToXlsx<T>(
       fgColor: { argb: "FFF0F0F0" },
     };
     cell.border = { bottom: { style: "thin", color: { argb: "FF333333" } } };
+    // Excel sayıları sağa yaslar; başlık da aynı hizada olsun
+    if (isNumericExportColumn(col)) cell.alignment = { horizontal: "right" };
   });
 
   data.forEach((row, rowIndex) => {
     const excelRow = sheet.getRow(headerRowIndex + 1 + rowIndex);
     columns.forEach((col, colIndex) => {
       const cell = excelRow.getCell(colIndex + 1);
-      const moneyValue =
-        col.format === "money" ? getExportMoneyValue(row, col) : null;
+      const numericValue = isNumericExportColumn(col)
+        ? getExportMoneyValue(row, col)
+        : null;
+      const rawValue = getExportRawValue(row, col);
 
-      if (moneyValue !== null) {
-        cell.value = moneyValue;
-        cell.numFmt = MONEY_NUM_FMT;
+      if (numericValue !== null) {
+        cell.value = numericValue;
+        if (col.format === "money") cell.numFmt = MONEY_NUM_FMT;
+      } else if (col.format === "date" && rawValue instanceof Date) {
+        cell.value = toExcelDate(rawValue);
+        cell.numFmt = DATE_NUM_FMT;
       } else {
         cell.value = getExportValue(row, col);
       }
     });
   });
+
+  const totals = getExportTotals(data, columns);
+  if (totals) {
+    const totalRow = sheet.getRow(headerRowIndex + 1 + data.length);
+    const labelIndex = totals.findIndex((total) => total === null);
+    columns.forEach((col, colIndex) => {
+      const cell = totalRow.getCell(colIndex + 1);
+      const total = totals[colIndex];
+      if (total !== null) {
+        cell.value = total;
+        if (col.format === "money") cell.numFmt = MONEY_NUM_FMT;
+      } else if (colIndex === labelIndex) {
+        cell.value = "Toplam";
+      }
+      cell.font = { bold: true };
+      cell.border = { top: { style: "thin", color: { argb: "FF333333" } } };
+    });
+  }
 
   const buffer = await workbook.xlsx.writeBuffer();
   downloadBlob(

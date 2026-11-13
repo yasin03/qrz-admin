@@ -4,9 +4,15 @@ export interface ExportColumn<T> {
   /** Export edilen dosyada görünecek sütun başlığı */
   header: string;
   /** Satırdan değeri okumak için: doğrudan alan adı ya da hesaplayan bir fonksiyon */
-  accessorKey: keyof T | ((row: T) => string | number | boolean | null | undefined);
-  /** "money" verilirse değer "3.500,00 ₺" şeklinde, Excel'de ise sayısal para formatında yazılır */
-  format?: "money";
+  accessorKey: keyof T | ((row: T) => string | number | boolean | Date | null | undefined);
+  /**
+   * "money": değer "3.500,00 ₺" şeklinde, Excel'de sayısal para formatında yazılır.
+   * "number": Excel'de sayı hücresi olarak yazılır, belgelerde sağa hizalanır.
+   * "date": değer Date olmalı; belgelerde "dd.MM.yyyy", Excel'de tarih hücresi olarak yazılır.
+   */
+  format?: "money" | "number" | "date";
+  /** true verilirse ("money"/"number" kolonlarında) tablonun sonuna toplam satırı eklenir */
+  total?: boolean;
 }
 
 export type ExportFormat = "pdf" | "docx" | "xlsx" | "report";
@@ -15,6 +21,8 @@ export type ExportOrientation = "portrait" | "landscape";
 
 export interface ExportMeta {
   title?: string;
+  /** Başlığın altına yazılan ek bilgi (tarih aralığı, şube vb.) */
+  subtitle?: string;
   fileName?: string;
   orientation?: ExportOrientation;
 }
@@ -29,6 +37,8 @@ export interface ExportMenuProps<T> {
   exportColumns: ExportColumn<T>[];
   /** Belgenin başlığı — verilmezse "Rapor" kullanılır */
   title?: string;
+  /** Başlığın altına yazılan ek bilgi (tarih aralığı, şube vb.) */
+  subtitle?: string;
   /** İndirilecek dosya adı (uzantısız) — verilmezse "rapor" kullanılır */
   fileName?: string;
   /**
@@ -54,12 +64,44 @@ export function getExportRawValue<T>(row: T, col: ExportColumn<T>): unknown {
     : row[col.accessorKey];
 }
 
-/** Para kolonları için sayısal değeri döner; boş/geçersizse null */
+/** Para/sayı kolonları için sayısal değeri döner; boş/geçersizse null */
 export function getExportMoneyValue<T>(row: T, col: ExportColumn<T>): number | null {
   const value = getExportRawValue(row, col);
   if (value === null || value === undefined || value === "") return null;
   const numeric = Number(value);
   return Number.isNaN(numeric) ? null : numeric;
+}
+
+export const isNumericExportColumn = <T,>(col: ExportColumn<T>) =>
+  col.format === "money" || col.format === "number";
+
+/**
+ * `total: true` olan kolonların toplamını döner (kolon sırasıyla; toplamı
+ * olmayan kolonlar null). Hiçbir kolonda total yoksa null döner.
+ */
+export function getExportTotals<T>(data: T[], columns: ExportColumn<T>[]): (number | null)[] | null {
+  if (!columns.some((col) => col.total && isNumericExportColumn(col))) return null;
+
+  return columns.map((col) => {
+    if (!col.total || !isNumericExportColumn(col)) return null;
+    return data.reduce((sum, row) => sum + (getExportMoneyValue(row, col) ?? 0), 0);
+  });
+}
+
+/** Toplam satırının belgelerde (PDF/Word) görünecek metinleri; ilk boş hücreye "Toplam" yazılır */
+export function getExportTotalLabels<T>(
+  totals: (number | null)[],
+  columns: ExportColumn<T>[],
+): string[] {
+  const labels = totals.map((total, i) => {
+    if (total === null) return "";
+    return columns[i].format === "money"
+      ? `${formatMoney(total)} ₺`
+      : total.toLocaleString("tr-TR");
+  });
+  const labelIndex = labels.findIndex((label) => label === "");
+  if (labelIndex !== -1) labels[labelIndex] = "Toplam";
+  return labels;
 }
 
 // "2026-04-22", "2026-04-22T00:00:00.000Z", "2026-04-22 08:30:00" gibi ISO tarihleri yakalar

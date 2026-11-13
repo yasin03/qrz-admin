@@ -4,8 +4,11 @@ import {
   ExportColumn,
   ExportMeta,
   downloadBlob,
+  getExportTotalLabels,
+  getExportTotals,
   getExportValue,
   getRecordCountLabel,
+  isNumericExportColumn,
 } from "@/components/export/types";
 
 // react-pdf'in gömülü Helvetica fontu Türkçe karakterleri (Ş, ğ, ı, İ...) ve ₺
@@ -49,6 +52,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#333333",
   },
+  subtitle: { fontSize: 9, color: "#555555", textAlign: "center", marginTop: -6, marginBottom: 10 },
   recordCount: { fontSize: 8, color: "#555555", marginBottom: 6 },
   table: { width: "100%" },
   tableHeaderRow: {
@@ -64,6 +68,13 @@ const styles = StyleSheet.create({
   },
   tableHeaderCell: { flex: 1, padding: 4, fontSize: 8, fontWeight: 700 },
   tableCell: { flex: 1, padding: 4, fontSize: 8 },
+  tableCellRight: { textAlign: "right" },
+  totalRow: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: "#333333",
+  },
+  totalCell: { flex: 1, padding: 4, fontSize: 8, fontWeight: 700 },
   footer: {
     position: "absolute",
     bottom: 16,
@@ -79,6 +90,7 @@ function ExportPdfDocument<T>({
   data,
   columns,
   title,
+  subtitle,
   company,
   logoDataUri,
   orientation,
@@ -86,10 +98,17 @@ function ExportPdfDocument<T>({
   data: T[];
   columns: ExportColumn<T>[];
   title: string;
+  subtitle?: string;
   company: CompanyInfo;
   logoDataUri?: string;
   orientation: "portrait" | "landscape";
 }) {
+  const totals = getExportTotals(data, columns);
+  const cellStyle = (col: ExportColumn<T>) =>
+    isNumericExportColumn(col)
+      ? [styles.tableCell, styles.tableCellRight]
+      : styles.tableCell;
+
   return (
     <Document>
       <Page size="A4" orientation={orientation} style={styles.page}>
@@ -109,12 +128,20 @@ function ExportPdfDocument<T>({
         </View>
 
         <Text style={styles.title}>{title}</Text>
+        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         <Text style={styles.recordCount}>{getRecordCountLabel(data.length)}</Text>
 
         <View style={styles.table}>
           <View style={styles.tableHeaderRow} fixed>
             {columns.map((col) => (
-              <Text key={col.header} style={styles.tableHeaderCell}>
+              <Text
+                key={col.header}
+                style={
+                  isNumericExportColumn(col)
+                    ? [styles.tableHeaderCell, styles.tableCellRight]
+                    : styles.tableHeaderCell
+                }
+              >
                 {col.header}
               </Text>
             ))}
@@ -122,12 +149,28 @@ function ExportPdfDocument<T>({
           {data.map((row, index) => (
             <View style={styles.tableRow} key={index} wrap={false}>
               {columns.map((col) => (
-                <Text key={col.header} style={styles.tableCell}>
+                <Text key={col.header} style={cellStyle(col)}>
                   {getExportValue(row, col)}
                 </Text>
               ))}
             </View>
           ))}
+          {totals ? (
+            <View style={styles.totalRow} wrap={false}>
+              {getExportTotalLabels(totals, columns).map((label, i) => (
+                <Text
+                  key={columns[i].header}
+                  style={
+                    isNumericExportColumn(columns[i])
+                      ? [styles.totalCell, styles.tableCellRight]
+                      : styles.totalCell
+                  }
+                >
+                  {label}
+                </Text>
+              ))}
+            </View>
+          ) : null}
         </View>
 
         <Text
@@ -157,6 +200,7 @@ export async function exportToPdf<T>(
       data={data}
       columns={columns}
       title={meta.title ?? "Rapor"}
+      subtitle={meta.subtitle}
       company={company}
       logoDataUri={logoDataUri}
       orientation={orientation}

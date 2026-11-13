@@ -126,6 +126,14 @@ export type CustomDataTableProps<TData> = {
  */
 
 /**
+ * meta.align = "right": sayı/para kolonları için. Başlık ve hücreler sağa
+ * hizalanır; sıralama ikonu başlık metninin soluna alınır ki başlık metni
+ * hücredeki rakamlarla aynı hizada bitsin.
+ */
+const isRightAligned = (meta: unknown) =>
+  (meta as { align?: string } | undefined)?.align === "right";
+
+/**
  * meta.cellClassName string ya da satıra göre class dönen fonksiyon olabilir
  * (ör. duruma göre hücre zemini). Fonksiyon td'nin kendisine uygulanır, böylece
  * renk hücreyi boşluksuz doldurur.
@@ -584,6 +592,8 @@ export function CustomDataTable<TData>({
                       className={cn(
                         "text-left align-middle font-medium text-muted-foreground border-b border-border has-[[role=checkbox]]:pr-0",
                         cellPadding,
+                        isRightAligned(header.column.columnDef.meta) &&
+                          "text-right",
                         (header.column.columnDef.meta as any)?.headerClassName,
                       )}
                     >
@@ -591,7 +601,11 @@ export function CustomDataTable<TData>({
                         <button
                           type="button"
                           onClick={header.column.getToggleSortingHandler()}
-                          className="inline-flex items-center gap-1.5 hover:text-foreground"
+                          className={cn(
+                            "inline-flex items-center gap-1.5 hover:text-foreground",
+                            isRightAligned(header.column.columnDef.meta) &&
+                              "flex-row-reverse text-right",
+                          )}
                         >
                           {flexRender(
                             header.column.columnDef.header,
@@ -673,6 +687,8 @@ export function CustomDataTable<TData>({
                           className={cn(
                             "align-middle border-b border-border has-[[role=checkbox]]:pr-0",
                             cellPadding,
+                            isRightAligned(cell.column.columnDef.meta) &&
+                              "text-right tabular-nums",
                             resolveCellClassName(
                               (cell.column.columnDef.meta as any)?.cellClassName,
                               row.original,
