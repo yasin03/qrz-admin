@@ -30,6 +30,7 @@ import {
   useSabitTanimlar,
 } from "@/modules/bordro/hooks/use-sabit-tanimlar";
 import { formatDate, formatMoney } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { CIKIS_NEDENLERI } from "./PersonelSgkDialog";
 
 type Props = {
@@ -84,10 +85,18 @@ function InfoItem({
   value: ReactNode;
   span?: boolean;
 }) {
+  // Bordro raporuyla aynı satır düzeni: etiket solda, değer sağda
   return (
-    <div className={span ? "space-y-0.5 @sm:col-span-2 @3xl:col-span-3" : "space-y-0.5"}>
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="text-sm text-foreground wrap-break-word">{value || "-"}</p>
+    <div
+      className={cn(
+        "flex items-baseline justify-between gap-3 border-b border-border/60 py-2 text-sm",
+        span && "col-span-full",
+      )}
+    >
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
+      <dd className="min-w-0 text-right font-medium wrap-break-word tabular-nums text-foreground">
+        {value || "-"}
+      </dd>
     </div>
   );
 }
@@ -117,14 +126,14 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="@container overflow-hidden rounded-lg border">
-      <div className="flex items-center gap-2 border-b bg-cyan-100 px-3 py-2.5">
-        <Icon className="size-4 shrink-0 text-foreground" />
+    <section className="@container rounded-xl border border-border bg-card">
+      <header className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <Icon className="size-4 shrink-0 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      </div>
-      <div className="grid grid-cols-1 gap-x-4 gap-y-3 p-4 @sm:grid-cols-2 @3xl:grid-cols-3">
+      </header>
+      <dl className="grid grid-cols-1 gap-x-6 px-4 py-2 @lg:grid-cols-2 @4xl:grid-cols-3">
         {children}
-      </div>
+      </dl>
     </section>
   );
 }

@@ -37,6 +37,7 @@ const PersonelDrawer = ({
         .filter(Boolean)
         .join(" · ")}
       bodyClassName="space-y-3"
+      size="lg"
       footer={
         <Button
           type="button"

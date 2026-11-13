@@ -7,6 +7,7 @@ import {
   Check,
   CheckCheck,
   FileText,
+  Headset,
   Loader2,
   Lock,
   MessagesSquare,
@@ -134,20 +135,31 @@ const DestekMesajDrawer = ({ talep: seciliTalep, onOpenChange }: Props) => {
     <SideDrawer
       open={open}
       onOpenChange={onOpenChange}
-      title={talep.Baslik}
+      title="Destek Merkezi"
       badge={
         <Badge variant={DURUM_BADGE[talep.Durumu] ?? "gray"}>
           {talep.Durumu}
         </Badge>
       }
-      description={[
-        `#${talep.IDDestekTakip}`,
-        talep.Konu,
-        isAdmin ? talep.SirketAdi : null,
-      ]
-        .filter(Boolean)
-        .join(" · ")}
-      bodyClassName="bg-muted/40 px-3 py-4"
+      icon={
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-700 to-sky-500 text-white shadow-md shadow-blue-700/25 dark:from-primary dark:to-sky-700 dark:text-primary-foreground dark:shadow-primary/20">
+          <Headset className="size-6" />
+        </div>
+      }
+      headerClassName="bg-linear-to-br from-blue-700/20 via-sky-500/12 to-transparent dark:from-primary/20 dark:via-primary/8"
+      description={
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate font-medium text-foreground">
+            #{talep.IDDestekTakip} · {talep.Baslik}
+          </span>
+          <span className="truncate">
+            {[talep.Konu, isAdmin ? talep.SirketAdi : null]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </span>
+      }
+      bodyClassName="destek-chat-bg px-3 py-4"
       footer={
         isKapali ? (
           <div className="flex w-full items-center justify-center gap-2 py-1 text-sm text-muted-foreground">

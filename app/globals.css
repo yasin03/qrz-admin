@@ -192,3 +192,29 @@
     @apply font-sans;
   }
 }
+/*
+ * Destek mesajlaşma alanının arka planı: ince nokta deseni + köşelerde
+ * marka renklerinde (primary / info) soluk ışıltılar. Renkler tema
+ * değişkenlerinden geldiği için açık/koyu temada kendiliğinden uyar.
+ * Nokta deseni mesajlarla birlikte kayar (local), ışıltılar sabit kalır.
+ */
+@utility destek-chat-bg {
+  background-color: color-mix(in oklab, var(--color-muted) 45%, var(--color-background));
+  background-image:
+    radial-gradient(
+      color-mix(in oklab, var(--color-foreground) 10%, transparent) 1px,
+      transparent 1.4px
+    ),
+    radial-gradient(
+      circle at 0% 0%,
+      color-mix(in oklab, var(--color-primary) 10%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      color-mix(in oklab, var(--color-info) 12%, transparent),
+      transparent 55%
+    );
+  background-size: 18px 18px, 100% 100%, 100% 100%;
+  background-attachment: local, scroll, scroll;
+}

@@ -56,12 +56,12 @@ const RaporSection = ({
   fields: RaporField[];
   values: RaporValues;
 }) => (
-  <section className="rounded-xl border border-border bg-card">
+  <section className="@container rounded-xl border border-border bg-card">
     <header className="flex items-center gap-2 border-b border-border px-4 py-3">
       <Icon className="size-4 text-primary" />
       <h2 className="text-sm font-semibold text-foreground">{title}</h2>
     </header>
-    <dl className="grid grid-cols-1 gap-x-6 px-4 py-2 sm:grid-cols-2 lg:grid-cols-3">
+    <dl className="grid grid-cols-1 gap-x-6 px-4 py-2 @lg:grid-cols-2 @4xl:grid-cols-3">
       {fields.map((f) => {
         const value = toFieldValue(values[f.key], f.type);
         return (
@@ -92,7 +92,19 @@ const RaporSection = ({
   </section>
 );
 
-const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
+type IcerikProps = {
+  kayit: BordroResponseType;
+  yil: string;
+  ay: string;
+  /** false iken rapor çekilmez (kapalı modal/drawer) */
+  enabled: boolean;
+};
+
+/**
+ * Rapor gövdesi: Log Göster / Filtre / Aktar şeridi, özet toplamlar ve
+ * bölümler. Rapor modalı ve bordro drawer'ı ortak kullanır.
+ */
+export const BordroRaporIcerik = ({ kayit, yil, ay, enabled }: IcerikProps) => {
   const [showPersonal, setShowPersonal] = useState(false);
   const [showEmpty, setShowEmpty] = useState(false);
   const [openLog, setOpenLog] = useState(false);
@@ -101,7 +113,7 @@ const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
     data: rapor,
     isLoading,
     isError,
-  } = useBordroRapor({ IDBordro: kayit.IDBordro }, open);
+  } = useBordroRapor({ IDBordro: kayit.IDBordro }, enabled);
 
   const values = (rapor ?? {}) as RaporValues;
   const adSoyad = kayit.AdSoyad ?? "";
@@ -160,20 +172,6 @@ const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90vh] sm:max-w-6xl">
-          <DialogHeader>
-            <DialogTitle>
-              Bordro Raporu{adSoyad ? ` — ${adSoyad}` : ""}
-            </DialogTitle>
-            <DialogDescription className="flex flex-wrap items-center gap-1.5">
-              {donem}
-              <Badge variant={onayli ? "success" : "gray"}>
-                {onayli ? "Onaylı" : "Onaysız"}
-              </Badge>
-            </DialogDescription>
-          </DialogHeader>
-
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Spinner className="size-6 text-muted-foreground" />
@@ -187,12 +185,13 @@ const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
               Bordro raporu bulunamadı.
             </div>
           ) : (
-            <div className="min-w-0 space-y-4">
+            <div className="@container min-w-0 space-y-4">
               {/* Kontrol şeridi */}
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <Button
                   type="button"
                   appearance="outline"
+                  className="cursor-pointer"
                   onClick={() => setOpenLog(true)}
                   disabled={!kayit.IDSubePersonel}
                 >
@@ -205,6 +204,7 @@ const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
                     <Button
                       variant="secondary"
                       appearance="outline"
+                      className="cursor-pointer"
                       aria-label="Görünüm filtresi"
                     >
                       <Filter className="size-4" />
@@ -247,7 +247,7 @@ const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
               </div>
 
               {/* Her zaman görünen özet toplamlar */}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 @3xl:grid-cols-4">
                 {SUMMARY_TOTAL_FIELDS.map(({ key, label, icon: Icon }) => (
                   <div
                     key={key}
@@ -287,18 +287,6 @@ const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
             </div>
           )}
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="secondary"
-              appearance="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Kapat
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {openLog && (
         <BordroLogModal
@@ -312,6 +300,45 @@ const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
         />
       )}
     </>
+  );
+};
+
+const BordroRaporModal = ({ open, onOpenChange, kayit, yil, ay }: Props) => {
+  const adSoyad = kayit.AdSoyad ?? "";
+  const onayli = kayit.OnayTarihi != null;
+  const donem = [AY_DATA.find((a) => a.value === ay)?.label, yil]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] sm:max-w-6xl">
+        <DialogHeader>
+          <DialogTitle>
+            Bordro Raporu{adSoyad ? ` — ${adSoyad}` : ""}
+          </DialogTitle>
+          <DialogDescription className="flex flex-wrap items-center gap-1.5">
+            {donem}
+            <Badge variant={onayli ? "success" : "gray"}>
+              {onayli ? "Onaylı" : "Onaysız"}
+            </Badge>
+          </DialogDescription>
+        </DialogHeader>
+
+        <BordroRaporIcerik kayit={kayit} yil={yil} ay={ay} enabled={open} />
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="secondary"
+            appearance="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Kapat
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

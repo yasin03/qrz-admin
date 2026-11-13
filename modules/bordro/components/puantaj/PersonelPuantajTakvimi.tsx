@@ -43,7 +43,7 @@ type OzetAlani = {
   iconClassName: string;
 };
 
-const OZET_ALANLARI: OzetAlani[] = [
+export const OZET_ALANLARI: OzetAlani[] = [
   {
     key: "ToplamGun",
     label: "Çalışılan Gün",

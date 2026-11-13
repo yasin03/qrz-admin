@@ -6,6 +6,7 @@ import { useBordroList } from "@/modules/bordro/hooks/use-bordro";
 import { useCurrentContext } from "@/modules/core/hooks/use-context";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   BrushCleaning,
   CalculatorIcon,
@@ -30,12 +31,12 @@ import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibil
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { ExportMenu } from "@/components/export/ExportMenu";
 import BordroRaporModal from "./rapor/BordroRaporModal";
+import BordroDrawer from "./BordroDrawer";
 
 const ACTIONS_WIDTH = 50;
-const TC_WIDTH = 160;
-const ADSOYAD_WIDTH = 180;
+const PERSONEL_WIDTH = 220;
 
-// Sabit (sticky) TC / Ad Soyad hücrelerinin durum rengi. Öncelik: onaylı →
+// Sabit (sticky) Ad Soyad / TC hücresinin durum rengi. Öncelik: onaylı →
 // hesaplanmamış → ödenecek tutarı negatif. Sticky hücrenin altı görünmesin
 // diye her durumda opak zemin veriliyor.
 function getBordroDurum(row: BordroResponseType) {
@@ -90,6 +91,16 @@ const BordroListesi = () => {
   const [selectedRows, setSelectedRows] = useState<BordroResponseType[]>([]);
   const [raporKayit, setRaporKayit] = useState<BordroResponseType | null>(
     null,
+  );
+  const [drawerId, setDrawerId] = useState<string | null>(null);
+  // Drawer listeden güncel kaydı okur (hesapla/onayla sonrası tazelenir)
+  const drawerKayit = useMemo(
+    () =>
+      drawerId === null
+        ? null
+        : (bordroData.find((b) => String(b.IDSubePersonel) === drawerId) ??
+          null),
+    [drawerId, bordroData],
   );
   const [columnVisibility, setColumnVisibility] = useColumnVisibility(
     "bordro-kolonlar", // localStorage anahtarı, kalıcı olsun istiyorsanız
@@ -367,31 +378,15 @@ const BordroListesi = () => {
     },
 
     {
-      accessorKey: "TcKimlikNo",
-      header: "TC Kimlik No",
-      size: TC_WIDTH,
+      id: "Personel",
+      accessorKey: "AdSoyad",
+      header: "Ad Soyad / T.C.K. No",
+      size: PERSONEL_WIDTH,
       meta: {
         stickyLeft: 40 + ACTIONS_WIDTH,
-        headerClassName: "sticky z-40 bg-background border-r border-border",
-        // Durum rengi td'ye veriliyor ki hücreyi boşluksuz doldursun
-        cellClassName: (row: BordroResponseType) =>
-          cn("sticky z-30 border-r border-border", getBordroDurum(row).className),
-      },
-      cell: ({ row }) => (
-        <span title={getBordroDurum(row.original).label}>
-          {row.original.TcKimlikNo ?? "-"}
-        </span>
-      ),
-    },
-
-    {
-      accessorKey: "AdSoyad",
-      header: "Ad Soyad",
-      size: ADSOYAD_WIDTH,
-      meta: {
-        stickyLeft: 40 + ACTIONS_WIDTH + TC_WIDTH,
         headerClassName:
           "sticky z-40 bg-background border-r border-border shadow-[5px_0_8px_-6px_rgba(0,0,0,0.35)]",
+        // Durum rengi td'ye veriliyor ki hücreyi boşluksuz doldursun
         cellClassName: (row: BordroResponseType) =>
           cn(
             "sticky z-30 border-r border-border shadow-[5px_0_8px_-6px_rgba(0,0,0,0.35)]",
@@ -399,9 +394,22 @@ const BordroListesi = () => {
           ),
       },
       cell: ({ row }) => (
-        <span title={getBordroDurum(row.original).label}>
-          {row.original.AdSoyad ?? "-"}
-        </span>
+        <div
+          className="flex min-w-0 flex-col items-start"
+          title={getBordroDurum(row.original).label}
+        >
+          <Button
+            variant="primary"
+            appearance="link"
+            className="h-auto max-w-full cursor-pointer justify-start px-0 text-blue-900 underline decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid dark:text-blue-300"
+            onClick={() => setDrawerId(String(row.original.IDSubePersonel))}
+          >
+            <span className="truncate">{row.original.AdSoyad ?? "-"}</span>
+          </Button>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {row.original.TcKimlikNo ?? "-"}
+          </span>
+        </div>
       ),
     },
 
@@ -817,6 +825,13 @@ const BordroListesi = () => {
             ? "Kayıtlar yüklenirken hata oluştu."
             : "Bordro kaydı bulunamadı."
         }
+      />
+
+      <BordroDrawer
+        kayit={drawerKayit}
+        onOpenChange={(open) => !open && setDrawerId(null)}
+        yil={params.Yil}
+        ay={params.Ay}
       />
 
       {raporKayit && (

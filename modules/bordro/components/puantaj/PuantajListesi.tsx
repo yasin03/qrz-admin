@@ -29,6 +29,9 @@ import { ExportColumn } from "@/components/export/types";
 import { ExportMenu } from "@/components/export/ExportMenu";
 import PuantajTopluIslemMenu from "./PuantajTopluIslemMenu";
 import PuantajTopluGirisModal from "./PuantajTopluGirisModal";
+import PuantajDrawer from "./PuantajDrawer";
+import { ayGunSayisi, getPuantajDurumu } from "./puantaj-durum";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   selectParams: PuantajSelectRequestType;
@@ -36,8 +39,16 @@ type Props = {
 };
 
 const SELECT_WIDTH = 40;
-const ADSOYAD_WIDTH = 200;
-const TC_WIDTH = 130;
+const PERSONEL_WIDTH = 220;
+
+const PERSONEL_CELL_BASE =
+  "sticky z-20 border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.06)]";
+// Hücre sola sabit olduğu için arka plan opak olmalı: tema rengi zeminle
+// karıştırılıyor (dark mode'da --success/--destructive koyu tonlarıyla).
+const PUANTAJ_DURUM_BG = {
+  eksik: "bg-[color-mix(in_oklch,var(--destructive)_10%,var(--background))]",
+  tamam: "bg-[color-mix(in_oklch,var(--success)_10%,var(--background))]",
+} as const;
 const BOS_TUR = "BOŞ";
 
 type SilmeModu = { type: "selected"; ids: string[] } | { type: "all" } | null;
@@ -64,6 +75,16 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
     [],
   );
   const [silmeModu, setSilmeModu] = useState<SilmeModu>(null);
+  const [drawerId, setDrawerId] = useState<string | null>(null);
+
+  // Drawer listeden güncel kaydı okur; hücre düzenlenince de tazelenir
+  const drawerKayit = useMemo(
+    () =>
+      drawerId === null
+        ? null
+        : (puantajData.find((p) => String(p.IDSubePersonel) === drawerId) ?? null),
+    [drawerId, puantajData],
+  );
 
   const filteredData = useMemo(() => {
     const query = searchText.trim().toLocaleLowerCase("tr-TR");
@@ -85,6 +106,13 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
     if (!yil || !ay) return 31;
     return new Date(yil, ay, 0).getDate();
   }, [selectParams.Yil, selectParams.Ay]);
+
+  // Doluluk kontrolü için: geçersiz dönemde null (renk yok); yukarıdaki
+  // gunSayisi ise kolon çizimi için 31'e düşüyor.
+  const durumGunSayisi = useMemo(
+    () => ayGunSayisi(selectParams.Yil, selectParams.Ay),
+    [selectParams.Yil, selectParams.Ay],
+  );
 
   const handleHucreClick = (
     kayit: PuantajSelectResponseType,
@@ -196,26 +224,39 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
   const columns: ColumnDef<PuantajSelectResponseType>[] = useMemo(() => {
     const sabitColumns: ColumnDef<PuantajSelectResponseType>[] = [
       {
+        id: "Personel",
         accessorKey: "AdSoyad",
-        header: "Ad Soyad",
-        size: ADSOYAD_WIDTH,
-        meta: {
-          headerClassName: "sticky z-30 bg-background border-r border-border",
-          cellClassName: "sticky z-20 bg-background border-r border-border",
-          stickyLeft: SELECT_WIDTH,
-        },
-      },
-      {
-        accessorKey: "TcKimlikNo",
-        header: "TC Kimlik No",
-        size: TC_WIDTH,
+        header: "Ad Soyad / T.C.K. No",
+        size: PERSONEL_WIDTH,
         meta: {
           headerClassName:
             "sticky z-30 bg-background border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.06)]",
-          cellClassName:
-            "sticky z-20 bg-background border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.06)]",
-          stickyLeft: SELECT_WIDTH + ADSOYAD_WIDTH,
+          // Eksik gün varsa kırmızı, ay tamamsa yeşil
+          cellClassName: (row: PuantajSelectResponseType) => {
+            const durum = getPuantajDurumu(row, durumGunSayisi);
+            return cn(
+              PERSONEL_CELL_BASE,
+              durum ? PUANTAJ_DURUM_BG[durum] : "bg-background",
+            );
+          },
+          stickyLeft: SELECT_WIDTH,
         },
+        cell: ({ row }) => (
+          <div className="flex min-w-0 flex-col items-start">
+            <Button
+              variant="primary"
+              appearance="link"
+              className="cursor-pointer h-auto max-w-full justify-start px-0 text-blue-900 underline decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid"
+              title="Detayları aç"
+              onClick={() => setDrawerId(String(row.original.IDSubePersonel))}
+            >
+              <span className="truncate">{row.original.AdSoyad}</span>
+            </Button>
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {row.original.TcKimlikNo}
+            </span>
+          </div>
+        ),
       },
     ];
 
@@ -297,7 +338,7 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
 
     return [...sabitColumns, ...gunColumns];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gunSayisi, activeTool, isPending]);
+  }, [gunSayisi, durumGunSayisi, activeTool, isPending]);
 
   return (
     <div className="min-w-0 space-y-3">
@@ -372,6 +413,11 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
         ay={selectParams.Ay}
         isSubmitting={isUpdating}
         onSubmit={handleTopluGirisSubmit}
+      />
+
+      <PuantajDrawer
+        kayit={drawerKayit}
+        onOpenChange={(open) => !open && setDrawerId(null)}
       />
 
       <ConfirmDialog
