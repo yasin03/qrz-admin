@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import {
+  MesaiCizelgesiSelectRequestType,
+  MesaiCizelgesiSelectResponseType,
   PuantajAktarRequestType,
   PuantajAktarResponseType,
   PuantajDeleteRequestType,
@@ -14,6 +16,7 @@ import { MESAI_QUERY_KEY } from "@/modules/bordro/hooks/use-bordro-parametre";
 
 const ENDPOINT = "/api/puantaj";
 const QUERY_KEY = "puantaj-list";
+const MESAI_CIZELGESI_QUERY_KEY = "puantaj-mesai-cizelgesi";
 
 export function usePuantajList(
   params: PuantajSelectRequestType,
@@ -110,6 +113,34 @@ export function useAktarPuantaj() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       // Aktarım mesai kayıtlarını da oluşturuyor; mesai listesi de yenilensin.
       queryClient.invalidateQueries({ queryKey: [MESAI_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [MESAI_CIZELGESI_QUERY_KEY] });
     },
+  });
+}
+
+/** Şube/bölüm bazında aylık mesai çizelgesi (G1..G31 + mesai toplamları). */
+export function useMesaiCizelgesiList(
+  params: MesaiCizelgesiSelectRequestType,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [
+      MESAI_CIZELGESI_QUERY_KEY,
+      params.IDSube,
+      params.IDBolum,
+      params.Yil,
+      params.Ay,
+      params.Adi,
+      params.TcKimlikNo,
+    ],
+    queryFn: async () => {
+      const { data } = await api.post<MesaiCizelgesiSelectResponseType[]>(
+        ENDPOINT,
+        { type: "SELECT_MESAI", ...params },
+      );
+      return data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 dakika
+    enabled,
   });
 }

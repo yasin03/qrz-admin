@@ -6,6 +6,8 @@ import { assertPersonelYetki } from "@/lib/per-yetki-server";
 const queryTypes = {
   SELECT_PUANTAJ: (params) =>
     `[UcretCizelgesi_SELECTByIDSube] '${params.IDSube}','${params.IDBolum}','${params.Yil}','${params.Ay}','${params.Adi}','${params.TcKimlikNo}'`,
+  SELECT_MESAI: (params) =>
+    `[UcretCizelgesiMesai_SELECTByIDSube] '${params.IDSube}','${params.IDBolum}','${params.Yil}','${params.Ay}','${params.Adi}','${params.TcKimlikNo}'`,
   SELECT_PUANTAJ_BYID: (params) =>
     `[UcretCizelgesi_SELECTByIDSubePersonel] '${params.IDSubePersonel}','${params.Yil}','${params.Ay}'`,
   UPDATE_PUANTAJ: (params) =>
