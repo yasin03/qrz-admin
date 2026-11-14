@@ -1,10 +1,15 @@
 "use client";
 
-import { SidebarProvider, SidebarInset, useSidebar } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AppSidebar } from "./app-sidebar";
 import { ActiveModuleProvider } from "@/hooks/use-active-module";
+import DestekMesajBildirimi from "@/modules/core/components/destek/DestekMesajBildirimi";
 import type { ModuleId } from "@/modules/registry";
 
 type DashboardShellProps = {
@@ -47,6 +52,9 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
 
         <Footer />
       </SidebarInset>
+
+      {/* Okunmamış destek mesajı bildirimi — tüm panel sayfalarında çalışır */}
+      <DestekMesajBildirimi />
     </div>
   );
 }

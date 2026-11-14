@@ -88,3 +88,11 @@ export type DestekMesajInsertRequestType = {
   Mesaj: string;
   Dosya: string; // JSON.stringify(DestekDosyaType[])
 };
+
+// ---- Okunmamış mesaj kontrolü ------------------------------------------------
+
+export type DestekMesajKontrolType = {
+  Okunmamis: number;
+  Mesaj: string | null; // son okunmamış mesaj
+  Tarih: string | null; // "yyyy-MM-dd HH:mm:ss.SSS"
+};

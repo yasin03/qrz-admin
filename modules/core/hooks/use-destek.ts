@@ -10,6 +10,10 @@ import {
 export const DESTEK_TALEP_QUERY_KEY = "destek-talep-list";
 export const DESTEK_KONU_QUERY_KEY = "destek-konu-list";
 export const DESTEK_MESAJ_QUERY_KEY = "destek-mesaj-list";
+export const DESTEK_KONTROL_QUERY_KEY = "destek-mesaj-kontrol";
+
+/** Okunmamış destek mesajı kontrol aralığı. */
+export const DESTEK_KONTROL_ARALIGI = 180 * 1000; // 180 saniye
 
 /** Varsayılan ana uygulama — konular ve talepler bununla çekiliyor. */
 export const DESTEK_ANA_UYGULAMA = "1";
@@ -95,5 +99,29 @@ export function useInsertDestekMesaj() {
       });
       queryClient.invalidateQueries({ queryKey: [DESTEK_TALEP_QUERY_KEY] });
     },
+  });
+}
+
+/**
+ * Kullanıcıya yazılmış okunmamış destek mesajı var mı? Her sayfada
+ * (DashboardShell) 180 saniyede bir kontrol edilir. Sekme arka plandayken
+ * istek atılmaz, sekmeye dönülünce hemen yenilenir.
+ */
+export function useDestekMesajKontrol(
+  IDKullanici: string | undefined,
+  enabled = true,
+) {
+  return useQuery({
+    // Kullanıcıya göre ayrı cache: aynı sekmede çıkış yapıp başka
+    // kullanıcıyla girilince önceki kullanıcının sonucu görünmesin.
+    queryKey: [DESTEK_KONTROL_QUERY_KEY, IDKullanici],
+    queryFn: () => destekService.destekMesajKontrol(),
+    enabled: enabled && Boolean(IDKullanici),
+    // Oturum düşmüşse (401/403) aynı isteği tekrar tekrar atmasın; hata
+    // varken periyodik kontrol durur, sekmeye dönüş / yeni giriş tetikler.
+    retry: false,
+    refetchInterval: (query) =>
+      enabled && !query.state.error ? DESTEK_KONTROL_ARALIGI : false,
+    staleTime: DESTEK_KONTROL_ARALIGI,
   });
 }

@@ -1,6 +1,7 @@
 import api from "@/lib/axios";
 import {
   DestekKonuType,
+  DestekMesajKontrolType,
   DestekTalepDeleteRequestType,
   DestekMesajInsertRequestType,
   DestekMesajType,
@@ -40,6 +41,15 @@ export const destekService = {
       params,
     });
     return Array.isArray(data) ? data[0] : data;
+  },
+
+  // IDSirket ve IDKullanici route'ta session'dan set ediliyor.
+  destekMesajKontrol: async (): Promise<DestekMesajKontrolType | null> => {
+    const { data } = await api.post(DESTEK_ENDPOINT, {
+      type: "KONTROL_MESAJ",
+      params: {},
+    });
+    return Array.isArray(data) ? (data[0] ?? null) : (data ?? null);
   },
 
   destekTalepDelete: async (

@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { KULLANICI_TIPI } from "@/lib/roles";
 import { useHasRole, useUser } from "@/stores/auth-store";
 import {
+  DESTEK_KONTROL_QUERY_KEY,
   DESTEK_TALEP_QUERY_KEY,
   useDestekMesajList,
   useInsertDestekMesaj,
@@ -90,6 +91,7 @@ const DestekMesajDrawer = ({ talep: seciliTalep, onOpenChange }: Props) => {
   useEffect(() => {
     if (!open) {
       queryClient.invalidateQueries({ queryKey: [DESTEK_TALEP_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DESTEK_KONTROL_QUERY_KEY] });
     }
   }, [open, queryClient]);
 
