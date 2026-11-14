@@ -164,7 +164,7 @@ const IzinYillikRaporu = ({
     sayiKolonu("KidemYil", "Kıdem Yılı"),
     sayiKolonu("ToplamIzinHakki", "Toplam İzin Hakkı"),
     sayiKolonu("KullanilanIzin", "Kullanılan İzin"),
-    sayiKolonu("oKullanilanIzin", "Geçmiş Yıl Kullanılan İzin"),
+    sayiKolonu("oKullanilanIzin", "Geçmişte Kullanılan İzin Günü"),
     sayiKolonu("ToplamKullanilanIzin", "Toplam Kullanılan İzin"),
     sayiKolonu("ToplamKalanIzin", "Toplam Kalan İzin"),
   ];

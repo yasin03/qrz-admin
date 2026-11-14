@@ -146,7 +146,7 @@ const MesaiCizelgesi = ({ selectParams: baslangicParams, enabled }: Props) => {
           <Button
             variant="primary"
             appearance="link"
-            className="cursor-pointer h-auto max-w-full justify-start px-0 py-0 leading-tight text-blue-900 underline decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid"
+            className="cursor-pointer h-auto max-w-full justify-start px-0 py-0 text-blue-900 underline decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid"
             title="Detayları aç"
             onClick={() => setDrawerId(String(row.original.IDSubePersonel))}
           >

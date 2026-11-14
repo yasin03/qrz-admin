@@ -39,7 +39,7 @@ import { useBolumler } from "@/modules/core/hooks/use-kurumsal-data";
 import { usePersonelGrupList } from "@/modules/bordro/hooks/use-personel-grup";
 import PersonelGrupEkle from "@/modules/bordro/components/ayarlar/tanimlamalar/personel-grup/PersonelGrupEkle";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { CalendarClock, MapPin, Plus, UserRound, Wallet } from "lucide-react";
 
 const CINSIYET_OPTIONS = [
   { label: "Kadın", value: "KADIN" },
@@ -249,11 +249,12 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
   }, [aylikUcret, setValue]);
 
   return (
-    <Accordion type="single" defaultValue="personel" className="w-full">
+    <Accordion type="single" defaultValue="personel" className="w-full my-4">
       {/* ---- Personel Bilgileri ---- */}
       <AccordionItem value="personel">
-        <AccordionTrigger className="bg-cyan-100 px-3">
+        <AccordionTrigger className="bg-muted/50 px-3">
           <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <UserRound className="size-4 text-muted-foreground" />
             Personel Bilgileri
             {sectionHasError(SECTION_FIELDS.personel) && (
               <span
@@ -358,8 +359,9 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
 
       {/* ---- Giriş/Çıkış Bilgileri ---- */}
       <AccordionItem value="giris-cikis">
-        <AccordionTrigger className="bg-cyan-100 px-3">
+        <AccordionTrigger className="bg-muted/50 px-3">
           <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <CalendarClock className="size-4 text-muted-foreground" />
             Giriş/Çıkış Bilgileri
             {sectionHasError(SECTION_FIELDS["giris-cikis"]) && (
               <span
@@ -449,7 +451,7 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
             <FormInput
               control={control}
               name="GecmistenKalanIzinGun"
-              label="Geçmişten Kalan İzin Gün"
+              label="Geçmişte Kullanılan İzin Gün"
               format="number"
               placeholder="0"
             />
@@ -472,8 +474,9 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
 
       {/* ---- Bordro Bilgileri ---- */}
       <AccordionItem value="bordro">
-        <AccordionTrigger className="bg-cyan-100 px-3">
+        <AccordionTrigger className="bg-muted/50 px-3">
           <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Wallet className="size-4 text-muted-foreground" />
             Bordro Bilgileri{" "}
             {sectionHasError(SECTION_FIELDS.bordro) && (
               <span
@@ -600,8 +603,9 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
 
       {/* ---- Adres Bilgileri ---- */}
       <AccordionItem value="adres">
-        <AccordionTrigger className="bg-cyan-100 px-3">
+        <AccordionTrigger className="bg-muted/50 px-3">
           <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <MapPin className="size-4 text-muted-foreground" />
             Adres Bilgileri{" "}
             {sectionHasError(SECTION_FIELDS.adres) && (
               <span
