@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ExecuteQuery } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
 import { assertPersonelYetki } from "@/lib/per-yetki-server";
+import { KULLANICI_TIPI } from "@/lib/roles";
 
 const queryTypes = {
   SELECT_PDKS: (params) =>
@@ -79,6 +80,17 @@ export const POST = withSession(async (request, session) => {
       Saat: payload.Saat,
       JsonData: payload.JsonData,
     };
+
+    // GEÇİCİ (sistem/qr simülasyon sayfası): admin web'den test için başka
+    // personel adına INSERT_PDKS_KENDI çalıştırabilir. Sayfayla birlikte silinecek.
+    if (
+      type === "INSERT_PDKS_KENDI" &&
+      !session.isMobile &&
+      String(session.user.IDKullaniciTip) === KULLANICI_TIPI.ADMIN &&
+      /^\d+$/.test(String(payload.IDSubePersonel ?? ""))
+    ) {
+      queryParams.IDSubePersonel = payload.IDSubePersonel;
+    }
 
     const queryFunction = queryTypes[type];
 
