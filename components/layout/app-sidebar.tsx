@@ -59,14 +59,14 @@ export function AppSidebar() {
   const hasYetki = (item: MenuItem) =>
     !item.yetki || (!isLoadingYetki && can(item.yetki));
   const menuItems = userTip
-    ? activeModule.nav.filter(
-        (item) => item.roles.includes(userTip) && hasYetki(item),
-      ).map((item) => ({
-        ...item,
-        children: item.children?.filter((child) =>
-          child.roles.includes(userTip),
-        ),
-      }))
+    ? activeModule.nav
+        .filter((item) => item.roles.includes(userTip) && hasYetki(item))
+        .map((item) => ({
+          ...item,
+          children: item.children?.filter((child) =>
+            child.roles.includes(userTip),
+          ),
+        }))
     : [];
 
   // Açık olan alt menüler (href → açık mı). Aktif route bir alt öğedeyse o
@@ -156,7 +156,7 @@ export function AppSidebar() {
                           asChild
                           isActive={isGroupActive}
                           tooltip={item.label}
-                          className="h-10"
+                          className="h-10 [&>svg:first-child]:size-5 group-data-[collapsible=icon]:p-1.5!"
                         >
                           <Link
                             href={firstChild.href}
@@ -170,7 +170,7 @@ export function AppSidebar() {
                         <SidebarMenuButton
                           isActive={isGroupActive && !isOpen}
                           tooltip={item.label}
-                          className="h-10"
+                          className="h-10 [&>svg:first-child]:size-5 group-data-[collapsible=icon]:p-1.5!"
                           aria-expanded={isOpen}
                           onClick={() => toggleGroup(item.href)}
                         >
@@ -228,7 +228,7 @@ export function AppSidebar() {
                       asChild
                       isActive={isActive}
                       tooltip={item.label}
-                      className="h-10"
+                      className="h-10 [&>svg:first-child]:size-5 group-data-[collapsible=icon]:p-1.5!"
                     >
                       <Link
                         href={item.href}
@@ -257,7 +257,7 @@ export function AppSidebar() {
               onClick={handleLogout}
               disabled={isLoggingOut}
               tooltip="Çıkış Yap"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive [&>svg:first-child]:size-5 group-data-[collapsible=icon]:p-1.5!"
             >
               <LogOut />
               <span>{isLoggingOut ? "Çıkış Yapılıyor..." : "Çıkış Yap"}</span>

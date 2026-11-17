@@ -391,6 +391,9 @@ const PuantajListesi = ({ selectParams, enabled }: Props) => {
         data={filteredData}
         columns={columns}
         loading={isPuantajLoading}
+        autoResetPageIndex={false}
+        pageResetKey={searchText.trim()}
+        getRowId={(row) => String(row.IDSubePersonel)}
         columnVisibilityValue={columnVisibility}
         onColumnVisibilityValueChange={setColumnVisibility}
         selectableRows

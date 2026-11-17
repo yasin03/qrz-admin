@@ -60,6 +60,11 @@ export type CustomDataTableProps<TData> = {
   paginationTotalRows?: number;
   onChangePage?: (pageIndex: number) => void;
   onChangeRowsPerPage?: (pageSize: number) => void;
+  /** false verilirse `data` değiştiğinde (ör. refetch sonrası) sayfa 1'e dönmez.
+   *  Hücre içi düzenleme yapılan tablolarda kullanın. Default: true. */
+  autoResetPageIndex?: boolean;
+  /** Bu değer değiştiğinde tablo 1. sayfaya döner (ör. dış arama metni). */
+  pageResetKey?: unknown;
 
   /** Sağ üstte "Kolonlar" görünürlük menüsünü göster. Default: false. */
   columnVisibility?: boolean;
@@ -157,6 +162,8 @@ export function CustomDataTable<TData>({
   paginationTotalRows,
   onChangePage,
   onChangeRowsPerPage,
+  autoResetPageIndex = true,
+  pageResetKey,
 
   columnVisibility = false,
   columnVisibilityValue,
@@ -391,6 +398,7 @@ export function CustomDataTable<TData>({
     manualSorting: sortServer,
     manualFiltering: searchServer,
     manualPagination: paginationServer,
+    autoResetPageIndex,
     rowCount: paginationServer ? paginationTotalRows : undefined,
 
     getCoreRowModel: getCoreRowModel(),
@@ -408,6 +416,27 @@ export function CustomDataTable<TData>({
       selectedRows: table.getSelectedRowModel().rows.map((r) => r.original),
     });
   }, [rowSelection, selectableRows]);
+
+  // autoReset kapalıyken veri küçülürse (arama, silme) mevcut sayfa boşta
+  // kalabilir; son geçerli sayfaya çek.
+  const pageCount = table.getPageCount();
+  useEffect(() => {
+    if (!pagination || paginationServer) return;
+    if (paginationState.pageIndex > 0 && paginationState.pageIndex >= pageCount) {
+      table.setPageIndex(Math.max(pageCount - 1, 0));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageCount, paginationState.pageIndex, pagination, paginationServer]);
+
+  // pageResetKey değişince (ilk render hariç) 1. sayfaya dön
+  const [prevPageResetKey, setPrevPageResetKey] = useState(pageResetKey);
+  if (!Object.is(prevPageResetKey, pageResetKey)) {
+    setPrevPageResetKey(pageResetKey);
+    if (paginationState.pageIndex !== 0) {
+      setPaginationState((prev) => ({ ...prev, pageIndex: 0 }));
+      onChangePage?.(0);
+    }
+  }
 
   const rows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
