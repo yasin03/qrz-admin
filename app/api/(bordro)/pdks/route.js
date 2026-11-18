@@ -81,11 +81,11 @@ export const POST = withSession(async (request, session) => {
       JsonData: payload.JsonData,
     };
 
-    // GEÇİCİ (sistem/qr simülasyon sayfası): admin web'den test için başka
-    // personel adına INSERT_PDKS_KENDI çalıştırabilir. Sayfayla birlikte silinecek.
+    // GEÇİCİ (sistem/qr simülasyon sayfası + mobil "Yük Testi" ekranı): admin,
+    // web'den veya mobilden test için başka personel adına INSERT_PDKS_KENDI
+    // çalıştırabilir. Test bitince her iki ekranla birlikte silinecek.
     if (
       type === "INSERT_PDKS_KENDI" &&
-      !session.isMobile &&
       String(session.user.IDKullaniciTip) === KULLANICI_TIPI.ADMIN &&
       /^\d+$/.test(String(payload.IDSubePersonel ?? ""))
     ) {

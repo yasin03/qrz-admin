@@ -109,8 +109,10 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="dialog-header"
       className={cn(
         // Kaydırılan alanın üstüne yapışık; -mt-4 pt-4 ile dialog'un üst
-        // padding'ini üstlenip yapıştığında yerinden oynamıyor.
-        "sticky top-0 z-10 -mx-4 -mt-4 flex flex-col gap-2 border-b bg-popover p-4",
+        // padding'ini üstlenip yapıştığında yerinden oynamıyor. Sticky,
+        // kaydırılan alanın padding'i (p-4) kadar aşağıda durduğu için
+        // -top-4 ile en üste çekiliyor; yoksa üstte içerik görünen boşluk kalır.
+        "sticky -top-4 z-10 -mx-4 -mt-4 flex flex-col gap-2 border-b bg-popover p-4",
         className
       )}
       {...props}
