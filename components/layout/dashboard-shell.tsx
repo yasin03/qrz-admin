@@ -10,6 +10,7 @@ import { Footer } from "@/components/layout/footer";
 import { AppSidebar } from "./app-sidebar";
 import { ActiveModuleProvider } from "@/hooks/use-active-module";
 import DestekMesajBildirimi from "@/modules/core/components/destek/DestekMesajBildirimi";
+import AjandaHatirlatici from "@/modules/core/components/takvim/AjandaHatirlatici";
 import type { ModuleId } from "@/modules/registry";
 
 type DashboardShellProps = {
@@ -55,6 +56,9 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
 
       {/* Okunmamış destek mesajı bildirimi — tüm panel sayfalarında çalışır */}
       <DestekMesajBildirimi />
+
+      {/* Ajanda hatırlatmaları (uygulama içi) — tüm panel sayfalarında çalışır */}
+      <AjandaHatirlatici />
     </div>
   );
 }

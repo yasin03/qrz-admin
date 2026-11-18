@@ -131,7 +131,9 @@ function Calendar({
           defaultClassNames.range_end,
         ),
         today: cn(
-          "rounded-(--cell-radius) data-[selected=true]:rounded-none bg-primary/20 text-primary-foreground font-semibold",
+          // Bugün seçiliyken hücreye zemin verilmez; seçim rengini buton taşır
+          // (aksi halde seçili butonun arkasında köşeli gri kare kalıyordu).
+          "rounded-(--cell-radius) bg-primary/20 text-primary-foreground font-semibold data-[selected=true]:bg-transparent",
           defaultClassNames.today,
         ),
         outside: cn(

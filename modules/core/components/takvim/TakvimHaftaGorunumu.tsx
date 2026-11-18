@@ -4,8 +4,9 @@ import { eachDayOfInterval, endOfWeek, format, isSameDay, isToday, startOfWeek }
 import { tr } from "date-fns/locale";
 
 import { cn } from "@/lib/utils";
-import type { TakvimGunu } from "@/modules/core/types/takvim";
+import type { AjandaOlay, TakvimGunu } from "@/modules/core/types/takvim";
 
+import { AjandaOlayChip } from "./AjandaOlayChip";
 import { TakvimEtkinlik } from "./TakvimEtkinlik";
 import { WEEK_OPTS, dateKey, isWeekend } from "./takvim-utils";
 
@@ -13,10 +14,23 @@ type Props = {
   date: Date;
   selected: Date;
   byDate: Map<string, TakvimGunu[]>;
+  /** "yyyy-MM-dd" → o günün ajanda olayları. */
+  ajandaByDate?: Map<string, AjandaOlay[]>;
   onSelect: (date: Date) => void;
+  /** Güne çift tıklanınca (yeni etkinlik). */
+  onGunCiftTik?: (date: Date) => void;
+  onOlayClick?: (olay: AjandaOlay) => void;
 };
 
-export function TakvimHaftaGorunumu({ date, selected, byDate, onSelect }: Props) {
+export function TakvimHaftaGorunumu({
+  date,
+  selected,
+  byDate,
+  ajandaByDate,
+  onSelect,
+  onGunCiftTik,
+  onOlayClick,
+}: Props) {
   const days = eachDayOfInterval({
     start: startOfWeek(date, WEEK_OPTS),
     end: endOfWeek(date, WEEK_OPTS),
@@ -26,16 +40,26 @@ export function TakvimHaftaGorunumu({ date, selected, byDate, onSelect }: Props)
     <div className="grid gap-2 md:grid-cols-7 md:gap-0 md:overflow-hidden md:rounded-lg md:border">
       {days.map((day) => {
         const gunler = byDate.get(dateKey(day)) ?? [];
+        const olaylar = ajandaByDate?.get(dateKey(day)) ?? [];
         const isSelected = isSameDay(day, selected);
         const tatil = gunler.some((g) => g.type === "resmi");
 
         return (
-          <button
+          // İçinde tıklanabilir etkinlik çipleri olduğu için <button> değil.
+          <div
             key={day.toISOString()}
-            type="button"
+            role="button"
+            tabIndex={0}
             onClick={() => onSelect(day)}
+            onDoubleClick={() => onGunCiftTik?.(day)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect(day);
+              }
+            }}
             className={cn(
-              "flex flex-col rounded-lg border text-left transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50 md:min-h-96 md:rounded-none md:border-0 md:border-r md:last:border-r-0",
+              "flex min-w-0 cursor-pointer flex-col rounded-lg border text-left transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50 md:min-h-96 md:rounded-none md:border-0 md:border-r md:last:border-r-0",
               isWeekend(day) && "bg-muted/30",
               tatil && "bg-red-50/70 dark:bg-red-950/20",
               isSelected && "ring-2 ring-primary ring-inset",
@@ -60,13 +84,21 @@ export function TakvimHaftaGorunumu({ date, selected, byDate, onSelect }: Props)
             </div>
 
             <div className="flex flex-1 flex-col gap-1.5 p-2">
-              {gunler.length ? (
-                gunler.map((g) => <TakvimEtkinlik key={g.name} gun={g} />)
-              ) : (
+              {olaylar.map((o) => (
+                <AjandaOlayChip key={o.key} olay={o} gun={day} onClick={onOlayClick} />
+              ))}
+              {gunler.length > 0 && (
+                <div className="mt-auto flex flex-col gap-1.5 pt-1.5">
+                  {gunler.map((g) => (
+                    <TakvimEtkinlik key={g.name} gun={g} />
+                  ))}
+                </div>
+              )}
+              {!olaylar.length && !gunler.length && (
                 <span className="hidden py-2 text-center text-xs text-muted-foreground/60 md:block">—</span>
               )}
             </div>
-          </button>
+          </div>
         );
       })}
     </div>

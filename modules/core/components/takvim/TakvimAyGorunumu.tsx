@@ -3,21 +3,42 @@
 import { isSameDay, isSameMonth, isToday } from "date-fns";
 
 import { cn } from "@/lib/utils";
-import type { TakvimGunu } from "@/modules/core/types/takvim";
+import type { AjandaOlay, TakvimGunu } from "@/modules/core/types/takvim";
 
+import { AjandaOlayChip } from "./AjandaOlayChip";
 import { TakvimEtkinlik } from "./TakvimEtkinlik";
-import { HAFTA_GUNLERI, TIP_DOT, dateKey, getMonthGrid, isWeekend } from "./takvim-utils";
+import {
+  AJANDA_VARSAYILAN_RENK,
+  HAFTA_GUNLERI,
+  TIP_DOT,
+  dateKey,
+  getMonthGrid,
+  isWeekend,
+} from "./takvim-utils";
 
 type Props = {
   date: Date;
   selected: Date;
   byDate: Map<string, TakvimGunu[]>;
+  /** "yyyy-MM-dd" → o günün ajanda olayları. */
+  ajandaByDate?: Map<string, AjandaOlay[]>;
   onSelect: (date: Date) => void;
+  /** Güne çift tıklanınca (yeni etkinlik). */
+  onGunCiftTik?: (date: Date) => void;
+  onOlayClick?: (olay: AjandaOlay) => void;
 };
 
-const MAX_CHIP = 2;
+const MAX_CHIP = 3;
 
-export function TakvimAyGorunumu({ date, selected, byDate, onSelect }: Props) {
+export function TakvimAyGorunumu({
+  date,
+  selected,
+  byDate,
+  ajandaByDate,
+  onSelect,
+  onGunCiftTik,
+  onOlayClick,
+}: Props) {
   const days = getMonthGrid(date);
 
   return (
@@ -39,17 +60,28 @@ export function TakvimAyGorunumu({ date, selected, byDate, onSelect }: Props) {
       <div className="grid grid-cols-7">
         {days.map((day) => {
           const gunler = byDate.get(dateKey(day)) ?? [];
+          const olaylar = ajandaByDate?.get(dateKey(day)) ?? [];
+          const gorunenOlay = olaylar.slice(0, MAX_CHIP);
           const inMonth = isSameMonth(day, date);
           const isSelected = isSameDay(day, selected);
           const tatil = gunler.some((g) => g.type === "resmi");
 
           return (
-            <button
+            // İçinde tıklanabilir etkinlik çipleri olduğu için <button> değil.
+            <div
               key={day.toISOString()}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(day)}
+              onDoubleClick={() => onGunCiftTik?.(day)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect(day);
+                }
+              }}
               className={cn(
-                "flex min-h-20 flex-col gap-1 border-r border-b p-1.5 text-left transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset sm:min-h-24 nth-[7n]:border-r-0",
+                "flex min-h-20 cursor-pointer flex-col gap-1 sm:min-h-32 border-r border-b p-1.5 text-left transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset sm:min-h-24 nth-[7n]:border-r-0",
                 isWeekend(day) && "bg-muted/30",
                 tatil && "bg-red-50/70 dark:bg-red-950/20",
                 !inMonth && "opacity-45",
@@ -67,7 +99,14 @@ export function TakvimAyGorunumu({ date, selected, byDate, onSelect }: Props) {
               </span>
 
               {/* Mobilde yer olmadığı için sadece nokta */}
-              <div className="flex gap-0.5 sm:hidden">
+              <div className="flex flex-wrap gap-0.5 sm:hidden">
+                {olaylar.slice(0, 3).map((o) => (
+                  <span
+                    key={o.key}
+                    className="size-1.5 rounded-full"
+                    style={{ backgroundColor: o.renk ?? AJANDA_VARSAYILAN_RENK }}
+                  />
+                ))}
                 {gunler.slice(0, 3).map((g, i) => (
                   <span
                     key={i}
@@ -79,17 +118,27 @@ export function TakvimAyGorunumu({ date, selected, byDate, onSelect }: Props) {
                 ))}
               </div>
 
-              <div className="hidden flex-col gap-0.5 sm:flex">
-                {gunler.slice(0, MAX_CHIP).map((g) => (
-                  <TakvimEtkinlik key={g.name} gun={g} compact />
+              {/* Ajanda etkinlikleri üstte */}
+              <div className="hidden min-w-0 flex-col gap-1 sm:flex">
+                {gorunenOlay.map((o) => (
+                  <AjandaOlayChip key={o.key} olay={o} gun={day} compact onClick={onOlayClick} />
                 ))}
-                {gunler.length > MAX_CHIP && (
+                {olaylar.length > MAX_CHIP && (
                   <span className="px-1 text-[11px] text-muted-foreground">
-                    +{gunler.length - MAX_CHIP} daha
+                    +{olaylar.length - MAX_CHIP} daha
                   </span>
                 )}
               </div>
-            </button>
+
+              {/* Tatil / özel günler hücrenin altında */}
+              {gunler.length > 0 && (
+                <div className="mt-auto hidden min-w-0 flex-col gap-0.5 sm:flex">
+                  {gunler.map((g) => (
+                    <TakvimEtkinlik key={g.name} gun={g} compact />
+                  ))}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
