@@ -139,7 +139,7 @@ export function AjandaDetayDialog({ open, onOpenChange, olay, onDuzenle }: Props
             <div className="flex items-start gap-3">
               <span className="mt-1.5 size-3 shrink-0 rounded-sm" style={{ backgroundColor: renk }} />
               <div className="min-w-0">
-                <DialogTitle className="leading-snug break-words">{olay.baslik}</DialogTitle>
+                <DialogTitle className="leading-snug wrap-break-words">{olay.baslik}</DialogTitle>
                 <DialogDescription className="mt-1">{zamanMetni(olay)}</DialogDescription>
               </div>
             </div>
@@ -159,7 +159,7 @@ export function AjandaDetayDialog({ open, onOpenChange, olay, onDuzenle }: Props
             {olay.konum && (
               <div className="flex items-start gap-2.5">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                <span className="break-words">{olay.konum}</span>
+                <span className="wrap-break-words">{olay.konum}</span>
               </div>
             )}
             {olay.kategoriAd && (
@@ -169,7 +169,7 @@ export function AjandaDetayDialog({ open, onOpenChange, olay, onDuzenle }: Props
               </div>
             )}
             {olay.aciklama && (
-              <p className="rounded-md bg-muted/50 p-3 whitespace-pre-wrap break-words">{olay.aciklama}</p>
+              <p className="rounded-md bg-muted/50 p-3 whitespace-pre-wrap wrap-break-words">{olay.aciklama}</p>
             )}
 
             {(olay.katilimciSayisi > 0 || !olay.sahip) && (

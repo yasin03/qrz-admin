@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -25,7 +25,14 @@ export const AJANDA_KATEGORI_QUERY_KEY = "ajanda-kategori";
 export const AJANDA_HATIRLATMA_QUERY_KEY = "ajanda-hatirlatma";
 
 /** Uygulama içi hatırlatma kontrol aralığı. */
-export const AJANDA_HATIRLATMA_ARALIGI = 60 * 1000; // 60 saniye
+/** Uygulama içi hatırlatmalar sunucuya bu aralıkla sorulur. */
+export const AJANDA_HATIRLATMA_ARALIGI = 5 * 60 * 1000; // 5 dakika
+/**
+ * Gelen listede "zamanı geldi mi" kontrolü bu aralıkla tarayıcıda yapılır
+ * (istek atılmaz). API önümüzdeki 5 dakikanın hatırlatmalarını da döndürdüğü
+ * için bildirim gecikmez.
+ */
+export const AJANDA_HATIRLATMA_KONTROL = 30 * 1000; // 30 saniye
 
 /* ------------------------------------------------------------------ */
 /* Sorgular                                                            */
@@ -76,7 +83,8 @@ export function useAjandaKategoriler() {
 }
 
 /**
- * Zamanı gelmiş uygulama içi hatırlatmalar. Her dakika yenilenir.
+ * Zamanı gelmiş uygulama içi hatırlatmalar. Sunucuya 5 dakikada bir sorulur,
+ * zamanı gelme kontrolü 30 saniyede bir tarayıcıda yapılır.
  * Kapatılanları saklamak (localStorage vb.) çağıran bileşenin işi;
  * her hatırlatmanın sabit bir `key`'i var.
  */
@@ -86,12 +94,23 @@ export function useAjandaHatirlatmalar(enabled = true) {
     queryFn: () => ajandaService.hatirlatmalar(),
     enabled,
     refetchInterval: AJANDA_HATIRLATMA_ARALIGI,
-    refetchIntervalInBackground: true,
+    // Sekme arka plandayken istek atılmaz; sekmeye dönünce bir kez yenilenir.
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    staleTime: AJANDA_HATIRLATMA_ARALIGI,
   });
 
+  // Saat ilerledikçe listeyi yeniden değerlendirmek için (istek atmadan).
+  const [simdi, setSimdi] = useState(() => Date.now());
+  useEffect(() => {
+    if (!enabled) return;
+    const t = setInterval(() => setSimdi(Date.now()), AJANDA_HATIRLATMA_KONTROL);
+    return () => clearInterval(t);
+  }, [enabled]);
+
   const hatirlatmalar = useMemo(
-    () => (query.data ? zamaniGelenHatirlatmalar(query.data, new Date(query.dataUpdatedAt)) : []),
-    [query.data, query.dataUpdatedAt],
+    () => (query.data ? zamaniGelenHatirlatmalar(query.data, new Date(Math.max(simdi, query.dataUpdatedAt))) : []),
+    [query.data, query.dataUpdatedAt, simdi],
   );
 
   return { ...query, hatirlatmalar };

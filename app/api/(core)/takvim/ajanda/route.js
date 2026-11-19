@@ -42,6 +42,21 @@ function sqlDate(v) {
   return `'${m[1]} ${m[2] ?? "00:00"}${m[3] ?? ":00"}'`;
 }
 
+// Uygulama içi hatırlatma: istemci 5 dakikada bir sorar, bu yüzden önümüzdeki
+// 5 dakikada zamanı gelecek hatırlatmalar da önceden döner; "zamanı geldi mi"
+// kontrolünü istemci kendi saatiyle yapar (hooks/use-ajanda.ts ile aynı değer).
+const HATIRLATMA_ILERI_DK = 5;
+// İstemcinin geç kalma toleransı (lib/ajanda.ts HATIRLATMA_TOLERANS_DK = 15)
+// + ileri bakış; @Simdi ileri kaydırıldığı için alt sınır da o kadar geniş.
+const HATIRLATMA_TOLERANS_DK = 15 + HATIRLATMA_ILERI_DK;
+
+// Şu an + dakika, TR yerel saati olarak 'yyyy-MM-dd HH:mm:ss' (sunucu saat
+// diliminden bağımsız; Türkiye'de yaz saati yok).
+function trSimdi(ekDakika = 0) {
+  const d = new Date(Date.now() + (3 * 60 + ekDakika) * 60_000);
+  return `'${d.toISOString().slice(0, 19).replace("T", " ")}'`;
+}
+
 // Katılımcı ID dizisi → '[12,34]'. undefined → NULL (katılımcılara dokunma).
 function sqlIdListe(v) {
   if (v === undefined || v === null) return "NULL";
@@ -204,8 +219,10 @@ const queryTypes = {
     zorunlu: [],
     query: (p) =>
       exec("Ajanda_SELECT_HatirlatmaAdaylari", {
+        Simdi: trSimdi(HATIRLATMA_ILERI_DK),
         IDKullanici: sqlInt(p.IDKullanici),
         Kanal: "1",
+        GecikmeToleransDk: String(HATIRLATMA_TOLERANS_DK),
       }),
     map: (rs) => ({ adaylar: rs[0] ?? [], istisnalar: rs[1] ?? [] }),
   },
