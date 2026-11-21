@@ -20,6 +20,7 @@ export type PDKSSelectResponseType = {
   MesaiSure: string | null;
   IzinSure: string | null;
   ToplamSure: string | null;
+  KonumDisi: boolean | null;
   GirisNotu: string | null;
   CikisNotu: string | null;
   MesaiNotu: string | null;
@@ -81,6 +82,7 @@ export type PDKSDetaySelectResponseType = {
   Boylam: string;
   Yon: string;
   Tarih: string;
+  Mesafe: number | null; // metre
 };
 
 export interface SubeVardiyaSaat {

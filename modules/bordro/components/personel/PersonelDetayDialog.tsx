@@ -434,6 +434,10 @@ export function PersonelDetayContent({ id, hideSummary }: ContentProps) {
                 label="Geçmişten Kalan İzin Günü"
                 value={dash(personel.GecmistenKalanIzinGun)}
               />
+              <InfoItem
+                label="Geçmişten Devreden İzin Günü"
+                value={dash(personel.GecmistenDevredenIzinGun)}
+              />
               <InfoItem label="Özel Kod" value={dash(personel.OzelKod)} />
               <InfoItem label="Özel Kod 2" value={dash(personel.OzelKod2)} />
               <InfoItem

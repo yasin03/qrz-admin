@@ -144,6 +144,10 @@ export default function PersonelEkle({
           personel.GecmistenKalanIzinGun != null
             ? String(personel.GecmistenKalanIzinGun)
             : "0",
+        GecmistenDevredenIzinGun:
+          personel.GecmistenDevredenIzinGun != null
+            ? String(personel.GecmistenDevredenIzinGun)
+            : "0",
 
         Ucret: personel.Ucret != null ? String(personel.Ucret) : "",
         MaasParaBirimi:

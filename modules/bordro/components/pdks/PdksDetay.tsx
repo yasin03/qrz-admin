@@ -64,6 +64,20 @@ export default function PdksDetay({ idSubePersonelSaat }: PdksDetayProps) {
         header: "Boylam",
         cell: ({ row }) => row.original.Boylam ?? "-",
       },
+      {
+        accessorKey: "Mesafe",
+        header: "Mesafe (m)",
+        cell: ({ row }) => {
+          const mesafe = row.original.Mesafe;
+          if (mesafe == null) return "-";
+          // 100 m üzeri mesafeler kırmızı badge ile vurgulanır
+          return (
+            <Badge variant={Number(mesafe) > 100 ? "danger" : "gray"}>
+              {mesafe} m
+            </Badge>
+          );
+        },
+      },
     ],
     [],
   );

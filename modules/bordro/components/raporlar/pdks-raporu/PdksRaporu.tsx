@@ -8,6 +8,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
 import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { ExportMenu } from "@/components/export/ExportMenu";
 import { ExportColumn } from "@/components/export/types";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
@@ -20,7 +21,10 @@ import {
   PdksRaporResponseType,
   PdksRaporSelectRequestType,
 } from "@/modules/bordro/types/rapor";
-import PdksRaporuFiltre, { ISLEM_OPTIONS } from "./PdksRaporuFiltre";
+import PdksRaporuFiltre, {
+  ISLEM_KONUM_DISI,
+  ISLEM_OPTIONS,
+} from "./PdksRaporuFiltre";
 
 function getDefaultFilters(): PdksRaporFilters {
   const now = new Date();
@@ -64,7 +68,12 @@ const PdksRaporu = () => {
     bolumAdlari.get(String(row.IDBolum)) ?? "-";
 
   const selectParams: PdksRaporSelectRequestType = useMemo(
-    () => ({ IDSube: IDSube ?? "", ...filters }),
+    () => ({
+      IDSube: IDSube ?? "",
+      ...filters,
+      // Konum dışı API'de bir işlem tipi değil, client'ta filtreleniyor
+      Islem: filters.Islem === ISLEM_KONUM_DISI ? "" : filters.Islem,
+    }),
     [IDSube, filters],
   );
 
@@ -77,15 +86,19 @@ const PdksRaporu = () => {
 
   const filteredData = useMemo(() => {
     const search = normalize(searchText.trim());
-    if (!search) return raporData;
+    const kayitlar =
+      filters.Islem === ISLEM_KONUM_DISI
+        ? raporData.filter((kayit) => kayit.KonumDisi === true)
+        : raporData;
+    if (!search) return kayitlar;
 
-    return raporData.filter((kayit) =>
+    return kayitlar.filter((kayit) =>
       [kayit.AdSoyad, kayit.Tarih, getBolumAdi(kayit)].some(
         (value) => value && normalize(String(value)).includes(search),
       ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [raporData, searchText, bolumAdlari]);
+  }, [raporData, searchText, bolumAdlari, filters.Islem]);
 
   const islemLabel = ISLEM_OPTIONS.find(
     (o) => o.value === filters.Islem,
@@ -102,6 +115,11 @@ const PdksRaporu = () => {
     { header: "Mesai Süresi", accessorKey: "MesaiSure" },
     { header: "İzin Süresi", accessorKey: "IzinSure" },
     { header: "Toplam Süre", accessorKey: "ToplamSure" },
+    {
+      header: "Konum Dışı",
+      accessorKey: (row) =>
+        row.KonumDisi == null ? "-" : row.KonumDisi ? "Evet" : "Hayır",
+    },
   ];
 
   const columns: ColumnDef<PdksRaporResponseType>[] = [
@@ -141,6 +159,19 @@ const PdksRaporu = () => {
       accessorKey: "ToplamSure",
       header: "Toplam Süre",
       cell: ({ row }) => row.original.ToplamSure ?? "-",
+    },
+    {
+      accessorKey: "KonumDisi",
+      header: "Konum Dışı",
+      cell: ({ row }) => {
+        const konumDisi = row.original.KonumDisi;
+        if (konumDisi == null) return "-";
+        return (
+          <Badge variant={konumDisi ? "danger" : "success"}>
+            {konumDisi ? "Evet" : "Hayır"}
+          </Badge>
+        );
+      },
     },
   ];
 

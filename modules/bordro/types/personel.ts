@@ -104,6 +104,7 @@ export interface PersonelType {
   UcretOtomatikIsle: boolean;
   UcretOdemeGun: number | null;
   GecmistenKalanIzinGun: number | null;
+  GecmistenDevredenIzinGun: number | null;
   VardiyaliCalismaDurumu: boolean;
 }
 

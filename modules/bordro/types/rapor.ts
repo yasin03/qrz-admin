@@ -2,7 +2,13 @@
 
 /** "" → tüm kayıtlar; diğerleri proc tarafında ilgili kayıtları süzer. */
 export type PdksRaporIslem =
-  "" | "GEÇGİRİŞ" | "GEÇÇIKIŞ" | "MESAİ" | "DEVAMSIZ";
+  | ""
+  | "GEÇGİRİŞ"
+  | "GEÇÇIKIŞ"
+  | "MESAİ"
+  | "DEVAMSIZ"
+  /** Sadece client-side filtre; API'ye "" olarak gider. */
+  | "KONUMDISI";
 
 export type PdksRaporSelectRequestType = {
   IDSube: string | number;
@@ -30,6 +36,7 @@ export type PdksRaporResponseType = {
   MesaiSure: string | null;
   IzinSure: string | null;
   ToplamSure: string | null;
+  KonumDisi: boolean | null;
   Cinsiyet: string | null;
   IDKullanici: string | number;
 };

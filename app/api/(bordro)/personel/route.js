@@ -114,6 +114,7 @@ function buildPersonelParams(p) {
     sqlNum(p.GecmistenKalanIzinGun || 0),
     sqlStr(p.HaftaTatilGunu), // "7" veya "5-7" gibi '-' ile ayrılmış günler; yoksa ""
     sqlNum(p.IDSirketPersonelGrup),
+    sqlNum(p.GecmistenDevredenIzinGun || 0),
   ].join(",");
 }
 

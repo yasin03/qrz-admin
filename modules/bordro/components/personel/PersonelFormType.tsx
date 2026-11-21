@@ -51,6 +51,7 @@ export type PersonelForm = {
   DayanismaDurumu: boolean;
   DayanismaBaslangicTarihi: string;
   GecmistenKalanIzinGun: string;
+  GecmistenDevredenIzinGun: string;
 
   // Bordro Bilgileri
   Ucret: string;
@@ -160,6 +161,7 @@ export const PERSONEL_DEFAULT_VALUES: PersonelForm = {
   DayanismaDurumu: false,
   DayanismaBaslangicTarihi: "",
   GecmistenKalanIzinGun: "0",
+  GecmistenDevredenIzinGun: "0",
 
   Ucret: "",
   MaasParaBirimi: "14",
@@ -299,6 +301,7 @@ export function mapPersonelToForm(personel: PersonelType): PersonelForm {
     AuKumulatifVergiMatrahi: str(personel.AuKumulatifVergiMatrahi),
     UcretOdemeGun: str(personel.UcretOdemeGun),
     GecmistenKalanIzinGun: str(personel.GecmistenKalanIzinGun) || "0",
+    GecmistenDevredenIzinGun: str(personel.GecmistenDevredenIzinGun) || "0",
     IDBanka: str(personel.IDBanka),
     BankaSubeKodu: str(personel.BankaSubeKodu),
     BankaHesapNo: str(personel.BankaHesapNo),

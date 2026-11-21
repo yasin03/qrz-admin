@@ -333,6 +333,10 @@ const OzlukBilgileri = ({ idSubePersonel, isAdminView = false }: Props) => {
           label: "Geçmişten Kalan İzin",
           value: num(p.GecmistenKalanIzinGun, " gün"),
         },
+        {
+          label: "Geçmişten Devreden İzin",
+          value: num(p.GecmistenDevredenIzinGun, " gün"),
+        },
       ],
     },
     {

@@ -67,6 +67,7 @@ export const personelSchema = z.object({
   DayanismaDurumu: z.boolean(),
   DayanismaBaslangicTarihi: z.string(),
   GecmistenKalanIzinGun: z.string(),
+  GecmistenDevredenIzinGun: z.string(),
 
   // Bordro Bilgileri
   Ucret: z.string().min(1, "Ücret zorunludur."),
@@ -179,6 +180,7 @@ export const DEFAULT_PERSONEL_FORM: PersonelForm = {
   DayanismaDurumu: false,
   DayanismaBaslangicTarihi: "",
   GecmistenKalanIzinGun: "0",
+  GecmistenDevredenIzinGun: "0",
 
   Ucret: "",
   MaasParaBirimi: "",

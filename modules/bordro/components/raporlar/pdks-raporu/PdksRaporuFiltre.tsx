@@ -35,12 +35,17 @@ type Props = {
 // API'ye "" olarak gidiyor.
 const ISLEM_TUMU = "ALL";
 
+// Konum dışı filtresi API'de yok; tüm kayıtlar çekilip client'ta
+// KonumDisi === true olanlar gösteriliyor.
+export const ISLEM_KONUM_DISI = "KONUMDISI";
+
 export const ISLEM_OPTIONS: { value: string; label: string }[] = [
   { value: ISLEM_TUMU, label: "Tümü" },
   { value: "GEÇGİRİŞ", label: "Geç Giriş Yapanlar" },
   { value: "GEÇÇIKIŞ", label: "Geç Çıkış Yapanlar" },
   { value: "MESAİ", label: "Mesai Yapanlar" },
   { value: "DEVAMSIZ", label: "Devamsızlık Yapanlar" },
+  { value: "KONUMDISI", label: "Konum Dışı Kayıtlar" },
 ];
 
 const toFormValues = (filters: PdksRaporFilters): FormValues => ({

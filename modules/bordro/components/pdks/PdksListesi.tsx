@@ -34,6 +34,7 @@ import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibil
 import { ExportColumn } from "@/components/export/types";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   enabled: boolean;
@@ -280,6 +281,11 @@ const PdksListesi = ({ enabled }: Props) => {
     { header: "MesaiSure", accessorKey: "MesaiSure" },
     { header: "IzinSure", accessorKey: "IzinSure" },
     { header: "ToplamSure", accessorKey: "ToplamSure" },
+    {
+      header: "Konum Dışı",
+      accessorKey: (row) =>
+        row.KonumDisi == null ? "-" : row.KonumDisi ? "Evet" : "Hayır",
+    },
   ];
 
   const columns: ColumnDef<PDKSSelectResponseType>[] = [
@@ -368,6 +374,19 @@ const PdksListesi = ({ enabled }: Props) => {
       accessorKey: "ToplamSure",
       header: "Toplam Süre",
       cell: ({ row }) => row.original.ToplamSure ?? "-",
+    },
+    {
+      accessorKey: "KonumDisi",
+      header: "Konum Dışı",
+      cell: ({ row }) => {
+        const konumDisi = row.original.KonumDisi;
+        if (konumDisi == null) return "-";
+        return (
+          <Badge variant={konumDisi ? "danger" : "success"}>
+            {konumDisi ? "Evet" : "Hayır"}
+          </Badge>
+        );
+      },
     },
   ];
 
