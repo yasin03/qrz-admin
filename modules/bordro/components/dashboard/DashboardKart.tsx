@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import type { ComponentType, ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import { format } from "date-fns";
+import { tr } from "date-fns/locale";
+import { ChevronRight, Clock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -114,7 +116,7 @@ export function StatKart({
   );
 
   return href ? (
-    <Link href={href} className={cn(base, "block")}>
+    <Link href={href} className={cn("block", base)}>
       {content}
     </Link>
   ) : (
@@ -129,14 +131,29 @@ export function BolumBaslik({ title }: { title: string }) {
 type ListeProps = {
   title: string;
   items: { key: string; title: string; sub?: string | null; right?: string | null; href?: string }[];
+  /** Başlığın yanında gösterilen kısa bilgi (örn. toplam sayı) */
+  badge?: string | null;
+  /** Liste boşken gösterilecek metin */
+  bos?: string;
+  /** Listenin altında (örn. "+5 kişi daha") */
+  footer?: string | null;
+  className?: string;
 };
 
-export function ListeKart({ title, items }: ListeProps) {
+export function ListeKart({ title, items, badge, bos, footer, className }: ListeProps) {
   return (
-    <section className="rounded-xl border border-border bg-card">
-      <header className="border-b border-border px-4 py-3 text-sm font-semibold">
-        {title}
+    <section className={cn("rounded-xl border border-border bg-card", className)}>
+      <header className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-semibold">
+        <span className="flex-1 truncate">{title}</span>
+        {badge ? (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums text-muted-foreground">
+            {badge}
+          </span>
+        ) : null}
       </header>
+      {items.length === 0 && bos ? (
+        <p className="px-4 py-6 text-center text-xs text-muted-foreground">{bos}</p>
+      ) : null}
       <ul>
         {items.map((item) => {
           const inner = (
@@ -168,6 +185,49 @@ export function ListeKart({ title, items }: ListeProps) {
           );
         })}
       </ul>
+      {footer ? (
+        <p className="border-t border-border/60 px-4 py-2 text-xs text-muted-foreground">{footer}</p>
+      ) : null}
     </section>
   );
 }
+
+// Sayfa başlığının sağındaki açık tarih ve canlı saat. Saat sunucu/istemci farkı
+// yüzünden hydration uyuşmazlığı oluşturmasın diye yalnızca istemcide çizilir.
+export function TarihSaat() {
+  const [simdi, setSimdi] = useState<Date | null>(null);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    const guncelle = () => setSimdi(new Date());
+    guncelle();
+    // Dakika başına hizalanıp her dakika güncellenir
+    const timeout = setTimeout(() => {
+      guncelle();
+      interval = setInterval(guncelle, 60_000);
+    }, 60_000 - (Date.now() % 60_000));
+    return () => {
+      clearTimeout(timeout);
+      if (interval) clearInterval(interval);
+    };
+  }, []);
+
+  if (!simdi) return <Skeleton className="h-7 w-64" />;
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <p className="text-sm font-semibold text-foreground sm:text-base">
+        {format(simdi, "d MMMM yyyy", { locale: tr })}
+        <span className="font-normal text-muted-foreground">
+          {" "}
+          · {format(simdi, "EEEE", { locale: tr })}
+        </span>
+      </p>
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-sm font-semibold tabular-nums text-foreground">
+        <Clock className="size-3.5 text-muted-foreground" />
+        {format(simdi, "HH:mm")}
+      </span>
+    </div>
+  );
+}
+

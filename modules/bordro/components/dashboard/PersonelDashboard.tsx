@@ -6,7 +6,9 @@ import { format, parseISO } from "date-fns";
 import { tr } from "date-fns/locale";
 import {
   Briefcase,
+  CalendarCheck,
   CalendarClock,
+  Clock,
   CalendarDays,
   Cake,
   Eye,
@@ -18,18 +20,22 @@ import {
   Plane,
   PlusCircle,
   Receipt,
+  Timer,
 } from "lucide-react";
 
 import { AY_DATA } from "@/constants/data";
 import { usePersonelDashboard } from "@/modules/bordro/hooks/use-dashboard";
 import { formatMoney } from "@/lib/format";
 import { BolumBaslik, StatKart } from "./DashboardKart";
+import { GrafikKart } from "./PersonelDagilimGrafikleri";
+import { DagilimBar, IzinHalkasi } from "./YoneticiGrafikleri";
 
 const MAAS_GIZLI_KEY = "dashboard-maas-gizli";
 
 const gunAy = (ymd: string) => format(parseISO(ymd), "d MMMM", { locale: tr });
 const tamTarih = (ymd: string) => format(parseISO(ymd), "dd.MM.yyyy");
 const tl = (value: number) => `${formatMoney(value)} ₺`;
+const saat = (n: number) => `${n.toLocaleString("tr-TR", { maximumFractionDigits: 1 })} sa`;
 const ayAdi = (ay: string) => AY_DATA.find((a) => a.value === ay.padStart(2, "0"))?.label ?? ay;
 
 // Maaş varsayılan olarak gizli; tercih tarayıcıda saklanır.
@@ -74,6 +80,7 @@ export default function PersonelDashboard() {
   const puantaj = data?.puantaj;
   const ek = data?.eklentiKesinti;
   const pdks = data?.pdksBugun;
+  const pdksAy = data?.pdksAy;
   const talepler = data?.bekleyenTalepler;
   const bekleyenToplam = (talepler?.Izin ?? 0) + (talepler?.Avans ?? 0);
   const dogumGunuYakin = p?.DogumGunuKalanGun != null && p.DogumGunuKalanGun <= 7;
@@ -128,15 +135,37 @@ export default function PersonelDashboard() {
 
       <BolumBaslik title="İzin & Çalışma" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatKart
-          icon={Plane}
-          color="#2563EB"
-          title="Kalan Yıllık İzin"
-          loading={isLoading}
-          value={izin ? `${izin.Kalan} gün` : "—"}
-          sub={izin ? `Toplam ${izin.ToplamHak} · Kullanılan ${izin.Kullanilan}` : "Bilgi yok"}
-          href="/izin"
-        />
+        {izin && !isLoading ? (
+          <Link
+            href="/izin"
+            className="flex flex-col items-start gap-3 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center"
+          >
+            <IzinHalkasi kullanilan={izin.Kullanilan} kalan={izin.Kalan} />
+            <div className="min-w-0 space-y-1 text-xs">
+              <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
+                <Plane className="size-3.5" style={{ color: "#2563EB" }} />
+                Yıllık İzin
+              </div>
+              <div className="text-muted-foreground">
+                Toplam hak <span className="font-semibold text-foreground tabular-nums">{izin.ToplamHak}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <span className="size-2 rounded-xs" style={{ backgroundColor: "#2a78d6" }} />
+                Kullanılan <span className="font-semibold text-foreground tabular-nums">{izin.Kullanilan}</span>
+              </div>
+            </div>
+          </Link>
+        ) : (
+          <StatKart
+            icon={Plane}
+            color="#2563EB"
+            title="Kalan Yıllık İzin"
+            loading={isLoading}
+            value="—"
+            sub="Bilgi yok"
+            href="/izin"
+          />
+        )}
         <StatKart
           icon={CalendarClock}
           color="#7C3AED"
@@ -177,6 +206,50 @@ export default function PersonelDashboard() {
           href="/ozluk"
         />
       </div>
+
+      {pdksAy && pdksAy.Gunler.length > 0 ? (
+        <>
+          <BolumBaslik title={`Bu Ay Çalışma · ${ayAdi(String(new Date().getMonth() + 1))}`} />
+          <div className="grid gap-3 lg:grid-cols-4">
+            <GrafikKart
+              title="Günlük Çalışma Saatleri"
+              sub="PDKS kayıtlarına göre · çıkış yapılmayan günler boş"
+              className="lg:col-span-3"
+            >
+              <DagilimBar
+                data={pdksAy.Gunler.map((g) => ({ Etiket: String(g.Gun), Sayi: g.Calisma }))}
+                label="Çalışma"
+                bicim={saat}
+              />
+            </GrafikKart>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+              <StatKart
+                icon={CalendarCheck}
+                color="#059669"
+                title="Giriş Yapılan Gün"
+                value={`${pdksAy.GirisYapilanGun} gün`}
+                sub={`Toplam ${saat(pdksAy.ToplamCalisma)}`}
+                href="/pdks"
+              />
+              <StatKart
+                icon={Clock}
+                color="#0EA5E9"
+                title="Günlük Ortalama"
+                value={pdksAy.OrtalamaCalisma != null ? saat(pdksAy.OrtalamaCalisma) : "—"}
+                href="/pdks"
+              />
+              <StatKart
+                className="col-span-2 lg:col-span-1"
+                icon={Timer}
+                color={pdksAy.ToplamMesai ? "#D97706" : "#64748B"}
+                title="Bu Ay Mesai"
+                value={saat(pdksAy.ToplamMesai)}
+                href="/pdks"
+              />
+            </div>
+          </div>
+        </>
+      ) : null}
 
       <BolumBaslik title="Maaş & Ödemeler" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

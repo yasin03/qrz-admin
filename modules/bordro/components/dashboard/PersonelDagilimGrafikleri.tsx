@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -45,11 +45,19 @@ const yuzde = (deger: number, toplam: number) =>
 export function GrafikKart({
   title,
   sub,
+  icon: Icon,
+  iconClassName,
+  iconNode,
   className,
   children,
 }: {
   title: string;
   sub?: string;
+  /** Başlığın solunda renkli ikon kutusu */
+  icon?: ComponentType<{ className?: string }>;
+  iconClassName?: string;
+  /** icon yerine hazır görsel (örn. renkli illüstrasyon) */
+  iconNode?: ReactNode;
   className?: string;
   children: ReactNode;
 }) {
@@ -57,23 +65,33 @@ export function GrafikKart({
     <section
       className={`flex flex-col rounded-xl border border-border bg-card ${className ?? ""}`}
     >
-      <header className="border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
+      <header className="flex items-center gap-3 border-b border-border px-4 py-3">
+        {iconNode ? <span className="shrink-0">{iconNode}</span> : Icon ? (
+          <span
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${iconClassName ?? "bg-muted text-muted-foreground"}`}
+          >
+            <Icon className="size-4.5" />
+          </span>
+        ) : null}
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold">{title}</h3>
+          {sub ? <p className="truncate text-xs text-muted-foreground">{sub}</p> : null}
+        </div>
       </header>
       <div className="min-h-0 flex-1 p-4">{children}</div>
     </section>
   );
 }
 
-function CinsiyetGrafigi({ dagilim }: { dagilim: Dagilim }) {
+// Küçük donut satırında (ücret tipi, medeni durum…) yanındakilerle aynı ölçüde
+export function CinsiyetGrafigi({ dagilim }: { dagilim: Dagilim }) {
   const dilimler = (Object.keys(chartConfig) as CinsiyetKey[])
     .map((key) => ({ key, value: dagilim[key] }))
     .filter((d) => d.value > 0);
 
   return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row lg:flex-col">
-      <ChartContainer config={chartConfig} className="aspect-square h-44 shrink-0">
+    <div className="flex flex-col items-center gap-4 sm:flex-row">
+      <ChartContainer config={chartConfig} className="aspect-square h-28 shrink-0">
         <PieChart>
           <ChartTooltip
             cursor={false}
@@ -98,14 +116,14 @@ function CinsiyetGrafigi({ dagilim }: { dagilim: Dagilim }) {
             y="50%"
             textAnchor="middle"
             dominantBaseline="middle"
-            className="fill-foreground text-2xl font-bold tabular-nums"
+            className="fill-foreground text-lg font-bold tabular-nums"
           >
             {dagilim.Toplam}
           </text>
           <text
             x="50%"
             y="50%"
-            dy={20}
+            dy={18}
             textAnchor="middle"
             className="fill-muted-foreground text-xs"
           >
@@ -115,7 +133,7 @@ function CinsiyetGrafigi({ dagilim }: { dagilim: Dagilim }) {
       </ChartContainer>
 
       {/* Legend + değerler: kimlik renkte değil sadece işarette; metin nötr. */}
-      <ul className="w-full space-y-2">
+      <ul className="w-full min-w-0 space-y-1.5">
         {dilimler.map((d) => (
           <li key={d.key} className="flex items-center gap-2 text-sm">
             <span
@@ -224,44 +242,44 @@ function GrupGrafigi({ dagilim }: { dagilim: Dagilim }) {
   );
 }
 
+// Personel grupları grafiği (2 kolon) + yanında ek kartlar (özel günler, ücret…)
 export function PersonelDagilimGrafikleri({
   dagilim,
   loading,
+  solKart,
   yanKart,
 }: {
   dagilim: YoneticiDashboard["personelDagilim"] | undefined;
   loading?: boolean;
-  /** Grafiklerin yanındaki dördüncü sütun (örn. doğum günleri) */
+  /** Grafiğin solundaki kolon */
+  solKart?: ReactNode;
+  /** Grafiğin sağındaki kolon(lar) (her biri lg'de 1 kolon) */
   yanKart?: ReactNode;
 }) {
   if (loading) {
     return (
       <div className="grid gap-3 lg:grid-cols-4">
-        <Skeleton className="h-72 rounded-xl" />
         <Skeleton className="h-72 rounded-xl lg:col-span-2" />
+        <Skeleton className="h-72 rounded-xl" />
         <Skeleton className="h-72 rounded-xl" />
       </div>
     );
   }
 
   const grafikVar = Boolean(dagilim && dagilim.Toplam > 0);
-  if (!grafikVar && !yanKart) return null;
+  if (!grafikVar && !yanKart && !solKart) return null;
 
   return (
     <div className="grid gap-3 lg:grid-cols-4">
+      {solKart}
       {grafikVar && dagilim ? (
-        <>
-          <GrafikKart title="Cinsiyet Dağılımı" sub="Aktif personel">
-            <CinsiyetGrafigi dagilim={dagilim} />
-          </GrafikKart>
-          <GrafikKart
-            title="Personel Grupları"
-            sub="Gruba göre erkek / kadın sayısı · grubu olmayanlar “Diğer”de"
-            className="lg:col-span-2"
-          >
-            <GrupGrafigi dagilim={dagilim} />
-          </GrafikKart>
-        </>
+        <GrafikKart
+          title="Personel Grupları"
+          sub="Gruba göre erkek / kadın sayısı · grubu olmayanlar “Diğer”de"
+          className="lg:col-span-2"
+        >
+          <GrupGrafigi dagilim={dagilim} />
+        </GrafikKart>
       ) : null}
       {yanKart}
     </div>
