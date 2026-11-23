@@ -2,7 +2,17 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CalendarPlus, Loader2, MessageSquarePlus, Pencil, Plus, Search, Trash2, UserCheck } from "lucide-react";
+import {
+  CalendarPlus,
+  Loader2,
+  MessageSquarePlus,
+  MessagesSquare,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  UserCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
@@ -18,13 +28,29 @@ import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { formatDate } from "@/lib/format";
 import { cn, normalize } from "@/lib/utils";
 import { parseYerel } from "@/modules/core/lib/ajanda";
-import { AktiviteFormDialog, type AktiviteFormModu } from "@/modules/crm/components/aktivite/AktiviteFormDialog";
-import { useCrmKisiler, useDeleteCrmKisi, useIlAdi, useMusteriyeDonustur } from "@/modules/crm/hooks/use-crm";
-import { KISI_TIP_ETIKET, KISI_TURU_SECENEKLERI, kisiAdi } from "@/modules/crm/lib/crm";
+import {
+  AktiviteFormDialog,
+  type AktiviteFormModu,
+} from "@/modules/crm/components/aktivite/AktiviteFormDialog";
+import {
+  useCrmKisiler,
+  useDeleteCrmKisi,
+  useIlAdi,
+  useMusteriyeDonustur,
+} from "@/modules/crm/hooks/use-crm";
+import {
+  KISI_TIP_ETIKET,
+  KISI_TURU_SECENEKLERI,
+  kisiAdi,
+} from "@/modules/crm/lib/crm";
 import type { CrmKisiRow, CrmKisiTip } from "@/modules/crm/types/crm";
 
 import { KisiDrawer } from "./KisiDrawer";
-import { BOS_KISI_FILTRELERI, KisiFiltre, type KisiFiltreleri } from "./KisiFiltre";
+import {
+  BOS_KISI_FILTRELERI,
+  KisiFiltre,
+  type KisiFiltreleri,
+} from "./KisiFiltre";
 import { KisiFormDialog } from "./KisiFormDialog";
 
 type Props = {
@@ -33,9 +59,17 @@ type Props = {
 
 type Onay = { tip: "sil" | "donustur"; kisi: CrmKisiRow };
 
-const ARANAN_ALANLAR = ["Kurum", "YetkiliKisi", "CepTelefon", "YetkiliKisiTel", "YetkiliKisiEPostaAdresi"] as const;
+const ARANAN_ALANLAR = [
+  "Kurum",
+  "YetkiliKisi",
+  "CepTelefon",
+  "YetkiliKisiTel",
+  "YetkiliKisiEPostaAdresi",
+] as const;
 
-const kisiTuruEtiket = (k: CrmKisiRow) => KISI_TURU_SECENEKLERI.find((s) => s.value === String(k.KisiTuru))?.label ?? "";
+const kisiTuruEtiket = (k: CrmKisiRow) =>
+  KISI_TURU_SECENEKLERI.find((s) => s.value === String(k.KisiTuru))?.label ??
+  "";
 
 /** Bekleyen randevusu var ve zamanı geçmiş. */
 const randevuGecikmis = (k: CrmKisiRow, simdi: Date) => {
@@ -44,14 +78,21 @@ const randevuGecikmis = (k: CrmKisiRow, simdi: Date) => {
 };
 
 export function KisiListesi({ tip }: Props) {
-  const { data: kisiler = [], isLoading, isError, refetch } = useCrmKisiler(tip);
+  const {
+    data: kisiler = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useCrmKisiler(tip);
   const sil = useDeleteCrmKisi();
   const donustur = useMusteriyeDonustur();
   const ilAdi = useIlAdi();
 
   const [arama, setArama] = useState("");
   const [filters, setFilters] = useState<KisiFiltreleri>(BOS_KISI_FILTRELERI);
-  const [columnVisibility, setColumnVisibility] = useColumnVisibility(`crm-${tip.toLowerCase()}-kolonlar`);
+  const [columnVisibility, setColumnVisibility] = useColumnVisibility(
+    `crm-${tip.toLowerCase()}-kolonlar`,
+  );
   const [formAcik, setFormAcik] = useState(false);
   const [duzenlenecek, setDuzenlenecek] = useState<CrmKisiRow | null>(null);
   const [aktiviteMod, setAktiviteMod] = useState<AktiviteFormModu | null>(null);
@@ -71,11 +112,15 @@ export function KisiListesi({ tip }: Props) {
     const simdi = new Date();
     return kisiler.filter((k) => {
       if (filters.Durum !== null && k.Durum !== filters.Durum) return false;
-      if (filters.KisiTuru !== null && k.KisiTuru !== filters.KisiTuru) return false;
+      if (filters.KisiTuru !== null && k.KisiTuru !== filters.KisiTuru)
+        return false;
       if (filters.IlKodu && k.IlKodu !== filters.IlKodu) return false;
-      if (filters.Randevu === "bekleyen" && !(k.BekleyenRandevuSayisi > 0)) return false;
-      if (filters.Randevu === "yok" && k.BekleyenRandevuSayisi > 0) return false;
-      if (filters.Randevu === "gecikmis" && !randevuGecikmis(k, simdi)) return false;
+      if (filters.Randevu === "bekleyen" && !(k.BekleyenRandevuSayisi > 0))
+        return false;
+      if (filters.Randevu === "yok" && k.BekleyenRandevuSayisi > 0)
+        return false;
+      if (filters.Randevu === "gecikmis" && !randevuGecikmis(k, simdi))
+        return false;
       if (!q) return true;
       return (
         ARANAN_ALANLAR.some((alan) => normalize(k[alan] ?? "").includes(q)) ||
@@ -84,28 +129,46 @@ export function KisiListesi({ tip }: Props) {
     });
   }, [kisiler, arama, filters, ilAdi]);
 
-  const handleFilterChange = useCallback((next: KisiFiltreleri) => setFilters(next), []);
-  const handleFilterReset = useCallback(() => setFilters(BOS_KISI_FILTRELERI), []);
+  const handleFilterChange = useCallback(
+    (next: KisiFiltreleri) => setFilters(next),
+    [],
+  );
+  const handleFilterReset = useCallback(
+    () => setFilters(BOS_KISI_FILTRELERI),
+    [],
+  );
 
   const exportColumns = useMemo<ExportColumn<CrmKisiRow>[]>(
     () => [
-      { header: musteri ? "Müşteri" : "Kontak", accessorKey: (k) => kisiAdi(k) },
+      {
+        header: musteri ? "Müşteri" : "Kontak",
+        accessorKey: (k) => kisiAdi(k),
+      },
       { header: "Kişi Türü", accessorKey: kisiTuruEtiket },
-      { header: "Yetkili Kişi", accessorKey: (k) => (k.Kurum ? k.YetkiliKisi : null) },
+      {
+        header: "Yetkili Kişi",
+        accessorKey: (k) => (k.Kurum ? k.YetkiliKisi : null),
+      },
       { header: "Pozisyon", accessorKey: "YetkiliKisiPozisyonu" },
       { header: "Cep Telefonu", accessorKey: "CepTelefon" },
       { header: "İş Telefonu", accessorKey: "YetkiliKisiTel" },
       { header: "E-posta", accessorKey: "YetkiliKisiEPostaAdresi" },
       { header: "Şehir", accessorKey: (k) => ilAdi(k.IlKodu) },
       { header: "Adres", accessorKey: "Adres" },
-      { header: "Vergi / TC No", accessorKey: (k) => (k.KisiTuru === 2 ? k.VergiNo : k.TcKimlikNo) },
+      {
+        header: "Vergi / TC No",
+        accessorKey: (k) => (k.KisiTuru === 2 ? k.VergiNo : k.TcKimlikNo),
+      },
       { header: "Kaynak", accessorKey: "Kaynak" },
       { header: "Görüşme", accessorKey: "GorusmeSayisi", format: "number" },
       { header: "Son Görüşme", accessorKey: "SonGorusmeTarihi" },
       { header: "Sıradaki Randevu", accessorKey: "SiradakiRandevuTarihi" },
       {
         header: musteri ? "Müşteri Olma" : "Oluşturma",
-        accessorKey: (k) => (musteri ? (k.MusteriOlmaTarihi ?? k.OlusturmaTarihi) : k.OlusturmaTarihi),
+        accessorKey: (k) =>
+          musteri
+            ? (k.MusteriOlmaTarihi ?? k.OlusturmaTarihi)
+            : k.OlusturmaTarihi,
       },
       { header: "Durum", accessorKey: (k) => (k.Durum ? "Aktif" : "Pasif") },
     ],
@@ -126,7 +189,9 @@ export function KisiListesi({ tip }: Props) {
         if (String(onay.kisi.IDCrmKisi) === seciliID) setSeciliID(null);
       } else {
         await donustur.mutateAsync(onay.kisi.IDCrmKisi);
-        toast.success("Kontak müşteriye dönüştürüldü.", { description: "Müşteriler sekmesinde listelenir." });
+        toast.success("Kontak müşteriye dönüştürüldü.", {
+          description: "Müşteriler sekmesinde listelenir.",
+        });
         // Kayıt bu listeden çıktığı için drawer kapanır.
         setSeciliID(null);
       }
@@ -147,16 +212,23 @@ export function KisiListesi({ tip }: Props) {
           <RowActions
             row={row.original}
             actions={[
+              {
+                label: "Görüşme Detayları",
+                icon: MessagesSquare,
+                onClick: (r) => setSeciliID(String(r.IDCrmKisi)),
+              },
               { label: "Düzenle", icon: Pencil, onClick: (r) => formuAc(r) },
               {
                 label: "Görüşme Ekle",
                 icon: MessageSquarePlus,
-                onClick: (r) => setAktiviteMod({ tip: "yeni", kisi: r, durum: 1 }),
+                onClick: (r) =>
+                  setAktiviteMod({ tip: "yeni", kisi: r, durum: 1 }),
               },
               {
                 label: "Randevu Planla",
                 icon: CalendarPlus,
-                onClick: (r) => setAktiviteMod({ tip: "yeni", kisi: r, durum: 0 }),
+                onClick: (r) =>
+                  setAktiviteMod({ tip: "yeni", kisi: r, durum: 0 }),
               },
               { divider: true },
               {
@@ -166,7 +238,12 @@ export function KisiListesi({ tip }: Props) {
                 onClick: (r) => setOnay({ tip: "donustur", kisi: r }),
               },
               { divider: true },
-              { label: "Sil", icon: Trash2, variant: "danger", onClick: (r) => setOnay({ tip: "sil", kisi: r }) },
+              {
+                label: "Sil",
+                icon: Trash2,
+                variant: "danger",
+                onClick: (r) => setOnay({ tip: "sil", kisi: r }),
+              },
             ]}
           />
         ),
@@ -177,13 +254,20 @@ export function KisiListesi({ tip }: Props) {
         header: musteri ? "Müşteri" : "Kontak",
         cell: ({ row }) => {
           const k = row.original;
-          const alt = [k.Kurum && k.YetkiliKisi ? k.YetkiliKisi : null, k.YetkiliKisiPozisyonu]
+          const alt = [
+            k.Kurum && k.YetkiliKisi ? k.YetkiliKisi : null,
+            k.YetkiliKisiPozisyonu,
+          ]
             .filter(Boolean)
             .join(" · ");
           return (
             <div className="min-w-0">
-              <p className="truncate font-medium text-foreground">{kisiAdi(k)}</p>
-              {alt && <p className="truncate text-xs text-muted-foreground">{alt}</p>}
+              <p className="truncate font-medium text-foreground">
+                {kisiAdi(k)}
+              </p>
+              {alt && (
+                <p className="truncate text-xs text-muted-foreground">{alt}</p>
+              )}
             </div>
           );
         },
@@ -203,18 +287,26 @@ export function KisiListesi({ tip }: Props) {
       {
         accessorKey: "YetkiliKisiEPostaAdresi",
         header: "E-posta",
-        cell: ({ row }) => <span className="truncate">{row.original.YetkiliKisiEPostaAdresi || "-"}</span>,
+        cell: ({ row }) => (
+          <span className="truncate">
+            {row.original.YetkiliKisiEPostaAdresi || "-"}
+          </span>
+        ),
       },
       {
         accessorKey: "GorusmeSayisi",
         header: "Görüşme",
         meta: { align: "right" },
-        cell: ({ row }) => <span className="tabular-nums">{row.original.GorusmeSayisi}</span>,
+        cell: ({ row }) => (
+          <span className="tabular-nums">{row.original.GorusmeSayisi}</span>
+        ),
       },
       {
         accessorKey: "SonGorusmeTarihi",
         header: "Son Görüşme",
-        cell: ({ row }) => <span>{formatDate(row.original.SonGorusmeTarihi)}</span>,
+        cell: ({ row }) => (
+          <span>{formatDate(row.original.SonGorusmeTarihi)}</span>
+        ),
       },
       {
         accessorKey: "SiradakiRandevuTarihi",
@@ -232,7 +324,10 @@ export function KisiListesi({ tip }: Props) {
       },
       {
         id: "Tarih",
-        accessorFn: (k) => (musteri ? (k.MusteriOlmaTarihi ?? k.OlusturmaTarihi) : k.OlusturmaTarihi),
+        accessorFn: (k) =>
+          musteri
+            ? (k.MusteriOlmaTarihi ?? k.OlusturmaTarihi)
+            : k.OlusturmaTarihi,
         header: musteri ? "Müşteri Olma" : "Oluşturma",
         cell: ({ getValue }) => <span>{formatDate(getValue() as string)}</span>,
       },
@@ -240,7 +335,9 @@ export function KisiListesi({ tip }: Props) {
         accessorKey: "Durum",
         header: "Durum",
         cell: ({ row }) => (
-          <Badge variant={row.original.Durum ? "success" : "danger"}>{row.original.Durum ? "Aktif" : "Pasif"}</Badge>
+          <Badge variant={row.original.Durum ? "success" : "danger"}>
+            {row.original.Durum ? "Aktif" : "Pasif"}
+          </Badge>
         ),
       },
     ],
@@ -287,7 +384,11 @@ export function KisiListesi({ tip }: Props) {
             fileName={musteri ? "musteri-listesi" : "kontak-listesi"}
           />
           <div className="shrink-0">
-            <CustomColumnVisibility columns={columns} value={columnVisibility} onChange={setColumnVisibility} />
+            <CustomColumnVisibility
+              columns={columns}
+              value={columnVisibility}
+              onChange={setColumnVisibility}
+            />
           </div>
         </div>
       </div>
@@ -330,7 +431,11 @@ export function KisiListesi({ tip }: Props) {
         onSil={(k) => setOnay({ tip: "sil", kisi: k })}
       />
 
-      <AktiviteFormDialog open={!!aktiviteMod} onOpenChange={(v) => !v && setAktiviteMod(null)} mod={aktiviteMod} />
+      <AktiviteFormDialog
+        open={!!aktiviteMod}
+        onOpenChange={(v) => !v && setAktiviteMod(null)}
+        mod={aktiviteMod}
+      />
 
       <ConfirmDialog
         open={!!onay}

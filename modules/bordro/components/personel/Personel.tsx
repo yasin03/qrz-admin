@@ -372,12 +372,14 @@ const Personel = () => {
       ),
       // header JSX olunca sütun gizleme menüsü adı buradan alır
       meta: { label: "Ad Soyad (Sicil No)" },
+      // Bilerek size yok: tablo table-fixed, diğer sütunlara verilen sabit
+      // genişliklerden kalan alanın tamamı bu sütuna kalıyor.
       cell: ({ row }) => (
         <div className="flex flex-col items-start">
           <Button
             variant="primary"
             appearance="link"
-            className="h-auto justify-start px-0 underline text-blue-900 cursor-pointer decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid"
+            className="h-auto justify-start px-0 text-left whitespace-normal underline text-blue-900 cursor-pointer decoration-primary/40 decoration-dotted hover:decoration-primary hover:decoration-solid"
             title="Detayları aç"
             onClick={() => setDrawerId(String(row.original.IDSubePersonel))}
           >
@@ -392,11 +394,13 @@ const Personel = () => {
     {
       id: "personelGrubu",
       header: "Personel Grubu",
+      size: 120,
       accessorFn: getGrupAdi,
       cell: ({ getValue }) => getValue<string>() || "-",
     },
     {
       accessorKey: "Cinsiyet",
+      size: 100,
       header: "Cinsiyet",
       cell: ({ row }) => {
         const cinsiyet = row.original.Cinsiyet;
@@ -410,6 +414,7 @@ const Personel = () => {
     },
     {
       accessorKey: "CalismaDurumu",
+      size: 140,
       header: "Çalışma Durumu",
       cell: ({ row }) => {
         const durum = row.original.CalismaDurumu;
@@ -424,6 +429,7 @@ const Personel = () => {
 
     {
       accessorKey: "Ucret",
+      size: 120,
       header: "Ücret",
 
       cell: ({ row }) =>
@@ -436,12 +442,14 @@ const Personel = () => {
 
     {
       accessorKey: "OdemeSekli",
+      size: 100,
       header: "Ödeme Şekli",
       cell: ({ row }) => <span>{row.original.OdemeSekli}</span>,
     },
 
     {
       accessorKey: "UcretTipi",
+      size: 100,
       header: "Ücret Tipi",
       cell: ({ row }) => (
         <Badge variant="secondary">{row.original.UcretTipi}</Badge>
@@ -450,6 +458,7 @@ const Personel = () => {
 
     {
       accessorKey: "Durum",
+      size: 100,
       header: "Durum",
       cell: ({ row }) => {
         const durum = row.original.Durum;

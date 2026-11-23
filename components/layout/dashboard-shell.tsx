@@ -26,7 +26,12 @@ export function DashboardShell({
 }: DashboardShellProps) {
   return (
     <ActiveModuleProvider lastModule={lastModule}>
-      <SidebarProvider defaultOpen={defaultSidebarOpen}>
+      <SidebarProvider
+        defaultOpen={defaultSidebarOpen}
+        // Daraltılmış sidebar: 44px menü butonu + 2×8px iç boşluk = 60px
+        // (app-sidebar'daki MENU_BUTTON_CLASS ile birlikte değişmeli)
+        style={{ "--sidebar-width-icon": "3.75rem" } as React.CSSProperties}
+      >
         <DashboardShellInner>{children}</DashboardShellInner>
       </SidebarProvider>
     </ActiveModuleProvider>

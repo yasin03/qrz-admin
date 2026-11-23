@@ -445,6 +445,17 @@ const PdksListesi = ({ enabled }: Props) => {
         data={filteredPdksData}
         columns={columns}
         getRowId={(row) => String(row.IDSubePersonelSaat)}
+        // Kayıt güncellenip liste yenilenince sayfa korunur; arama veya
+        // filtre değişince 1. sayfaya dönülür
+        autoResetPageIndex={false}
+        pageResetKey={[
+          searchText.trim(),
+          pdksFilters.IDSube,
+          pdksFilters.IDBolum,
+          pdksFilters.Tarih,
+          bolumFiltre?.GirisYok ?? false,
+          bolumFiltre?.CikisYok ?? false,
+        ].join("|")}
         columnVisibilityValue={columnVisibility}
         onColumnVisibilityValueChange={setColumnVisibility}
         loading={isPdksLoading}
