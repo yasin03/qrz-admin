@@ -82,7 +82,14 @@ export function useIller(idUlke: string = TURKIYE_ID_ULKE) {
     queryKey: genelKeys.iller(idUlke),
     queryFn: () =>
       callGenelApi<unknown>({ type: "GET_ILLER", IDUlke: idUlke }),
-    select: (data) => dedupeBy(normalizeListResponse<IlType>(data), "IlKodu"),
+    // DB'deki boş placeholder satırı ({ IlKodu: "0  ", IlAdi: " " }) listeye girmesin.
+    select: (data) =>
+      dedupeBy(
+        normalizeListResponse<IlType>(data).filter(
+          (il) => il.IlAdi?.trim() && il.IlKodu?.trim() && il.IlKodu.trim() !== "0",
+        ),
+        "IlKodu",
+      ),
     staleTime: Infinity,
     gcTime: Infinity,
   });

@@ -120,6 +120,12 @@ export function HeaderCalendar() {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-auto p-3">
+        <Button asChild variant="primary" className="w-full">
+          <Link href={detayHref} onClick={() => setOpen(false)}>
+            <CalendarRange />
+            Ajanda
+          </Link>
+        </Button>
         <GunlerContext.Provider value={byDate}>
           <Calendar
             mode="single"
@@ -152,18 +158,6 @@ export function HeaderCalendar() {
             ))}
           </div>
         )}
-
-        <Button
-          asChild
-          variant="primary"
-          appearance="outline"
-          className="mt-3 w-full"
-        >
-          <Link href={detayHref} onClick={() => setOpen(false)}>
-            <CalendarRange />
-            Detaylı Takvim
-          </Link>
-        </Button>
       </PopoverContent>
     </Popover>
   );

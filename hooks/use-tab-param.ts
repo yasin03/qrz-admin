@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 /**
  * Aktif tab'ı adreste (?tab=...) tutar; sayfa yenilenince veya link
@@ -9,11 +9,15 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
  *
  *   const [activeTab, setActiveTab] = useTabParam(["izin", "talepler"] as const);
  *
+ * Adres native history.replaceState ile güncellenir: Next.js router'a
+ * entegre olduğu için useSearchParams güncellenir ama router.replace gibi
+ * sunucuya RSC isteği atmaz (tab geçişi tamamen istemcide). Bu yüzden
+ * server component'ler `tab` parametresine göre render edilmemeli.
+ *
  * useSearchParams kullandığı için bileşen page.tsx'te <Suspense> ile
  * sarılmalı, yoksa build prerender sırasında hata verir.
  */
 export function useTabParam<T extends string>(tabs: readonly T[]) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -23,7 +27,7 @@ export function useTabParam<T extends string>(tabs: readonly T[]) {
   const setActiveTab = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", value);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
   };
 
   return [activeTab, setActiveTab] as const;
