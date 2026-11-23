@@ -81,7 +81,10 @@ export function TakvimAyGorunumu({
                 }
               }}
               className={cn(
-                "flex min-h-20 cursor-pointer flex-col gap-1 sm:min-h-32 border-r border-b p-1.5 text-left transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset sm:min-h-24 nth-[7n]:border-r-0",
+                // xl'de (takvim sol panelin yanında) 6 satır ekran yüksekliğini
+                // paylaşıyor: 22rem üst bar + başlık + gün adları + lejant
+                // payı, altta da biraz boşluk kalıyor. Küçük ekranda 6rem'in altına düşmüyor.
+                "flex min-h-20 cursor-pointer flex-col gap-1 border-r border-b p-1.5 text-left transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset sm:min-h-24 xl:min-h-[max(6rem,calc((100svh-22rem)/6))] nth-[7n]:border-r-0",
                 isWeekend(day) && "bg-muted/30",
                 tatil && "bg-red-50/70 dark:bg-red-950/20",
                 !inMonth && "opacity-45",

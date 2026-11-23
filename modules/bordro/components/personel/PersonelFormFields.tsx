@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Control,
-  UseFormSetValue,
-  useFormState,
-  useWatch,
-} from "react-hook-form";
+import { Control, UseFormSetValue, useWatch } from "react-hook-form";
 
 import {
   FormInput,
@@ -18,12 +13,9 @@ import { Switch } from "@/components/ui/switch";
 import { FormMultiSelect } from "@/components/forms/form-multi-select";
 import { cn, normalize } from "@/lib/utils";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { useIlceler, useIller } from "@/modules/core/hooks/use-il-ilce-vergi-data";
+  useIlceler,
+  useIller,
+} from "@/modules/core/hooks/use-il-ilce-vergi-data";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PersonelForm } from "./PersonelFormType";
 import {
@@ -39,7 +31,7 @@ import { useBolumler } from "@/modules/core/hooks/use-kurumsal-data";
 import { usePersonelGrupList } from "@/modules/bordro/hooks/use-personel-grup";
 import PersonelGrupEkle from "@/modules/bordro/components/ayarlar/tanimlamalar/personel-grup/PersonelGrupEkle";
 import { Button } from "@/components/ui/button";
-import { CalendarClock, MapPin, Plus, UserRound, Wallet } from "lucide-react";
+import { Plus } from "lucide-react";
 
 const CINSIYET_OPTIONS = [
   { label: "Kadın", value: "KADIN" },
@@ -60,20 +52,103 @@ const GUNLUK_SAAT = 7.5;
 const toMoneyValue = (value: number) =>
   (Math.round(value * 100) / 100).toFixed(2);
 
+/**
+ * Formun adımları ve her adımın alanları. PersonelEkle "İleri"de sadece o
+ * adımın alanlarını doğruluyor, hatalı adımı stepper'da işaretliyor.
+ * Şemaya yeni zorunlu alan eklenirse buraya da eklenmeli — yoksa hatası
+ * hiçbir adımda görünmez.
+ */
+export const PERSONEL_STEPS = [
+  {
+    id: "personel",
+    label: "Personel Bilgileri",
+    fields: [
+      "IDBolum",
+      "IDSirketPersonelGrup",
+      "TcKimlikNo",
+      "Ad",
+      "Soyad",
+      "IlkSoyad",
+      "DogumTarihi",
+      "Cinsiyet",
+      "Uyruk",
+      "UnvanAdi",
+      "OgrenimDurumu",
+      "MezuniyetYili",
+      "MezuniyetBolumu",
+    ],
+  },
+  {
+    id: "giris-cikis",
+    label: "Giriş/Çıkış Bilgileri",
+    fields: [
+      "SgkDurumu",
+      "PersonelKanunNo",
+      "PersonelSgkBelgeTuru",
+      "PersonelMeslekKodu",
+      "PersonelSigortaKolu",
+      "PersonelGorevKodu",
+      "IseIlkGirisTarihi",
+      "IseSonGirisTarihi",
+      "KumulatifSgkMatrahi",
+      "DevredenSgkMatrahi",
+      "AuKumulatifVergiMatrahi",
+      "VardiyaliCalismaDurumu",
+      "AzCalismaDurumu",
+      "AzCalismaDurumuGunSayisi",
+      "GecmistenKalanIzinGun",
+      "GecmistenDevredenIzinGun",
+    ],
+  },
+  {
+    id: "bordro",
+    label: "Bordro Bilgileri",
+    fields: [
+      "IstihdamDurumu",
+      "OdemeSekli",
+      "UcretTipi",
+      "AsgeriUcretli",
+      "EskiHukumluDurumu",
+      "OzurluDurumu",
+      "OzurlulukDerecesi",
+      "MaasParaBirimi",
+      "Ucret",
+      "GunlukUcret",
+      "SaatlikUcret",
+      "HaftaTatilGunu",
+    ],
+  },
+  {
+    id: "adres",
+    label: "Adres Bilgileri",
+    fields: ["IlKodu", "IlceKodu", "Adres", "Telefon"],
+  },
+] as const satisfies readonly {
+  id: string;
+  label: string;
+  fields: readonly (keyof PersonelForm)[];
+}[];
+
 type Props = {
   control: Control<PersonelForm>;
   setValue: UseFormSetValue<PersonelForm>;
   personel?: PersonelForm | null;
+  /** Gösterilen adımın PERSONEL_STEPS içindeki index'i. */
+  activeStep: number;
 };
 
 /**
- * Şirket formunun tüm alanları, akordiyon bölümlerinde — hem SirketEkle
- * (ekleme modalı) hem de /kurumsal/sirketler/[idSirket] (detay/düzenleme
- * sayfası) bunu kullanır. Tek yerden değişiklik, ikisine de yansır.
+ * Personel formunun alanları, PERSONEL_STEPS adımlarına bölünmüş. Bütün
+ * adımlar render ediliyor, sadece aktif olan görünüyor — böylece gizli
+ * adımlardaki alanlar ve hesaplama effect'leri çalışmaya devam ediyor.
+ * Adım state'i ve İleri/Geri butonları PersonelEkle'de.
  */
-export function PersonelFormFields({ control, setValue, personel }: Props) {
-  const { errors } = useFormState({ control });
-
+export function PersonelFormFields({
+  control,
+  setValue,
+  personel,
+  activeStep,
+}: Props) {
   const selectedIlKodu = useWatch({ control, name: "IlKodu" });
   const { data: iller = [] } = useIller();
   const { data: ilceler = [] } = useIlceler(selectedIlKodu || undefined);
@@ -107,59 +182,6 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
     [gruplarData],
   );
   const [openGrupEkle, setOpenGrupEkle] = useState(false);
-
-  // Dosyanın üstüne, CINSIYET_OPTIONS'ın yanına ekleyin
-  const SECTION_FIELDS = {
-    personel: [
-      "TcKimlikNo",
-      "Ad",
-      "Soyad",
-      "IlkSoyad",
-      "DogumTarihi",
-      "Cinsiyet",
-      "Uyruk",
-      "UnvanAdi",
-      "OgrenimDurumu",
-      "MezuniyetYili",
-      "MezuniyetBolumu",
-    ],
-    "giris-cikis": [
-      "SgkDurumu",
-      "PersonelKanunNo",
-      "PersonelSgkBelgeTuru",
-      "PersonelMeslekKodu",
-      "PersonelSigortaKolu",
-      "PersonelGorevKodu",
-      "IseIlkGirisTarihi",
-      "IseSonGirisTarihi",
-      "KumulatifSgkMatrahi",
-      "DevredenSgkMatrahi",
-      "AuKumulatifVergiMatrahi",
-      "VardiyaliCalismaDurumu",
-      "AzCalismaDurumu",
-      "AzCalismaDurumuGunSayisi",
-      "GecmistenKalanIzinGun",
-      "GecmistenDevredenIzinGun",
-    ],
-    bordro: [
-      "IstihdamDurumu",
-      "OdemeSekli",
-      "UcretTipi",
-      "AsgeriUcretli",
-      "EskiHukumluDurumu",
-      "OzurluDurumu",
-      "OzurlulukDerecesi",
-      "MaasParaBirimi",
-      "Ucret",
-      "GunlukUcret",
-      "SaatlikUcret",
-      "HaftaTatilGunu",
-    ],
-    adres: ["IlKodu", "IlceKodu", "Adres", "Telefon"],
-  } as const satisfies Record<string, (keyof PersonelForm)[]>;
-
-  const sectionHasError = (fields: readonly (keyof PersonelForm)[]) =>
-    fields.some((field) => Boolean(errors[field]));
 
   // İl değişince, önceki ile ait seçili ilçe geçersiz kalabileceği için
   // temizliyoruz. Önceki il boşken (ilk render ya da düzenleme modunda
@@ -250,414 +272,366 @@ export function PersonelFormFields({ control, setValue, personel }: Props) {
   }, [aylikUcret, setValue]);
 
   return (
-    <Accordion type="single" defaultValue="personel" className="w-full my-4">
-      {/* ---- Personel Bilgileri ---- */}
-      <AccordionItem value="personel">
-        <AccordionTrigger className="bg-muted/50 px-3">
-          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <UserRound className="size-4 text-muted-foreground" />
-            Personel Bilgileri
-            {sectionHasError(SECTION_FIELDS.personel) && (
-              <span
-                className="size-2 rounded-full bg-destructive"
-                title="Bu bölümde hatalı/eksik alan var"
-              />
-            )}
-          </span>
-        </AccordionTrigger>
-        <AccordionContent className="p-4">
-          <div className=" space-y-2 py-1">
-            <FormSelect
-              control={control}
-              name="IDBolum"
-              label="Bölümü"
-              options={bolumler}
-              valueKey="IDBolum"
-              labelKey="BolumAdi"
-            />
-            <FormLabel label="Personel Grubu">
-              <FormSelect
-                control={control}
-                name="IDSirketPersonelGrup"
-                options={personelGruplari}
-                valueKey="IDSirketPersonelGrup"
-                labelKey="Adi"
-              />
-              <Button
-                type="button"
-                appearance="outline"
-                size="icon"
-                className="flex-none!"
-                title="Yeni personel grubu ekle"
-                aria-label="Yeni personel grubu ekle"
-                onClick={() => setOpenGrupEkle(true)}
-              >
-                <Plus />
-              </Button>
-            </FormLabel>
-            <PersonelGrupEkle
-              open={openGrupEkle}
-              onOpenChange={setOpenGrupEkle}
-            />
-            <FormInput
-              control={control}
-              name="TcKimlikNo"
-              label="* TC Kimlik No"
-              format="tcno"
-            />
-            <FormInput control={control} name="Ad" label="* Ad" format="ad" />
-            <FormInput
-              control={control}
-              name="Soyad"
-              label="* Soyad"
-              format="soyad"
-            />
-            <FormInput
-              control={control}
-              name="IlkSoyad"
-              label="İlk Soyad"
-              format="soyad"
-            />
-            <FormInput
-              control={control}
-              name="DogumTarihi"
-              label="* Doğum Tarihi"
-              type="date"
-            />
-            <FormSelect
-              control={control}
-              name="Cinsiyet"
-              label="* Cinsiyet"
-              options={CINSIYET_OPTIONS}
-            />
-            <FormSelect
-              control={control}
-              name="Uyruk"
-              label="* Uyruk"
-              options={uyruklar}
-            />
-            <FormInput control={control} name="UnvanAdi" label="Unvan Adı" />
-            <FormSelect
-              control={control}
-              name="OgrenimDurumu"
-              label="* Öğrenim Durumu"
-              options={ogrenimDurumlari}
-            />
-            <FormSelect
-              control={control}
-              name="MezuniyetYili"
-              label="Mezuniyet Yılı"
-              options={MEZUNIYET_YILI_OPTIONS}
-            />
-            <FormInput
-              control={control}
-              name="MezuniyetBolumu"
-              label="Mezuniyet Bölümü"
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+    // Adımlar aynı grid hücresinde üst üste duruyor, pasifler "invisible"
+    // (yer kaplar ama görünmez/odaklanamaz). Böylece kap en yüksek adım kadar
+    // oluyor ve adım değişince modal büyüyüp küçülmüyor.
+    <div className="my-4 grid">
+      <div
+        className={cn(
+          "col-start-1 row-start-1 space-y-2",
+          activeStep !== 0 && "invisible",
+        )}
+      >
+        <FormSelect
+          control={control}
+          name="IDBolum"
+          label="Bölümü"
+          options={bolumler}
+          valueKey="IDBolum"
+          labelKey="BolumAdi"
+        />
+        <FormLabel label="Personel Grubu">
+          <FormSelect
+            control={control}
+            name="IDSirketPersonelGrup"
+            options={personelGruplari}
+            valueKey="IDSirketPersonelGrup"
+            labelKey="Adi"
+          />
+          <Button
+            type="button"
+            appearance="outline"
+            size="icon"
+            className="flex-none!"
+            title="Yeni personel grubu ekle"
+            aria-label="Yeni personel grubu ekle"
+            onClick={() => setOpenGrupEkle(true)}
+          >
+            <Plus />
+          </Button>
+        </FormLabel>
+        <PersonelGrupEkle open={openGrupEkle} onOpenChange={setOpenGrupEkle} />
+        <FormInput
+          control={control}
+          name="TcKimlikNo"
+          label="* TC Kimlik No"
+          format="tcno"
+        />
+        <FormInput control={control} name="Ad" label="* Ad" format="ad" />
+        <FormInput
+          control={control}
+          name="Soyad"
+          label="* Soyad"
+          format="soyad"
+        />
+        <FormInput
+          control={control}
+          name="IlkSoyad"
+          label="İlk Soyad"
+          format="soyad"
+        />
+        <FormInput
+          control={control}
+          name="DogumTarihi"
+          label="* Doğum Tarihi"
+          type="date"
+        />
+        <FormSelect
+          control={control}
+          name="Cinsiyet"
+          label="* Cinsiyet"
+          options={CINSIYET_OPTIONS}
+        />
+        <FormSelect
+          control={control}
+          name="Uyruk"
+          label="* Uyruk"
+          options={uyruklar}
+        />
+        <FormInput control={control} name="UnvanAdi" label="Unvan Adı" />
+        <FormSelect
+          control={control}
+          name="OgrenimDurumu"
+          label="* Öğrenim Durumu"
+          options={ogrenimDurumlari}
+        />
+        <FormSelect
+          control={control}
+          name="MezuniyetYili"
+          label="Mezuniyet Yılı"
+          options={MEZUNIYET_YILI_OPTIONS}
+        />
+        <FormInput
+          control={control}
+          name="MezuniyetBolumu"
+          label="Mezuniyet Bölümü"
+        />
+      </div>
 
-      {/* ---- Giriş/Çıkış Bilgileri ---- */}
-      <AccordionItem value="giris-cikis">
-        <AccordionTrigger className="bg-muted/50 px-3">
-          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <CalendarClock className="size-4 text-muted-foreground" />
-            Giriş/Çıkış Bilgileri
-            {sectionHasError(SECTION_FIELDS["giris-cikis"]) && (
-              <span
-                className="size-2 rounded-full bg-destructive"
-                title="Bu bölümde hatalı/eksik alan var"
-              />
-            )}
-          </span>
-        </AccordionTrigger>
-        <AccordionContent className="p-4">
-          <div className="space-y-2 pt-1">
-            <FormSelect
-              control={control}
-              name="SgkDurumu"
-              label="* SGK Durumu"
-              options={sgkDurumlari}
-            />
-            <FormSelect
-              control={control}
-              name="PersonelKanunNo"
-              label="* SGK Kanun No"
-              options={sgkKanunNolar}
-            />
-            <FormSelect
-              control={control}
-              name="PersonelSgkBelgeTuru"
-              label="* SGK Belge Türü"
-              options={sgkBelgeTurleri}
-            />
-            <FormSearchSelect
-              control={control}
-              name="PersonelMeslekKodu"
-              label="* Meslek Kodu"
-              placeholder="Meslek seçin"
-              searchPlaceholder="Meslek adı yazın (örn. muhasebe)"
-              useOptions={useMeslekKodlari}
-              minSearchLength={MESLEK_KODU_MIN_SEARCH}
-            />
-            <FormSelect
-              control={control}
-              name="PersonelSigortaKolu"
-              label="* Sigorta Kolu"
-              options={sigortaKollari}
-            />
-            <FormSelect
-              control={control}
-              name="PersonelGorevKodu"
-              label="2821 SK Gereğince Belirlenen Sigortalının Görev Kodu"
-              options={gorevKodlari}
-            />
+      <div
+        className={cn(
+          "col-start-1 row-start-1 space-y-2",
+          activeStep !== 1 && "invisible",
+        )}
+      >
+        <FormSelect
+          control={control}
+          name="SgkDurumu"
+          label="* SGK Durumu"
+          options={sgkDurumlari}
+        />
+        <FormSelect
+          control={control}
+          name="PersonelKanunNo"
+          label="* SGK Kanun No"
+          options={sgkKanunNolar}
+        />
+        <FormSelect
+          control={control}
+          name="PersonelSgkBelgeTuru"
+          label="* SGK Belge Türü"
+          options={sgkBelgeTurleri}
+        />
+        <FormSearchSelect
+          control={control}
+          name="PersonelMeslekKodu"
+          label="* Meslek Kodu"
+          placeholder="Meslek seçin"
+          searchPlaceholder="Meslek adı yazın (örn. muhasebe)"
+          useOptions={useMeslekKodlari}
+          minSearchLength={MESLEK_KODU_MIN_SEARCH}
+        />
+        <FormSelect
+          control={control}
+          name="PersonelSigortaKolu"
+          label="* Sigorta Kolu"
+          options={sigortaKollari}
+        />
+        <FormSelect
+          control={control}
+          name="PersonelGorevKodu"
+          label="2821 SK Gereğince Belirlenen Sigortalının Görev Kodu"
+          options={gorevKodlari}
+        />
 
-            <FormInput
-              control={control}
-              name="IseIlkGirisTarihi"
-              label="İlk Sigorta Başlangıç Tarihi"
-              type="date"
-            />
-            <FormInput
-              control={control}
-              name="IseSonGirisTarihi"
-              label="* İşe Giriş Tarihi"
-              type="date"
-            />
-            <FormInput
-              control={control}
-              name="KumulatifSgkMatrahi"
-              label="Geçmiş Gelir V. Matrahı"
-              format="money"
-            />
-            <FormInput
-              control={control}
-              name="DevredenSgkMatrahi"
-              label="Devreden SGK Matrahı"
-              format="money"
-            />
-            <FormInput
-              control={control}
-              name="AuKumulatifVergiMatrahi"
-              label="A.Ü. Kümülatif Vergi Matrahı"
-              format="money"
-            />
-            <FormSwitch
-              control={control}
-              name="VardiyaliCalismaDurumu"
-              label="Vardiyalı Çalışma Durumu"
-            />
-            <FormInput
-              control={control}
-              name="GecmistenKalanIzinGun"
-              label="Geçmişte Kullanılan İzin Gün"
-              format="number"
-              placeholder="0"
-            />
-            <FormInput
-              control={control}
-              name="GecmistenDevredenIzinGun"
-              label="Geçmişten Devreden İzin Gün"
-              format="number"
-              placeholder="0"
-            />
-            <FormLabel label="Az Çalışma Durumu ve Gün">
-              <FormSwitch
-                control={control}
-                name="AzCalismaDurumu"
-                className="w-auto flex-none! self-center p-0"
-              />
-              <FormInput
-                control={control}
-                name="AzCalismaDurumuGunSayisi"
-                format="number"
-                disabled={!useWatch({ control, name: "AzCalismaDurumu" })}
-              />
-            </FormLabel>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+        <FormInput
+          control={control}
+          name="IseIlkGirisTarihi"
+          label="İlk Sigorta Başlangıç Tarihi"
+          type="date"
+        />
+        <FormInput
+          control={control}
+          name="IseSonGirisTarihi"
+          label="* İşe Giriş Tarihi"
+          type="date"
+        />
+        <FormInput
+          control={control}
+          name="KumulatifSgkMatrahi"
+          label="Geçmiş Gelir V. Matrahı"
+          format="money"
+        />
+        <FormInput
+          control={control}
+          name="DevredenSgkMatrahi"
+          label="Devreden SGK Matrahı"
+          format="money"
+        />
+        <FormInput
+          control={control}
+          name="AuKumulatifVergiMatrahi"
+          label="A.Ü. Kümülatif Vergi Matrahı"
+          format="money"
+        />
+        <FormSwitch
+          control={control}
+          name="VardiyaliCalismaDurumu"
+          label="Vardiyalı Çalışma Durumu"
+        />
+        <FormInput
+          control={control}
+          name="GecmistenKalanIzinGun"
+          label="Geçmişte Kullanılan İzin Gün"
+          format="number"
+          placeholder="0"
+        />
+        <FormInput
+          control={control}
+          name="GecmistenDevredenIzinGun"
+          label="Geçmişten Devreden İzin Gün"
+          format="number"
+          placeholder="0"
+        />
+        <FormLabel label="Az Çalışma Durumu ve Gün">
+          <FormSwitch
+            control={control}
+            name="AzCalismaDurumu"
+            className="w-auto flex-none! self-center p-0"
+          />
+          <FormInput
+            control={control}
+            name="AzCalismaDurumuGunSayisi"
+            format="number"
+            disabled={!useWatch({ control, name: "AzCalismaDurumu" })}
+          />
+        </FormLabel>
+      </div>
 
-      {/* ---- Bordro Bilgileri ---- */}
-      <AccordionItem value="bordro">
-        <AccordionTrigger className="bg-muted/50 px-3">
-          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Wallet className="size-4 text-muted-foreground" />
-            Bordro Bilgileri{" "}
-            {sectionHasError(SECTION_FIELDS.bordro) && (
-              <span
-                className="size-2 rounded-full bg-destructive"
-                title="Bu bölümde hatalı/eksik alan var"
-              />
-            )}
-          </span>
-        </AccordionTrigger>
-        <AccordionContent className="p-4">
-          <div className="pt-1 space-y-2">
-            <FormSelect
-              control={control}
-              name="IstihdamDurumu"
-              label="* İstihdam Durumu"
-              options={istihdamDurumlari}
-            />
-            <FormSelect
-              control={control}
-              name="OdemeSekli"
-              label="* Ödeme Şekli"
-              options={odemeSekilleri}
-            />
-            <FormSelect
-              control={control}
-              name="UcretTipi"
-              label="* Ücret Tipi"
-              options={ucretTipleri}
-            />
-            <FormSwitch
-              control={control}
-              name="AsgeriUcretli"
-              label="* Asgari Ücretli Mi?"
-              onCheckedChange={(checked) => {
-                // Asgari ücretliden çıkınca asgari ücret tutarı kalmasın,
-                // kullanıcı ücreti baştan girsin. (Açılınca tutarı yukarıdaki
-                // effect API'den set ediyor.)
-                if (!checked) {
-                  setValue("Ucret", toMoneyValue(0), {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }
-              }}
-            />
-            <FormSwitch
-              control={control}
-              name="EskiHukumluDurumu"
-              label="Eski Hükümlü Mü?"
-            />
-            <FormLabel label="Sakatlık İndirimi Uygula">
-              {/* FormLabel çocuklarına flex-1 veriyor; switch içeriği kadar
+      <div
+        className={cn(
+          "col-start-1 row-start-1 space-y-2",
+          activeStep !== 2 && "invisible",
+        )}
+      >
+        <FormSelect
+          control={control}
+          name="IstihdamDurumu"
+          label="* İstihdam Durumu"
+          options={istihdamDurumlari}
+        />
+        <FormSelect
+          control={control}
+          name="OdemeSekli"
+          label="* Ödeme Şekli"
+          options={odemeSekilleri}
+        />
+        <FormSelect
+          control={control}
+          name="UcretTipi"
+          label="* Ücret Tipi"
+          options={ucretTipleri}
+        />
+        <FormSwitch
+          control={control}
+          name="AsgeriUcretli"
+          label="* Asgari Ücretli Mi?"
+          onCheckedChange={(checked) => {
+            // Asgari ücretliden çıkınca asgari ücret tutarı kalmasın,
+            // kullanıcı ücreti baştan girsin. (Açılınca tutarı yukarıdaki
+            // effect API'den set ediyor.)
+            if (!checked) {
+              setValue("Ucret", toMoneyValue(0), {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+            }
+          }}
+        />
+        <FormSwitch
+          control={control}
+          name="EskiHukumluDurumu"
+          label="Eski Hükümlü Mü?"
+        />
+        <FormLabel label="Sakatlık İndirimi Uygula">
+          {/* FormLabel çocuklarına flex-1 veriyor; switch içeriği kadar
                   yer kaplasın, kalan genişliği select alsın. */}
-              <FormSwitch
-                control={control}
-                name="OzurluDurumu"
-                className="w-auto flex-none! self-center p-0"
-              />
-              <FormSelect
-                control={control}
-                name="OzurlulukDerecesi"
-                options={ozurlulukDurumlari}
-                hidden={!ozurluDurumu}
-              />
-            </FormLabel>
-            <FormSelect
-              control={control}
-              name="MaasParaBirimi"
-              label="* Maaş Para Birimi"
-              options={maasParaBirimleri}
-            />
-            <FormLabel label="* Ücret (Aylık/Günlük/Saatlik)">
-              <FormInput
-                control={control}
-                name="Ucret"
-                format="money"
-                readOnly={asgariUcretli}
-                placeholder={
-                  asgariUcretli && isLoadingAsgariUcret
-                    ? "Yükleniyor..."
-                    : undefined
-                }
-              />
-              <FormInput
-                control={control}
-                name="GunlukUcret"
-                format="money"
-                readOnly
-              />
-              <FormInput
-                control={control}
-                name="SaatlikUcret"
-                format="money"
-                readOnly
-              />
-            </FormLabel>
-            <FormLabel label="Hafta Tatil Günü">
-              {/* Switch ayrı bir form alanı değil: açıkken varsayılan Pazar ("7"),
+          <FormSwitch
+            control={control}
+            name="OzurluDurumu"
+            className="w-auto flex-none! self-center p-0"
+          />
+          <FormSelect
+            control={control}
+            name="OzurlulukDerecesi"
+            options={ozurlulukDurumlari}
+            hidden={!ozurluDurumu}
+          />
+        </FormLabel>
+        <FormSelect
+          control={control}
+          name="MaasParaBirimi"
+          label="* Maaş Para Birimi"
+          options={maasParaBirimleri}
+        />
+        <FormLabel label="* Ücret (Aylık/Günlük/Saatlik)">
+          <FormInput
+            control={control}
+            name="Ucret"
+            format="money"
+            readOnly={asgariUcretli}
+            placeholder={
+              asgariUcretli && isLoadingAsgariUcret
+                ? "Yükleniyor..."
+                : undefined
+            }
+          />
+          <FormInput
+            control={control}
+            name="GunlukUcret"
+            format="money"
+            readOnly
+          />
+          <FormInput
+            control={control}
+            name="SaatlikUcret"
+            format="money"
+            readOnly
+          />
+        </FormLabel>
+        <FormLabel label="Hafta Tatil Günü">
+          {/* Switch ayrı bir form alanı değil: açıkken varsayılan Pazar ("7"),
                   kapalıyken "" gönderilir */}
-              <Switch
-                checked={haftaTatiliVar}
-                onCheckedChange={(checked) =>
-                  setValue("HaftaTatilGunu", checked ? "7" : "", {
-                    shouldDirty: true,
-                  })
-                }
-                className="flex-none! self-center"
-              />
-              {haftaTatiliVar && (
-                <FormMultiSelect
-                  control={control}
-                  name="HaftaTatilGunu"
-                  options={HAFTA_DATA}
-                  valueSeparator="-"
-                  placeholder="Gün seçiniz"
-                  searchPlaceholder="Gün ara..."
-                  maxVisibleChips={7}
-                />
-              )}
-            </FormLabel>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+          <Switch
+            checked={haftaTatiliVar}
+            onCheckedChange={(checked) =>
+              setValue("HaftaTatilGunu", checked ? "7" : "", {
+                shouldDirty: true,
+              })
+            }
+            className="flex-none! self-center"
+          />
+          {haftaTatiliVar && (
+            <FormMultiSelect
+              control={control}
+              name="HaftaTatilGunu"
+              options={HAFTA_DATA}
+              valueSeparator="-"
+              placeholder="Gün seçiniz"
+              searchPlaceholder="Gün ara..."
+              maxVisibleChips={7}
+            />
+          )}
+        </FormLabel>
+      </div>
 
-      {/* ---- Adres Bilgileri ---- */}
-      <AccordionItem value="adres">
-        <AccordionTrigger className="bg-muted/50 px-3">
-          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <MapPin className="size-4 text-muted-foreground" />
-            Adres Bilgileri{" "}
-            {sectionHasError(SECTION_FIELDS.adres) && (
-              <span
-                className="size-2 rounded-full bg-destructive"
-                title="Bu bölümde hatalı/eksik alan var"
-              />
-            )}
-          </span>
-        </AccordionTrigger>
-        <AccordionContent className="p-4">
-          <div className="pt-1 space-y-2">
-            <FormLabel label="İl / İlçe">
-              <FormSelect
-                control={control}
-                name="IlKodu"
-                options={iller}
-                valueKey="IlKodu"
-                labelKey="IlAdi"
-              />
-              <FormSelect
-                control={control}
-                name="IlceKodu"
-                options={ilceler}
-                valueKey="IlceKodu"
-                labelKey="IlceAdi"
-                disabled={!selectedIlKodu}
-              />
-            </FormLabel>
-            <FormInput
-              control={control}
-              type="textarea"
-              name="Adres"
-              label="Adres"
-            />
-            <FormInput
-              control={control}
-              name="Telefon"
-              label="Telefon"
-              format="tel"
-              placeholder="5xx xxx xx xx"
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+      <div
+        className={cn(
+          "col-start-1 row-start-1 space-y-2",
+          activeStep !== 3 && "invisible",
+        )}
+      >
+        <FormLabel label="İl / İlçe">
+          <FormSelect
+            control={control}
+            name="IlKodu"
+            options={iller}
+            valueKey="IlKodu"
+            labelKey="IlAdi"
+          />
+          <FormSelect
+            control={control}
+            name="IlceKodu"
+            options={ilceler}
+            valueKey="IlceKodu"
+            labelKey="IlceAdi"
+            disabled={!selectedIlKodu}
+          />
+        </FormLabel>
+        <FormInput
+          control={control}
+          type="textarea"
+          name="Adres"
+          label="Adres"
+        />
+        <FormInput
+          control={control}
+          name="Telefon"
+          label="Telefon"
+          format="tel"
+          placeholder="5xx xxx xx xx"
+        />
+      </div>
+    </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
+import { KeyboardEvent, useEffect, useState } from "react";
+import { FieldErrors, useForm } from "react-hook-form";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,8 @@ import {
 import { PERSONEL_DEFAULT_VALUES, PersonelForm } from "./PersonelFormType";
 import { toast } from "sonner";
 import { useCurrentContext } from "@/modules/core/hooks/use-context";
-import { PersonelFormFields } from "./PersonelFormFields";
+import { PERSONEL_STEPS, PersonelFormFields } from "./PersonelFormFields";
+import { Stepper } from "@/components/ui/stepper";
 import { personelSchema } from "@/modules/bordro/schemas/personel/personel.schema";
 
 type Props = {
@@ -54,6 +55,69 @@ export default function PersonelEkle({
     defaultValues: PERSONEL_DEFAULT_VALUES,
     resolver: zodResolver(personelSchema),
   });
+
+  // ---- Adımlar ------------------------------------------------------------
+  // Eklemede: İleri'de o adım doğrulanır, stepper'dan sadece daha önce
+  // ulaşılmış adımlara gidilebilir, Kaydet son adımda çıkar.
+  // Düzenlemede: bütün adımlar serbest, Kaydet her adımda görünür.
+  const [activeStep, setActiveStep] = useState(0);
+  const [maxReachedStep, setMaxReachedStep] = useState(0);
+  // Dialog kapanınca ilk adıma dön (effect yerine render sırasında —
+  // React'ın "prop değişince state sıfırlama" önerisi)
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (!open) {
+      setActiveStep(0);
+      setMaxReachedStep(0);
+    }
+  }
+  const lastStep = PERSONEL_STEPS.length - 1;
+  const isLastStep = activeStep === lastStep;
+  const { errors } = form.formState;
+
+  const stepHasError = (index: number, errs: FieldErrors<PersonelForm>) =>
+    PERSONEL_STEPS[index].fields.some((field) => Boolean(errs[field]));
+
+  const goToStep = (index: number) => {
+    setActiveStep(index);
+    setMaxReachedStep((max) => Math.max(max, index));
+  };
+
+  /** Aktif adımı doğrular; geçerliyse hedef adıma geçer. */
+  const validateAndGoTo = async (index: number) => {
+    const isValid = await form.trigger([...PERSONEL_STEPS[activeStep].fields]);
+    if (!isValid) {
+      toast.error("Lütfen bu adımdaki zorunlu alanları kontrol edin.");
+      return;
+    }
+    goToStep(index);
+  };
+
+  const handleStepClick = (index: number) => {
+    // Geri gitmek ve düzenleme modu doğrulama istemez
+    if (isEditMode || index < activeStep) goToStep(index);
+    else validateAndGoTo(index);
+  };
+
+  // Eklemede son adıma kadar Enter formu submit etmesin, İleri gibi çalışsın.
+  // Sadece bu formun kendi input'larına bakıyoruz — portal'daki arama
+  // kutuları (select/combobox) kendi Enter'larını yönetiyor.
+  const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    const target = event.target;
+    if (
+      event.key !== "Enter" ||
+      event.defaultPrevented ||
+      isEditMode ||
+      isLastStep ||
+      !(target instanceof HTMLInputElement) ||
+      target.form !== event.currentTarget
+    ) {
+      return;
+    }
+    event.preventDefault();
+    validateAndGoTo(activeStep + 1);
+  };
 
   useEffect(() => {
     if (!open) {
@@ -353,17 +417,36 @@ export default function PersonelEkle({
           </p>
         ) : (
           <form
-            onSubmit={form.handleSubmit(handleSubmit, (errors) => {
-              const errorCount = Object.keys(errors).length;
+            onKeyDown={handleFormKeyDown}
+            onSubmit={form.handleSubmit(handleSubmit, (submitErrors) => {
+              const errorCount = Object.keys(submitErrors).length;
+              // Hatalı ilk adıma götür ki kullanıcı hatayı görsün
+              const firstErrorStep = PERSONEL_STEPS.findIndex((_, index) =>
+                stepHasError(index, submitErrors),
+              );
+              if (firstErrorStep !== -1) setActiveStep(firstErrorStep);
               toast.error(
                 `Lütfen zorunlu alanları kontrol edin (${errorCount} alanda hata var).`,
               );
             })}
           >
+            <Stepper
+              className="mt-2"
+              steps={PERSONEL_STEPS.map((step, index) => ({
+                id: step.id,
+                label: step.label,
+                hasError: stepHasError(index, errors),
+              }))}
+              activeStep={activeStep}
+              onStepClick={handleStepClick}
+              isStepClickable={(index) => isEditMode || index <= maxReachedStep}
+            />
+
             <PersonelFormFields
               control={form.control}
               setValue={form.setValue}
               personel={personel}
+              activeStep={activeStep}
             />
 
             <DialogFooter>
@@ -371,10 +454,39 @@ export default function PersonelEkle({
                 type="button"
                 appearance="outline"
                 onClick={() => onOpenChange(false)}
+                className="sm:mr-auto"
               >
                 İptal
               </Button>
-              <Button type="submit">Kaydet</Button>
+              {activeStep > 0 && (
+                <Button
+                  type="button"
+                  appearance="outline"
+                  onClick={() => goToStep(activeStep - 1)}
+                >
+                  <ChevronLeft />
+                  Geri
+                </Button>
+              )}
+              {/* İleri ve Kaydet'e ayrı key: aynı DOM butonu type="button"dan
+                  "submit"e dönerse İleri tıklaması formu submit edebiliyor. */}
+              {!isLastStep && (
+                <Button
+                  key="next"
+                  type="button"
+                  appearance={isEditMode ? "outline" : undefined}
+                  onClick={() => validateAndGoTo(activeStep + 1)}
+                >
+                  İleri
+                  <ChevronRight />
+                </Button>
+              )}
+              {(isEditMode || isLastStep) && (
+                <Button key="submit" type="submit" disabled={isSaving}>
+                  {isSaving && <Loader2 className="animate-spin" />}
+                  Kaydet
+                </Button>
+              )}
             </DialogFooter>
           </form>
         )}

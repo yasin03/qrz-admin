@@ -218,3 +218,46 @@
   background-size: 18px 18px, 100% 100%, 100% 100%;
   background-attachment: local, scroll, scroll;
 }
+
+/* ---- Ajanda hatırlatma toast'u (AjandaHatirlatici) --------------------
+   Birkaç saniyede bir kısa sallanır, zil ikonu çalar; üstüne gelince durur.
+   Sonner toast'u konumlamak için `transform` kullanıyor, o yüzden sallanma
+   ayrı `translate` / `rotate` özellikleriyle yapılıyor (çakışmasınlar).
+   Kaydırarak kapatırken sonner'ın kendi animasyonu çalışsın diye
+   swipe-out sırasında devre dışı. */
+@keyframes ajanda-hatirlatma-salla {
+  0%, 10%, 100% { translate: 0; }
+  2%, 6% { translate: -4px 0; }
+  4%, 8% { translate: 4px 0; }
+}
+
+@keyframes ajanda-hatirlatma-zil {
+  0%, 12%, 100% { rotate: 0deg; }
+  2% { rotate: 18deg; }
+  4% { rotate: -16deg; }
+  6% { rotate: 12deg; }
+  8% { rotate: -8deg; }
+  10% { rotate: 4deg; }
+}
+
+.ajanda-hatirlatma-toast:not([data-swipe-out="true"]) {
+  border-left: 4px solid var(--color-warning) !important;
+  animation: ajanda-hatirlatma-salla 5s ease-in-out 1s infinite;
+}
+
+.ajanda-hatirlatma-toast [data-icon] svg {
+  transform-origin: 50% 0;
+  animation: ajanda-hatirlatma-zil 5s ease-in-out 1s infinite;
+}
+
+.ajanda-hatirlatma-toast:hover,
+.ajanda-hatirlatma-toast:hover [data-icon] svg {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ajanda-hatirlatma-toast:not([data-swipe-out="true"]),
+  .ajanda-hatirlatma-toast [data-icon] svg {
+    animation: none;
+  }
+}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { format, isToday, isTomorrow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { toast } from "sonner";
+import { BellRing } from "lucide-react";
 
 import { useAuthHasHydrated, useUser } from "@/stores/auth-store";
 import { useAjandaHatirlatmalar } from "@/modules/core/hooks/use-ajanda";
@@ -66,8 +67,12 @@ export default function AjandaHatirlatici() {
       gosterilen[key] = Date.now();
       degisti = true;
 
-      toast(h.baslik, {
+      // warning: richColors ile amber zemin. Sallanma/zil animasyonu
+      // globals.css'teki .ajanda-hatirlatma-toast'ta.
+      toast.warning(h.baslik, {
         id: key,
+        icon: <BellRing />,
+        className: "ajanda-hatirlatma-toast",
         description: [zaman(h), h.konum].filter(Boolean).join(" · "),
         duration: Infinity,
         closeButton: true,

@@ -184,7 +184,7 @@ function YaklasanGunler({
         </div>
       ) : (
         <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-          <Ilustrasyon className="size-10 shrink-0 opacity-70 grayscale-[40%]" />
+          <Ilustrasyon className="size-10 shrink-0 opacity-70 grayscale-40" />
           {bugunBos}
         </div>
       )}
