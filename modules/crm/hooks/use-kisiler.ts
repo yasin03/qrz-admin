@@ -36,6 +36,7 @@ export function useCrmKisiler(Tip: CrmKisiTip, enabled = true) {
     queryFn: () => kisilerService.kisiList(Tip),
     enabled,
     staleTime: 60 * 1000, // 1 dakika
+    meta: { hataMesaji: "Kişi listesi alınamadı." },
   });
 }
 
@@ -49,6 +50,7 @@ export function useCrmAktiviteler(filtre: CrmAktiviteListeFiltre = {}, enabled =
     queryFn: () => kisilerService.aktiviteList({ IDCrmKisi, Durum }),
     enabled,
     staleTime: 60 * 1000,
+    meta: { hataMesaji: "Görüşmeler alınamadı." },
   });
 }
 
@@ -62,6 +64,7 @@ export function useCrmYaklasan(filtre: CrmYaklasanFiltre = {}, enabled = true) {
     queryFn: () => kisilerService.yaklasan({ Gun, Benim }),
     enabled,
     staleTime: 60 * 1000,
+    meta: { hataMesaji: "Yaklaşan randevular alınamadı." },
   });
 }
 

@@ -93,11 +93,14 @@ export function useAjandaHatirlatmalar(enabled = true) {
     queryKey: [AJANDA_HATIRLATMA_QUERY_KEY],
     queryFn: () => ajandaService.hatirlatmalar(),
     enabled,
-    refetchInterval: AJANDA_HATIRLATMA_ARALIGI,
+    // Hata varken periyodik istek durur; sekmeye dönünce (refetchOnWindowFocus) tekrar denenir.
+    refetchInterval: (query) => (query.state.error ? false : AJANDA_HATIRLATMA_ARALIGI),
     // Sekme arka plandayken istek atılmaz; sekmeye dönünce bir kez yenilenir.
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
     staleTime: AJANDA_HATIRLATMA_ARALIGI,
+    // Arka plan kontrolü: hata olursa kullanıcıya toast gösterilmez.
+    meta: { hataMesaji: false },
   });
 
   // Saat ilerledikçe listeyi yeniden değerlendirmek için (istek atmadan).

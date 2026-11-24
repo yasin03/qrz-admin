@@ -36,6 +36,7 @@ export function useTeklifler(filtre: TeklifListeFiltre = {}, enabled = true) {
     queryFn: () => teklifService.list({ IDCrmKisi, Durum, SadeceGuncel }),
     enabled,
     staleTime: 60 * 1000,
+    meta: { hataMesaji: "Teklif listesi alınamadı." },
   });
 }
 
@@ -45,6 +46,7 @@ export function useTeklifDetay(IDCrmTeklif: DbId | null | undefined) {
     queryKey: [CRM_TEKLIF_DETAY_QUERY_KEY, String(IDCrmTeklif)],
     queryFn: () => teklifService.detay(IDCrmTeklif!),
     enabled: IDCrmTeklif != null && IDCrmTeklif !== "",
+    meta: { hataMesaji: "Teklif bilgileri alınamadı." },
   });
 }
 
@@ -84,9 +86,9 @@ export function useTeklifKisiSecenekleri(search: string) {
 }
 
 /** Formda seçili kişinin kaydı (PDF önizleme için; cache'teki listelerden). */
-export function useTeklifKisi(IDCrmKisi: string | null | undefined) {
-  const { data: kontaklar } = useCrmKisiler("Kontak");
-  const { data: musteriler } = useCrmKisiler("Musteri");
+export function useTeklifKisi(IDCrmKisi: string | null | undefined, enabled = true) {
+  const { data: kontaklar } = useCrmKisiler("Kontak", enabled);
+  const { data: musteriler } = useCrmKisiler("Musteri", enabled);
   return useMemo(() => {
     if (!IDCrmKisi) return null;
     const bul = (liste: typeof kontaklar) => liste?.find((k) => String(k.IDCrmKisi) === IDCrmKisi);

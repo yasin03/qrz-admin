@@ -13,7 +13,7 @@ export const DESTEK_MESAJ_QUERY_KEY = "destek-mesaj-list";
 export const DESTEK_KONTROL_QUERY_KEY = "destek-mesaj-kontrol";
 
 /** Okunmamış destek mesajı kontrol aralığı. */
-export const DESTEK_KONTROL_ARALIGI = 180 * 1000; // 180 saniye
+export const DESTEK_KONTROL_ARALIGI = 5 * 60 * 1000; // 5 dakika
 
 /** Varsayılan ana uygulama — konular ve talepler bununla çekiliyor. */
 export const DESTEK_ANA_UYGULAMA = "1";
@@ -84,7 +84,9 @@ export function useDestekMesajList(
     queryKey: [DESTEK_MESAJ_QUERY_KEY, IDDestekTakip],
     queryFn: () => destekService.destekMesajSelect(IDDestekTakip!),
     enabled: enabled && Boolean(IDDestekTakip),
-    refetchInterval: enabled ? 15 * 1000 : false,
+    // Sunucu hata veriyorsa 15 sn'de bir istek atmaya devam etmesin;
+    // hata varken periyodik yenileme durur, sonraki başarılı istekte devam eder.
+    refetchInterval: (query) => (enabled && !query.state.error ? 15 * 1000 : false),
   });
 }
 
@@ -104,7 +106,7 @@ export function useInsertDestekMesaj() {
 
 /**
  * Kullanıcıya yazılmış okunmamış destek mesajı var mı? Her sayfada
- * (DashboardShell) 180 saniyede bir kontrol edilir. Sekme arka plandayken
+ * (DashboardShell) 5 dakikada bir kontrol edilir. Sekme arka plandayken
  * istek atılmaz, sekmeye dönülünce hemen yenilenir.
  */
 export function useDestekMesajKontrol(
@@ -123,5 +125,7 @@ export function useDestekMesajKontrol(
     refetchInterval: (query) =>
       enabled && !query.state.error ? DESTEK_KONTROL_ARALIGI : false,
     staleTime: DESTEK_KONTROL_ARALIGI,
+    // Arka plan kontrolü: hata olursa kullanıcıya toast gösterilmez.
+    meta: { hataMesaji: false },
   });
 }

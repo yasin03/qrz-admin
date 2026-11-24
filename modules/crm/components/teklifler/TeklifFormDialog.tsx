@@ -176,7 +176,8 @@ export function TeklifFormDialog({
      Kaydedilmemiş formdan üretilir; numara yeni kayıtta "Taslak". */
   const user = useUser();
   const tumDegerler = useWatch({ control }) as TeklifForm;
-  const seciliKisi = useTeklifKisi(tumDegerler.IDCrmKisi);
+  // Form kapalıyken kişi listeleri çekilmez.
+  const seciliKisi = useTeklifKisi(tumDegerler.IDCrmKisi, open);
   const onizlemeAdimi = aktifAdim === SON_ADIM;
   const pdfVeri = useMemo(
     () =>
