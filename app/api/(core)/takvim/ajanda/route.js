@@ -3,44 +3,18 @@
 import { NextResponse } from "next/server";
 import { ExecuteQueryRecordsets } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
-
-/* ------------------------------------------------------------------ */
-/* SQL değer yardımcıları — boş değer NULL olarak gider                */
-/* ------------------------------------------------------------------ */
-
-const bos = (v) => v === undefined || v === null || v === "";
-
-// nvarchar (serbest metin): N'' öneki unicode/emoji kaybolmasın diye.
-function sqlNStr(v) {
-  return bos(v) ? "NULL" : `N'${String(v).replace(/'/g, "''")}'`;
-}
-
-// varchar / char (renk, RRULE).
-function sqlStr(v) {
-  return bos(v) ? "NULL" : `'${String(v).replace(/'/g, "''")}'`;
-}
-
-function sqlInt(v) {
-  if (bos(v)) return "NULL";
-  const n = Number(v);
-  if (!Number.isInteger(n)) throw new GecersizIstek(`Geçersiz sayı: ${v}`);
-  return String(n);
-}
-
-function sqlBit(v) {
-  return v === true || v === 1 || v === "1" || v === "true" ? "1" : "0";
-}
-
-// Tarihler TR yerel saatidir. "2026-11-20T14:00:00.000Z" gelse de Z yok
-// sayılır (lib/format.ts ile aynı konvansiyon).
-const TARIH = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2})(:\d{2})?(?:\.\d+)?)?Z?$/;
-
-function sqlDate(v) {
-  if (bos(v)) return "NULL";
-  const m = String(v).match(TARIH);
-  if (!m) throw new GecersizIstek(`Geçersiz tarih: ${v}`);
-  return `'${m[1]} ${m[2] ?? "00:00"}${m[3] ?? ":00"}'`;
-}
+import {
+  GecersizIstek,
+  SP_HATA,
+  bos,
+  exec,
+  ilk,
+  sqlBit,
+  sqlDate,
+  sqlInt,
+  sqlNStr,
+  sqlStr,
+} from "@/lib/sql";
 
 // Uygulama içi hatırlatma: istemci 5 dakikada bir sorar, bu yüzden önümüzdeki
 // 5 dakikada zamanı gelecek hatırlatmalar da önceden döner; "zamanı geldi mi"
@@ -65,14 +39,6 @@ function sqlIdListe(v) {
   return `N'${JSON.stringify(ids)}'`;
 }
 
-class GecersizIstek extends Error {}
-
-// EXEC [SP] @A = x, @B = y
-function exec(sp, args) {
-  const list = Object.entries(args).map(([k, v]) => `@${k} = ${v}`);
-  return `EXEC [dbo].[${sp}] ${list.join(", ")}`;
-}
-
 // Ajanda_INSERT / Ajanda_UPDATE_ByID ortak alanları.
 function ajandaAlanlari(p) {
   return {
@@ -92,7 +58,6 @@ function ajandaAlanlari(p) {
   };
 }
 
-const ilk = (rs, i = 0) => rs?.[i]?.[0] ?? null;
 const ids = (rs, i) => (rs?.[i] ?? []).map((r) => r.IDKullanici);
 
 /* ------------------------------------------------------------------ */
@@ -272,13 +237,6 @@ const queryTypes = {
       }),
     map: () => ({ success: true }),
   },
-};
-
-// SP içindeki THROW kodları → HTTP durumu.
-const SP_HATA = {
-  50001: [403, "FORBIDDEN"],
-  50002: [404, "NOT_FOUND"],
-  50003: [400, "VALIDATION_ERROR"],
 };
 
 export const POST = withSession(async (request, session) => {

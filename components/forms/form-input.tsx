@@ -34,6 +34,7 @@ export type InputFormat =
   | "tel"
   | "number"
   | "decimal"
+  | "oran"
   | "text"
   | "money"
   | "ad"
@@ -67,6 +68,7 @@ const FORMAT_META: Record<
   tel: { htmlType: "tel", inputMode: "numeric", maxLength: 13 }, // "555 444 22 33" -> 13 karakter
   number: { htmlType: "text", inputMode: "numeric" },
   decimal: { htmlType: "text", inputMode: "decimal" },
+  oran: { htmlType: "text", inputMode: "decimal", maxLength: 6 },
   text: { htmlType: "text" },
   money: { htmlType: "text", inputMode: "decimal" },
   ad: { htmlType: "text" },
@@ -112,6 +114,24 @@ function toTitleCaseTr(value: string): string {
     .join(" ");
 }
 
+/**
+ * Yüzde oranı (iskonto, KDV, vergi vb.): 0–100 arası, en fazla 2 ondalık.
+ * Virgül de nokta da ondalık ayracı kabul edilir; form değeri noktalı
+ * tutulur ("12.5"). 100'ü aşan değer 100'e çekilir, eksi işaret alınmaz.
+ */
+function formatOran(raw: string): string {
+  const cleaned = raw.replace(/[^\d,.]/g, "").replace(/,/g, ".");
+  const firstDot = cleaned.indexOf(".");
+  let value =
+    firstDot === -1
+      ? cleaned
+      : cleaned.slice(0, firstDot + 1) +
+        cleaned.slice(firstDot + 1).replace(/\./g, "").slice(0, 2);
+  value = value.replace(/^0+(?=\d)/, "");
+  if (value.startsWith(".")) value = `0${value}`;
+  return Number(value) > 100 ? "100" : value;
+}
+
 /** Form değerini ekranda gösterilecek hale getirir. "tel" formatında değer
  *  boşluksuz tutuluyor ("2122121212"), ekranda ise gruplanmış gösteriliyor
  *  ("212 212 12 12"). Diğer formatlarda değer olduğu gibi gösteriliyor. */
@@ -147,6 +167,8 @@ function applyFormat(raw: string, format?: InputFormat): string {
 
       return `${hasMinus ? "-" : ""}${normalized}`;
     }
+    case "oran":
+      return formatOran(raw);
     case "text":
       return raw.replace(/[0-9]/g, "");
     case "ad":

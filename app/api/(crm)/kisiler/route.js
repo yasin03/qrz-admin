@@ -4,60 +4,19 @@
 import { NextResponse } from "next/server";
 import { ExecuteQueryRecordsets } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
-
-/* ------------------------------------------------------------------ */
-/* SQL değer yardımcıları — boş değer NULL olarak gider                */
-/* ------------------------------------------------------------------ */
-
-const bos = (v) => v === undefined || v === null || v === "";
-
-// Serbest metin: N'' öneki Türkçe karakter / unicode kaybolmasın diye
-// (kolon varchar olsa da Turkish collation'a doğru çevrilir).
-function sqlNStr(v) {
-  return bos(v) ? "NULL" : `N'${String(v).replace(/'/g, "''")}'`;
-}
-
-// Kod değerleri (Tip, IlKodu, GorusmeAraci ...).
-function sqlStr(v) {
-  return bos(v) ? "NULL" : `'${String(v).replace(/'/g, "''")}'`;
-}
-
-function sqlInt(v) {
-  if (bos(v)) return "NULL";
-  const n = Number(v);
-  if (!Number.isInteger(n)) throw new GecersizIstek(`Geçersiz sayı: ${v}`);
-  return String(n);
-}
-
-// Boş → NULL (SP mevcut değeri korur / varsayılanı kullanır).
-function sqlBitN(v) {
-  if (bos(v)) return "NULL";
-  return v === true || v === 1 || v === "1" || v === "true" ? "1" : "0";
-}
-
-// Tarihler TR yerel saatidir. "2026-11-20T14:00:00.000Z" gelse de Z yok
-// sayılır (lib/format.ts ile aynı konvansiyon).
-const TARIH = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2})(:\d{2})?(?:\.\d+)?)?Z?$/;
-
-function sqlDate(v) {
-  if (bos(v)) return "NULL";
-  const m = String(v).match(TARIH);
-  if (!m) throw new GecersizIstek(`Geçersiz tarih: ${v}`);
-  return `'${m[1]} ${m[2] ?? "00:00"}${m[3] ?? ":00"}'`;
-}
-
-class GecersizIstek extends Error {}
-
-// EXEC [SP] @A = x, @B = y — undefined değerler gönderilmez (SP varsayılanı).
-function exec(sp, args) {
-  const list = Object.entries(args)
-    .filter(([, v]) => v !== undefined)
-    .map(([k, v]) => `@${k} = ${v}`);
-  return `EXEC [dbo].[${sp}] ${list.join(", ")}`;
-}
-
-// Alan hiç gönderilmediyse parametreyi atla (INSERT'te SP varsayılanı devreye girsin).
-const opt = (p, key, fn) => (p[key] === undefined ? undefined : fn(p[key]));
+import {
+  GecersizIstek,
+  SP_HATA,
+  bos,
+  exec,
+  ilk,
+  opt,
+  sqlBitN,
+  sqlDate,
+  sqlInt,
+  sqlNStr,
+  sqlStr,
+} from "@/lib/sql";
 
 const KISI_TIPLERI = ["Kontak", "Musteri"];
 const KISI_TURLERI = [1, 2]; // 1 Gerçek kişi, 2 Tüzel kişi
@@ -117,8 +76,6 @@ function aktiviteAlanlari(p) {
     HatirlatmaKanal: sqlInt(p.HatirlatmaKanal),
   };
 }
-
-const ilk = (rs, i = 0) => rs?.[i]?.[0] ?? null;
 
 /* ------------------------------------------------------------------ */
 /* Sorgu tipleri: query → SQL, map → recordset'lerden cevap            */
@@ -305,13 +262,6 @@ const queryTypes = {
   },
 };
 
-// SP içindeki THROW kodları → HTTP durumu.
-const SP_HATA = {
-  50001: [403, "FORBIDDEN"],
-  50002: [404, "NOT_FOUND"],
-  50003: [400, "VALIDATION_ERROR"],
-};
-
 export const POST = withSession(async (request, session) => {
   try {
     const payload = await request.json();
@@ -362,7 +312,7 @@ export const POST = withSession(async (request, session) => {
       return fail(session.isMobile, err.message, spHata[0], spHata[1]);
     }
 
-    console.error("API Error (crm):", err);
+    console.error("API Error (kisiler):", err);
 
     if (session.isMobile) {
       return fail(

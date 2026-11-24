@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------ */
 /* CRM — kişi (kontak / müşteri) ve aktivite (görüşme + randevu)       */
-/* SP'ler: /sql/crm_duzeltme.sql · API: /api/crm                       */
+/* SP'ler: /sql/crm_duzeltme.sql · API: /api/kisiler                       */
 /* Tarihler API'de "yyyy-MM-ddTHH:mm:ss(.sss)Z" gelir ama TR yerel      */
 /* saatidir (Z yok sayılır) — bkz. modules/core/lib/ajanda.ts           */
 /* ------------------------------------------------------------------ */

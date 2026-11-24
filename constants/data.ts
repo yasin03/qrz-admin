@@ -74,6 +74,38 @@ export const AY_DATA = [
   { value: "12", label: "Aralık" },
 ] as const;
 
+/**
+ * Ölçü birimleri (teklif kalemleri vb.). Değer metin olarak saklanır
+ * (ör. CrmTeklifKalem.Birim), bu yüzden value = label.
+ */
+export const BIRIM_DATA = [
+  { value: "Adet", label: "Adet" },
+  { value: "Saat", label: "Saat" },
+  { value: "Gün", label: "Gün" },
+  { value: "Hafta", label: "Hafta" },
+  { value: "Ay", label: "Ay" },
+  { value: "Yıl", label: "Yıl" },
+  { value: "Kişi", label: "Kişi" },
+  { value: "Paket", label: "Paket" },
+  { value: "Kutu", label: "Kutu" },
+  { value: "Set", label: "Set" },
+  { value: "Kg", label: "Kg" },
+  { value: "Gr", label: "Gr" },
+  { value: "Ton", label: "Ton" },
+  { value: "Lt", label: "Lt" },
+  { value: "Metre", label: "Metre" },
+  { value: "m²", label: "m²" },
+  { value: "m³", label: "m³" },
+] as const;
+
+/** KDV oranları (%). Değer sayı olarak saklanır (ör. CrmTeklifKalem.KdvOrani). */
+export const KDV_DATA = [
+  { value: "0", label: "%0" },
+  { value: "1", label: "%1" },
+  { value: "10", label: "%10" },
+  { value: "20", label: "%20" },
+] as const;
+
 export function useYearOptions(length = 10, futureYears = 0) {
   const currentYear = new Date().getFullYear();
 

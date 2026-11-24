@@ -23,19 +23,19 @@ import {
   FormSwitch,
 } from "@/components/forms";
 import { HATIRLATMA_SECENEKLERI } from "@/modules/core/components/takvim/takvim-utils";
-import { useInsertCrmAktivite, useUpdateCrmAktivite } from "@/modules/crm/hooks/use-crm";
+import { useInsertCrmAktivite, useUpdateCrmAktivite } from "@/modules/crm/hooks/use-kisiler";
 import {
   GORUSME_ARACI_SECENEKLERI,
   aktiviteFormVarsayilan,
   aktiviteFormdanParams,
   kisiAdi,
-} from "@/modules/crm/lib/crm";
+} from "@/modules/crm/lib/kisiler";
 import {
   SECILMEDI,
   aktiviteSchema,
   type AktiviteForm,
-} from "@/modules/crm/schemas/crm.schema";
-import type { CrmAktiviteRow, CrmKisiRow } from "@/modules/crm/types/crm";
+} from "@/modules/crm/schemas/kisiler.schema";
+import type { CrmAktiviteRow, CrmKisiRow } from "@/modules/crm/types/kisiler";
 
 /**
  * - yeni: kişiye görüşme (durum 1) veya randevu (durum 0) ekle

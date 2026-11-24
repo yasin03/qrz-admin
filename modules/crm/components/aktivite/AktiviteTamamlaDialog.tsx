@@ -15,10 +15,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FormInput, FormSubmitButton } from "@/components/forms";
-import { useTamamlaCrmAktivite } from "@/modules/crm/hooks/use-crm";
-import { tamamlaFormdanParams } from "@/modules/crm/lib/crm";
-import { tamamlaSchema, type TamamlaForm } from "@/modules/crm/schemas/crm.schema";
-import type { CrmAktiviteRow } from "@/modules/crm/types/crm";
+import { useTamamlaCrmAktivite } from "@/modules/crm/hooks/use-kisiler";
+import { tamamlaFormdanParams } from "@/modules/crm/lib/kisiler";
+import { tamamlaSchema, type TamamlaForm } from "@/modules/crm/schemas/kisiler.schema";
+import type { CrmAktiviteRow } from "@/modules/crm/types/kisiler";
 
 type Props = {
   open: boolean;

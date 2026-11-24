@@ -7,7 +7,7 @@ import {
   AJANDA_LIST_QUERY_KEY,
 } from "@/modules/core/hooks/use-ajanda";
 import { useIller } from "@/modules/core/hooks/use-il-ilce-vergi-data";
-import { crmService } from "@/modules/crm/services/crm.service";
+import { kisilerService } from "@/modules/crm/services/kisiler.service";
 import type {
   CrmAktiviteGuncelleParams,
   CrmAktiviteKaydetParams,
@@ -18,7 +18,7 @@ import type {
   CrmKisiTip,
   CrmYaklasanFiltre,
   DbId,
-} from "@/modules/crm/types/crm";
+} from "@/modules/crm/types/kisiler";
 
 export const CRM_KISI_LIST_QUERY_KEY = "crm-kisi-list";
 export const CRM_AKTIVITE_LIST_QUERY_KEY = "crm-aktivite-list";
@@ -33,7 +33,7 @@ export const CRM_AKTIVITE_AJANDA_QUERY_KEY = "crm-aktivite-ajanda";
 export function useCrmKisiler(Tip: CrmKisiTip, enabled = true) {
   return useQuery({
     queryKey: [CRM_KISI_LIST_QUERY_KEY, Tip],
-    queryFn: () => crmService.kisiList(Tip),
+    queryFn: () => kisilerService.kisiList(Tip),
     enabled,
     staleTime: 60 * 1000, // 1 dakika
   });
@@ -46,7 +46,7 @@ export function useCrmAktiviteler(filtre: CrmAktiviteListeFiltre = {}, enabled =
 
   return useQuery({
     queryKey: [CRM_AKTIVITE_LIST_QUERY_KEY, String(IDCrmKisi ?? ""), Durum],
-    queryFn: () => crmService.aktiviteList({ IDCrmKisi, Durum }),
+    queryFn: () => kisilerService.aktiviteList({ IDCrmKisi, Durum }),
     enabled,
     staleTime: 60 * 1000,
   });
@@ -59,7 +59,7 @@ export function useCrmYaklasan(filtre: CrmYaklasanFiltre = {}, enabled = true) {
 
   return useQuery({
     queryKey: [CRM_YAKLASAN_QUERY_KEY, Gun, Benim],
-    queryFn: () => crmService.yaklasan({ Gun, Benim }),
+    queryFn: () => kisilerService.yaklasan({ Gun, Benim }),
     enabled,
     staleTime: 60 * 1000,
   });
@@ -79,7 +79,7 @@ export function useIlAdi() {
 export function useCrmAktiviteByAjanda(IDAjanda: DbId | null | undefined) {
   return useQuery({
     queryKey: [CRM_AKTIVITE_AJANDA_QUERY_KEY, String(IDAjanda)],
-    queryFn: () => crmService.aktiviteByAjanda(IDAjanda!),
+    queryFn: () => kisilerService.aktiviteByAjanda(IDAjanda!),
     enabled: IDAjanda != null && IDAjanda !== "",
   });
 }
@@ -116,7 +116,7 @@ function useCrmYenile() {
 export function useInsertCrmKisi() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (params: CrmKisiKaydetParams) => crmService.kisiInsert(params),
+    mutationFn: (params: CrmKisiKaydetParams) => kisilerService.kisiInsert(params),
     onSuccess: yenile,
   });
 }
@@ -124,7 +124,7 @@ export function useInsertCrmKisi() {
 export function useUpdateCrmKisi() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (params: CrmKisiGuncelleParams) => crmService.kisiUpdate(params),
+    mutationFn: (params: CrmKisiGuncelleParams) => kisilerService.kisiUpdate(params),
     onSuccess: yenile,
   });
 }
@@ -133,7 +133,7 @@ export function useUpdateCrmKisi() {
 export function useMusteriyeDonustur() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (IDCrmKisi: DbId) => crmService.musteriyeDonustur(IDCrmKisi),
+    mutationFn: (IDCrmKisi: DbId) => kisilerService.musteriyeDonustur(IDCrmKisi),
     onSuccess: yenile,
   });
 }
@@ -142,7 +142,7 @@ export function useMusteriyeDonustur() {
 export function useDeleteCrmKisi() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (IDCrmKisi: DbId) => crmService.kisiDelete(IDCrmKisi),
+    mutationFn: (IDCrmKisi: DbId) => kisilerService.kisiDelete(IDCrmKisi),
     onSuccess: yenile,
   });
 }
@@ -153,7 +153,7 @@ export function useDeleteCrmKisi() {
 export function useInsertCrmAktivite() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (params: CrmAktiviteKaydetParams) => crmService.aktiviteInsert(params),
+    mutationFn: (params: CrmAktiviteKaydetParams) => kisilerService.aktiviteInsert(params),
     onSuccess: yenile,
   });
 }
@@ -161,7 +161,7 @@ export function useInsertCrmAktivite() {
 export function useUpdateCrmAktivite() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (params: CrmAktiviteGuncelleParams) => crmService.aktiviteUpdate(params),
+    mutationFn: (params: CrmAktiviteGuncelleParams) => kisilerService.aktiviteUpdate(params),
     onSuccess: yenile,
   });
 }
@@ -170,7 +170,7 @@ export function useUpdateCrmAktivite() {
 export function useTamamlaCrmAktivite() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (params: CrmAktiviteTamamlaParams) => crmService.aktiviteTamamla(params),
+    mutationFn: (params: CrmAktiviteTamamlaParams) => kisilerService.aktiviteTamamla(params),
     onSuccess: yenile,
   });
 }
@@ -179,7 +179,7 @@ export function useTamamlaCrmAktivite() {
 export function useIptalCrmAktivite() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (IDCrmAktivite: DbId) => crmService.aktiviteIptal(IDCrmAktivite),
+    mutationFn: (IDCrmAktivite: DbId) => kisilerService.aktiviteIptal(IDCrmAktivite),
     onSuccess: yenile,
   });
 }
@@ -187,7 +187,7 @@ export function useIptalCrmAktivite() {
 export function useDeleteCrmAktivite() {
   const yenile = useCrmYenile();
   return useMutation({
-    mutationFn: (IDCrmAktivite: DbId) => crmService.aktiviteDelete(IDCrmAktivite),
+    mutationFn: (IDCrmAktivite: DbId) => kisilerService.aktiviteDelete(IDCrmAktivite),
     onSuccess: yenile,
   });
 }

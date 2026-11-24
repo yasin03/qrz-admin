@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   CalendarPlus,
+  FilePlus2,
   Loader2,
   MessageSquarePlus,
   MessagesSquare,
@@ -33,17 +34,21 @@ import {
   type AktiviteFormModu,
 } from "@/modules/crm/components/aktivite/AktiviteFormDialog";
 import {
+  TeklifFormDialog,
+  type TeklifFormModu,
+} from "@/modules/crm/components/teklifler/TeklifFormDialog";
+import {
   useCrmKisiler,
   useDeleteCrmKisi,
   useIlAdi,
   useMusteriyeDonustur,
-} from "@/modules/crm/hooks/use-crm";
+} from "@/modules/crm/hooks/use-kisiler";
 import {
   KISI_TIP_ETIKET,
   KISI_TURU_SECENEKLERI,
   kisiAdi,
-} from "@/modules/crm/lib/crm";
-import type { CrmKisiRow, CrmKisiTip } from "@/modules/crm/types/crm";
+} from "@/modules/crm/lib/kisiler";
+import type { CrmKisiRow, CrmKisiTip } from "@/modules/crm/types/kisiler";
 
 import { KisiDrawer } from "./KisiDrawer";
 import {
@@ -96,6 +101,7 @@ export function KisiListesi({ tip }: Props) {
   const [formAcik, setFormAcik] = useState(false);
   const [duzenlenecek, setDuzenlenecek] = useState<CrmKisiRow | null>(null);
   const [aktiviteMod, setAktiviteMod] = useState<AktiviteFormModu | null>(null);
+  const [teklifMod, setTeklifMod] = useState<TeklifFormModu | null>(null);
   const [onay, setOnay] = useState<Onay | null>(null);
   // Drawer ID ile tutulur; liste tazelenince güncel kayıt gösterilir.
   const [seciliID, setSeciliID] = useState<string | null>(null);
@@ -229,6 +235,12 @@ export function KisiListesi({ tip }: Props) {
                 icon: CalendarPlus,
                 onClick: (r) =>
                   setAktiviteMod({ tip: "yeni", kisi: r, durum: 0 }),
+              },
+              {
+                label: "Teklif Oluştur",
+                icon: FilePlus2,
+                onClick: (r) =>
+                  setTeklifMod({ tip: "yeni", IDCrmKisi: r.IDCrmKisi }),
               },
               { divider: true },
               {
@@ -435,6 +447,12 @@ export function KisiListesi({ tip }: Props) {
         open={!!aktiviteMod}
         onOpenChange={(v) => !v && setAktiviteMod(null)}
         mod={aktiviteMod}
+      />
+
+      <TeklifFormDialog
+        open={!!teklifMod}
+        onOpenChange={(v) => !v && setTeklifMod(null)}
+        mod={teklifMod}
       />
 
       <ConfirmDialog

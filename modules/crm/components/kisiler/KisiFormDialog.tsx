@@ -26,19 +26,19 @@ import { useIller } from "@/modules/core/hooks/use-il-ilce-vergi-data";
 import {
   useInsertCrmKisi,
   useUpdateCrmKisi,
-} from "@/modules/crm/hooks/use-crm";
+} from "@/modules/crm/hooks/use-kisiler";
 import {
   KISI_TIP_ETIKET,
   KISI_TURU_SECENEKLERI,
   kisiFormVarsayilan,
   kisiFormdanParams,
-} from "@/modules/crm/lib/crm";
+} from "@/modules/crm/lib/kisiler";
 import {
   SECILMEDI,
   kisiSchema,
   type KisiForm,
-} from "@/modules/crm/schemas/crm.schema";
-import type { CrmKisiRow, CrmKisiTip } from "@/modules/crm/types/crm";
+} from "@/modules/crm/schemas/kisiler.schema";
+import type { CrmKisiRow, CrmKisiTip } from "@/modules/crm/types/kisiler";
 
 type Props = {
   open: boolean;

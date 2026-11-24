@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AktiviteListesi } from "@/modules/crm/components/aktivite/AktiviteListesi";
-import { useIlAdi } from "@/modules/crm/hooks/use-crm";
-import { KISI_TIP_ETIKET, kisiAdi } from "@/modules/crm/lib/crm";
-import type { CrmKisiRow } from "@/modules/crm/types/crm";
+import { KisiTeklifleri } from "@/modules/crm/components/teklifler/KisiTeklifleri";
+import { useIlAdi } from "@/modules/crm/hooks/use-kisiler";
+import { KISI_TIP_ETIKET, kisiAdi } from "@/modules/crm/lib/kisiler";
+import type { CrmKisiRow } from "@/modules/crm/types/kisiler";
 
 type Props = {
   kisi: CrmKisiRow | null;
@@ -136,6 +137,8 @@ export function KisiDrawer({ kisi: seciliKisi, onOpenChange, onDuzenle, onDonust
       {kisi.Notlar && (
         <p className="rounded-md bg-muted/50 p-3 text-sm whitespace-pre-wrap wrap-break-word">{kisi.Notlar}</p>
       )}
+
+      <KisiTeklifleri kisi={kisi} />
 
       <AktiviteListesi kisi={kisi} />
     </SideDrawer>

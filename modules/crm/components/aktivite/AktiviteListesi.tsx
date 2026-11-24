@@ -30,9 +30,9 @@ import {
   useCrmAktiviteler,
   useDeleteCrmAktivite,
   useIptalCrmAktivite,
-} from "@/modules/crm/hooks/use-crm";
-import { gecikmisMi, gorusmeAraciEtiket } from "@/modules/crm/lib/crm";
-import type { CrmAktiviteRow, CrmKisiRow } from "@/modules/crm/types/crm";
+} from "@/modules/crm/hooks/use-kisiler";
+import { gecikmisMi, gorusmeAraciEtiket } from "@/modules/crm/lib/kisiler";
+import type { CrmAktiviteRow, CrmKisiRow } from "@/modules/crm/types/kisiler";
 
 import { AktiviteFormDialog, type AktiviteFormModu } from "./AktiviteFormDialog";
 import { AktiviteTamamlaDialog } from "./AktiviteTamamlaDialog";

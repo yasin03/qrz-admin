@@ -8,8 +8,8 @@ import { FormSelect } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIller } from "@/modules/core/hooks/use-il-ilce-vergi-data";
-import { KISI_TURU_SECENEKLERI } from "@/modules/crm/lib/crm";
-import type { CrmKisiTuru } from "@/modules/crm/types/crm";
+import { KISI_TURU_SECENEKLERI } from "@/modules/crm/lib/kisiler";
+import type { CrmKisiTuru } from "@/modules/crm/types/kisiler";
 
 export type KisiRandevuFiltre = "bekleyen" | "gecikmis" | "yok";
 

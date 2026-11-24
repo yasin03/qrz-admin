@@ -17,13 +17,13 @@ import type {
   CrmYaklasanAktiviteRow,
   CrmYaklasanFiltre,
   DbId,
-} from "@/modules/crm/types/crm";
+} from "@/modules/crm/types/kisiler";
 
-const CRM_ENDPOINT = "/api/crm";
+const KISILER_ENDPOINT = "/api/kisiler";
 
 // IDKullanici ve IDSirket route'ta her zaman session'dan set ediliyor.
 async function post<T>(type: string, params: object = {}): Promise<T> {
-  const { data } = await api.post(CRM_ENDPOINT, { type, params });
+  const { data } = await api.post(KISILER_ENDPOINT, { type, params });
   return data as T;
 }
 
@@ -67,7 +67,7 @@ function aktivitePayload(p: CrmAktiviteAlanlari) {
   };
 }
 
-export const crmService = {
+export const kisilerService = {
   /* ---------------- Kişi ---------------- */
 
   /** Şirketin kontakları veya müşterileri. */

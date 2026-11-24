@@ -6,7 +6,7 @@ import {
   type AktiviteForm,
   type KisiForm,
   type TamamlaForm,
-} from "@/modules/crm/schemas/crm.schema";
+} from "@/modules/crm/schemas/kisiler.schema";
 import type {
   CrmAktiviteAlanlari,
   CrmAktiviteDurum,
@@ -15,7 +15,7 @@ import type {
   CrmKisiRow,
   CrmKisiTip,
   CrmKisiTuru,
-} from "@/modules/crm/types/crm";
+} from "@/modules/crm/types/kisiler";
 
 /* ------------------------------------------------------------------ */
 /* Etiketler / seçenekler                                              */

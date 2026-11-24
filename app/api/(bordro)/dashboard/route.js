@@ -556,6 +556,17 @@ async function personelOzet(p, IDSubePersonel) {
   const birYilOnce = ymd(addYears(today, -1));
   const birYilSonra = ymd(addYears(today, 1));
 
+  // SubePersonelSaat_SelectByIDSubePersonel parametreleri (IDSubePersonel,
+  // Yil, Ay) — tarih aralığı DEĞİL (pdks/route.js SELECT_PDKS_KENDI ile aynı).
+  // Tarih gönderilince prosedür "Conversion failed when converting date"
+  // hatası veriyordu. pdksBugun ve pdksAy aynı ay listesini kullanıyor,
+  // sorgu bir kez atılsın diye promise paylaşılıyor.
+  let pdksAyPromise;
+  const pdksAyKayitlari = () =>
+    (pdksAyPromise ??= run(
+      `[SubePersonelSaat_SelectByIDSubePersonel] '${IDSubePersonel}','${format(today, "yyyy")}','${format(today, "MM")}'`,
+    ));
+
   const [
     personel,
     yillikIzin,
@@ -733,22 +744,24 @@ async function personelOzet(p, IDSubePersonel) {
     }),
 
     section("pdksBugun", async () => {
-      const [k] = await run(
-        `[SubePersonelSaat_SelectByIDSubePersonel] '${IDSubePersonel}','${bugun}','${bugun}'`,
-      );
+      const kayitlar = await pdksAyKayitlari();
+      const k = kayitlar.find((x) => {
+        const d = toDate(x.Tarih);
+        return d && ymd(d) === bugun;
+      });
       return { Giris: k?.Giris ?? null, Cikis: k?.Cikis ?? null };
     }),
 
     section("pdksAy", async () => {
-      const kayitlar = await run(
-        `[SubePersonelSaat_SelectByIDSubePersonel] '${IDSubePersonel}','${ymd(startOfMonth(today))}','${bugun}'`,
-      );
+      const kayitlar = await pdksAyKayitlari();
       // Gün bazında topla (aynı güne birden fazla satır gelebilir)
       const gunler = new Map();
       for (const k of kayitlar) {
         const d = toDate(k.Tarih);
         if (!d) continue;
         const key = ymd(d);
+        // Prosedür ayın tamamını döndürüyor; bugünden sonrası sayılmasın
+        if (key > bugun) continue;
         const x = gunler.get(key) ?? {
           Tarih: key,
           Gun: d.getDate(),
