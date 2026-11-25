@@ -9,6 +9,7 @@ import type {
   CrmAktiviteRow,
   CrmAktiviteTamamlaParams,
   CrmKisiAlanlari,
+  CrmKisiDeleteResponse,
   CrmKisiGuncelleParams,
   CrmKisiInsertResponse,
   CrmKisiKaydetParams,
@@ -108,7 +109,8 @@ export const kisilerService = {
     post<{ success: true }>("UPDATE_KISI_MUSTERIYE_DONUSTUR", { IDCrmKisi }),
 
   /** Kişiyi aktiviteleriyle siler; bağlı takvim kayıtları da kalkar. */
-  kisiDelete: (IDCrmKisi: DbId) => post<{ success: true }>("DELETE_KISI", { IDCrmKisi }),
+  /** Tahsilatı varsa silinmez, pasife alınır (Sonuc: "PASIF"). */
+  kisiDelete: (IDCrmKisi: DbId) => post<CrmKisiDeleteResponse>("DELETE_KISI", { IDCrmKisi }),
 
   /* ---------------- Aktivite ---------------- */
 

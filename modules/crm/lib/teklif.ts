@@ -2,6 +2,7 @@ import type { ComponentProps } from "react";
 import { format } from "date-fns";
 
 import type { Badge } from "@/components/ui/badge";
+import { paraSembol } from "@/constants/data";
 import { formatMoney } from "@/lib/format";
 import { sayiOku, type TeklifForm, type TeklifKalemForm } from "@/modules/crm/schemas/teklif.schema";
 import type {
@@ -38,17 +39,6 @@ export function teklifDurumGorunum(t: Pick<TeklifRow, "Durum" | "SuresiDoldu">) 
   if (t.Durum === 1 && t.SuresiDoldu) return { label: "Süresi doldu", variant: "orange" as BadgeVariant };
   return TEKLIF_DURUM[t.Durum];
 }
-
-export const PARA_BIRIMI_SECENEKLERI: { value: TeklifParaBirimi; label: string; sembol: string }[] = [
-  { value: "TRY", label: "TRY — Türk Lirası", sembol: "₺" },
-  { value: "USD", label: "USD — Amerikan Doları", sembol: "$" },
-  { value: "EUR", label: "EUR — Euro", sembol: "€" },
-  { value: "GBP", label: "GBP — İngiliz Sterlini", sembol: "£" },
-];
-
-
-export const paraSembol = (pb: TeklifParaBirimi | string | null | undefined) =>
-  PARA_BIRIMI_SECENEKLERI.find((p) => p.value === pb)?.sembol ?? pb ?? "";
 
 /**
  * Gün → "dd.MM.yyyy". "2026-11-23" (form) ve "2026-11-23T00:00:00.000Z" (API)

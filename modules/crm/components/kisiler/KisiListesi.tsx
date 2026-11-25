@@ -190,9 +190,16 @@ export function KisiListesi({ tip }: Props) {
     if (!onay) return;
     try {
       if (onay.tip === "sil") {
-        await sil.mutateAsync(onay.kisi.IDCrmKisi);
-        toast.success(`${etiket} silindi.`);
-        if (String(onay.kisi.IDCrmKisi) === seciliID) setSeciliID(null);
+        const { Sonuc } = await sil.mutateAsync(onay.kisi.IDCrmKisi);
+        if (Sonuc === "PASIF") {
+          // Hata değil: tahsilatı olduğu için kayıt korunur, liste pasif olarak gösterir.
+          toast.success(`${etiket} pasife alındı.`, {
+            description: "Tahsilat kaydı olduğu için silinmedi; satış ve finans geçmişi korunur.",
+          });
+        } else {
+          toast.success(`${etiket} silindi.`);
+          if (String(onay.kisi.IDCrmKisi) === seciliID) setSeciliID(null);
+        }
       } else {
         await donustur.mutateAsync(onay.kisi.IDCrmKisi);
         toast.success("Kontak müşteriye dönüştürüldü.", {
@@ -461,7 +468,7 @@ export function KisiListesi({ tip }: Props) {
         title={onay?.tip === "sil" ? `${etiket} sil` : "Müşteriye dönüştür"}
         description={
           onay?.tip === "sil"
-            ? `"${onay ? kisiAdi(onay.kisi) : ""}" görüşme ve randevularıyla birlikte kalıcı olarak silinecek; takvimdeki randevuları da kaldırılacak. Bu işlem geri alınamaz.`
+            ? `"${onay ? kisiAdi(onay.kisi) : ""}" görüşme, randevu ve satışlarıyla birlikte kalıcı olarak silinecek; takvimdeki randevuları da kaldırılacak. Bu işlem geri alınamaz. Tahsilat kaydı varsa silinmez, pasife alınır.`
             : `"${onay ? kisiAdi(onay.kisi) : ""}" müşteri olarak işaretlenecek. Görüşme ve randevuları korunur.`
         }
         variant={onay?.tip === "sil" ? "danger" : "success"}

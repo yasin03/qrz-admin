@@ -150,6 +150,8 @@ const queryTypes = {
   },
 
   // Kişiyi aktiviteleriyle siler; bağlı takvim kayıtları da kalkar.
+  // Tahsilatı olan kişi silinmez, pasife alınır (finans geçmişi korunur); bu bir
+  // hata değil, başarılı sonuçtur. Sonuc: "SILINDI" | "PASIF" (sql/crm_finans.sql).
   DELETE_KISI: {
     zorunlu: ["IDCrmKisi"],
     query: (p) =>
@@ -157,7 +159,7 @@ const queryTypes = {
         IDCrmKisi: sqlInt(p.IDCrmKisi),
         IDSirket: sqlInt(p.IDSirket),
       }),
-    map: () => ({ success: true }),
+    map: (rs) => ({ success: true, Sonuc: ilk(rs)?.Sonuc ?? "SILINDI" }),
   },
 
   /* ---------------- Aktivite (görüşme + randevu) ---------------- */

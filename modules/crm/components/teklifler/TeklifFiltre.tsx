@@ -7,7 +7,8 @@ import { Filter } from "lucide-react";
 import { FormSelect } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PARA_BIRIMI_SECENEKLERI, TEKLIF_DURUM } from "@/modules/crm/lib/teklif";
+import { PARA_BIRIMI_DATA } from "@/constants/data";
+import { TEKLIF_DURUM } from "@/modules/crm/lib/teklif";
 import type { TeklifParaBirimi } from "@/modules/crm/types/teklif";
 
 /** Durum: "0".."4" ya da "SURESI_DOLDU" (gönderilmiş + geçerliliği geçmiş). */
@@ -32,7 +33,7 @@ const DURUM_OPTIONS = [
   { value: "SURESI_DOLDU", label: "Süresi doldu" },
   ...([2, 3, 4] as const).map((d) => ({ value: String(d), label: TEKLIF_DURUM[d].label })),
 ];
-const PARA_OPTIONS = [TUMU, ...PARA_BIRIMI_SECENEKLERI.map((p) => ({ value: p.value, label: p.value }))];
+const PARA_OPTIONS = [TUMU, ...PARA_BIRIMI_DATA.map((p) => ({ value: p.value, label: p.value }))];
 const KISI_OPTIONS = [TUMU, { value: "Musteri", label: "Müşteri" }, { value: "Kontak", label: "Kontak" }];
 
 const formaCevir = (f: TeklifFiltreleri): FormValues => ({

@@ -122,6 +122,14 @@ export type CrmKisiInsertResponse = {
   IDCrmKisi: DbId | null;
 };
 
+/**
+ * DELETE_KISI sonucu. Tahsilatı olan kişi silinmez, pasife alınır (finans
+ * geçmişi korunur): "PASIF". Diğer durumda kişi satışlarıyla birlikte silinir.
+ */
+export type CrmKisiSilSonuc = "SILINDI" | "PASIF";
+
+export type CrmKisiDeleteResponse = { success: true; Sonuc: CrmKisiSilSonuc };
+
 /* ---------------- Aktivite ---------------- */
 
 /** vCrmAktivite satırı (CrmAktivite_SELECT / _Yaklasan / _ByIDAjanda). */

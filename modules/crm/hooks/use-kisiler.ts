@@ -142,11 +142,21 @@ export function useMusteriyeDonustur() {
 }
 
 /** Kişiyi aktiviteleriyle siler (bağlı takvim kayıtları da kalkar). */
+/**
+ * Silmede kişinin satışları da silinir ve teklif bağları çözülür; pasife
+ * almada finans bakiyelerindeki kişi durumu değişir. Bu yüzden tüm CRM
+ * sorguları ("crm-" ile başlayan key'ler) tazelenir. use-satis / use-finans
+ * key'leri import edilmez: onlar bu dosyayı import ediyor (döngü olmasın).
+ */
 export function useDeleteCrmKisi() {
   const yenile = useCrmYenile();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (IDCrmKisi: DbId) => kisilerService.kisiDelete(IDCrmKisi),
-    onSuccess: yenile,
+    onSuccess: () => {
+      yenile();
+      queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).startsWith("crm-") });
+    },
   });
 }
 

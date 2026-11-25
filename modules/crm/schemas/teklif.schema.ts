@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { PARA_BIRIMI_KODLARI } from "@/constants/data";
+
 /** "1.234,5" / "1234.5" → 1234.5 (boş / geçersiz → NaN). */
 export function sayiOku(v: string | number | null | undefined): number {
   if (typeof v === "number") return v;
@@ -44,7 +46,7 @@ export const teklifSchema = z
     /** "yyyy-MM-dd" */
     TeklifTarihi: z.string().min(1, "Teklif tarihi zorunlu."),
     GecerlilikTarihi: z.string(),
-    ParaBirimi: z.enum(["TRY", "USD", "EUR", "GBP"]),
+    ParaBirimi: z.enum(PARA_BIRIMI_KODLARI),
     Kur: z.string().trim(),
     GenelIskontoOrani: oranAlani,
     Aciklama: z.string(),

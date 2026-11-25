@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Stepper } from "@/components/ui/stepper";
+import { PARA_BIRIMI_DATA } from "@/constants/data";
 import {
   useInsertTeklif,
   useTeklifDetay,
@@ -30,7 +31,6 @@ import {
   useUpdateTeklif,
 } from "@/modules/crm/hooks/use-teklif";
 import {
-  PARA_BIRIMI_SECENEKLERI,
   formKalemGirdileri,
   paraFormat,
   teklifFormVarsayilan,
@@ -319,7 +319,7 @@ export function TeklifFormDialog({
                   <FormSelect
                     control={control}
                     name="ParaBirimi"
-                    options={PARA_BIRIMI_SECENEKLERI}
+                    options={PARA_BIRIMI_DATA}
                   />
                   <FormInput
                     control={control}

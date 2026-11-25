@@ -16,8 +16,8 @@ const TUMU: KullaniciTipi[] = [ADMIN, BAYI];
 // CRM dashboard'u (/crm) menüde yok; sidebar logosu oraya gider.
 export const CRM_NAV: MenuItem[] = [
   { href: "/crm/kisiler", label: "Kişiler", icon: Users, roles: TUMU },
-  { href: "/crm/satislar", label: "Satışlar", icon: HandCoins, roles: TUMU },
   { href: "/crm/teklifler", label: "Teklifler", icon: FileText, roles: TUMU },
+  { href: "/crm/satislar", label: "Satışlar", icon: HandCoins, roles: TUMU },
   { href: "/crm/gorevler", label: "Görevler", icon: ListTodo, roles: TUMU },
   {
     href: "/crm/raporlar",

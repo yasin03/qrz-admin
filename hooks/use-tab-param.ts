@@ -14,19 +14,22 @@ import { usePathname, useSearchParams } from "next/navigation";
  * sunucuya RSC isteği atmaz (tab geçişi tamamen istemcide). Bu yüzden
  * server component'ler `tab` parametresine göre render edilmemeli.
  *
+ * Aynı sayfada ikinci bir seviye gerekirse farklı parametre adı verilir:
+ *   useTabParam(["alacaklar", "tahsilatlar"] as const, "gorunum")
+ *
  * useSearchParams kullandığı için bileşen page.tsx'te <Suspense> ile
  * sarılmalı, yoksa build prerender sırasında hata verir.
  */
-export function useTabParam<T extends string>(tabs: readonly T[]) {
+export function useTabParam<T extends string>(tabs: readonly T[], param = "tab") {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const tabParam = searchParams.get("tab");
+  const tabParam = searchParams.get(param);
   const activeTab = tabs.find((t) => t === tabParam) ?? tabs[0];
 
   const setActiveTab = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", value);
+    params.set(param, value);
     window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
   };
 

@@ -106,6 +106,27 @@ export const KDV_DATA = [
   { value: "20", label: "%20" },
 ] as const;
 
+/**
+ * Para birimleri (teklif, satış, tahsilat). Değer ISO 4217 kodudur ve DB'de
+ * char(3) olarak saklanır; CHECK kısıtlarındaki liste ile aynı olmalı
+ * (sql/crm_teklif.sql, crm_satis.sql, crm_finans.sql).
+ * Yeni birim eklenirse önce DB CHECK kısıtları güncellenir.
+ */
+export const PARA_BIRIMI_KODLARI = ["TRY", "USD", "EUR", "GBP"] as const;
+
+export type ParaBirimi = (typeof PARA_BIRIMI_KODLARI)[number];
+
+export const PARA_BIRIMI_DATA = [
+  { value: "TRY", label: "TRY — Türk Lirası", sembol: "₺", ad: "Türk Lirası", adEn: "Turkish Lira" },
+  { value: "USD", label: "USD — Amerikan Doları", sembol: "$", ad: "Amerikan Doları", adEn: "US Dollar" },
+  { value: "EUR", label: "EUR — Euro", sembol: "€", ad: "Euro", adEn: "Euro" },
+  { value: "GBP", label: "GBP — İngiliz Sterlini", sembol: "£", ad: "İngiliz Sterlini", adEn: "British Pound" },
+] as const satisfies readonly { value: ParaBirimi; label: string; sembol: string; ad: string; adEn: string }[];
+
+/** "USD" → "$". Bilinmeyen kodda kodun kendisi, boşta "". */
+export const paraSembol = (pb: string | null | undefined) =>
+  PARA_BIRIMI_DATA.find((p) => p.value === pb)?.sembol ?? pb ?? "";
+
 export function useYearOptions(length = 10, futureYears = 0) {
   const currentYear = new Date().getFullYear();
 

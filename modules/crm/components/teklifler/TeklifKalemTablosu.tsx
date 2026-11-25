@@ -1,6 +1,6 @@
 "use client";
 
-import { useFieldArray, type UseFormReturn } from "react-hook-form";
+import { useFieldArray, type Control, type FieldValues, type UseFormReturn } from "react-hook-form";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
 import { FormInput, FormSelect } from "@/components/forms";
@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { BIRIM_DATA, KDV_DATA } from "@/constants/data";
 import { cn } from "@/lib/utils";
 import { bosKalem, paraFormat } from "@/modules/crm/lib/teklif";
-import type { TeklifForm } from "@/modules/crm/schemas/teklif.schema";
+import type { TeklifKalemForm } from "@/modules/crm/schemas/teklif.schema";
 import type { TeklifKalem, TeklifParaBirimi } from "@/modules/crm/types/teklif";
 
-type Props = {
-  form: UseFormReturn<TeklifForm>;
+/** Kalem tablosunu kullanan formlar (teklif, satış): `Kalemler` dizisi aynı şekilde. */
+type KalemliForm = { Kalemler: TeklifKalemForm[] };
+
+type Props<T extends FieldValues & KalemliForm> = {
+  form: UseFormReturn<T>;
   /** Canlı hesaplanmış kalemler (satır toplamı için). */
   kalemler: TeklifKalem[];
   paraBirimi: TeklifParaBirimi;
@@ -27,11 +30,13 @@ const birimSecenekleri = (mevcut: string | undefined) =>
     ? [...BIRIM_DATA, { value: mevcut, label: mevcut }]
     : BIRIM_DATA;
 
-/** Teklif satırları: ekle / sil / sırala; satır toplamı veri girildikçe güncellenir. */
-export function TeklifKalemTablosu({ form, kalemler, paraBirimi }: Props) {
-  const { control, formState } = form;
+/** Teklif / satış satırları: ekle / sil / sırala; satır toplamı veri girildikçe güncellenir. */
+export function TeklifKalemTablosu<T extends FieldValues & KalemliForm>({ form, kalemler, paraBirimi }: Props<T>) {
+  // T, Kalemler'i aynı şekilde taşıdığı için alan yolları ortak tipten yazılır.
+  const control = form.control as unknown as Control<KalemliForm>;
+  const { formState } = form;
   const { fields, append, remove, move } = useFieldArray({ control, name: "Kalemler" });
-  const hatalar = formState.errors.Kalemler;
+  const hatalar = (formState.errors as UseFormReturn<KalemliForm>["formState"]["errors"]).Kalemler;
 
   return (
     <div className="space-y-2">

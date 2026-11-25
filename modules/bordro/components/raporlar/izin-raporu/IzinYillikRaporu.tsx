@@ -97,7 +97,7 @@ const IzinYillikRaporu = ({
           : "-",
     },
     {
-      header: "İşe Giriş Tarihi",
+      header: "İlk İşe Giriş Tarihi",
       accessorKey: (row) => isoTarihParse(row.IseIlkGirisTarihi),
       format: "date",
     },
@@ -159,7 +159,7 @@ const IzinYillikRaporu = ({
         </div>
       ),
     },
-    isoTarihKolonu("IseIlkGirisTarihi", "İşe Giriş Tarihi"),
+    isoTarihKolonu("IseIlkGirisTarihi", "İlk İşe Giriş Tarihi"),
     isoTarihKolonu("CikisTarihi", "İşten Çıkış Tarihi"),
     sayiKolonu("KidemYil", "Kıdem Yılı"),
     sayiKolonu("ToplamIzinHakki", "Toplam İzin Hakkı"),

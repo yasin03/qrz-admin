@@ -5,6 +5,7 @@
 //
 // Durum: 0 Taslak, 1 Gönderildi, 2 Kabul, 3 Red, 4 İptal, 5 Revize edildi
 import { NextResponse } from "next/server";
+import { PARA_BIRIMI_KODLARI } from "@/constants/data";
 import { ExecuteQueryRecordsets } from "@/lib/db";
 import { ok, fail, withSession } from "@/lib/api-session";
 import {
@@ -27,7 +28,6 @@ import {
 /* Doğrulama                                                           */
 /* ------------------------------------------------------------------ */
 
-const PARA_BIRIMLERI = ["TRY", "USD", "EUR", "GBP"];
 const DURUMLAR = [0, 1, 2, 3, 4, 5];
 
 function sayi(v, alan, { min, max, zorunlu = true, sifirHaric = false } = {}) {
@@ -99,8 +99,8 @@ function teklifDogrula(p) {
   }
 
   const paraBirimi = bos(p.ParaBirimi) ? "TRY" : String(p.ParaBirimi).toUpperCase();
-  if (!PARA_BIRIMLERI.includes(paraBirimi)) {
-    throw new GecersizIstek(`Para birimi ${PARA_BIRIMLERI.join(", ")} olmalı.`);
+  if (!PARA_BIRIMI_KODLARI.includes(paraBirimi)) {
+    throw new GecersizIstek(`Para birimi ${PARA_BIRIMI_KODLARI.join(", ")} olmalı.`);
   }
   if (paraBirimi !== "TRY") sayi(p.Kur, "Kur", { min: 0, sifirHaric: true });
 

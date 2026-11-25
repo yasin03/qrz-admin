@@ -5,6 +5,7 @@
 /* olduğu gibi kaydedilir. Tarihler "yyyy-MM-dd" (Z/saat yok sayılır). */
 /* ------------------------------------------------------------------ */
 
+import type { ParaBirimi } from "@/constants/data";
 import type { CrmKisiTip, CrmKisiTuru, DbId } from "@/modules/crm/types/kisiler";
 
 export type { DbId };
@@ -12,7 +13,8 @@ export type { DbId };
 /** 0 Taslak, 1 Gönderildi, 2 Kabul, 3 Red, 4 İptal, 5 Revize edildi */
 export type TeklifDurum = 0 | 1 | 2 | 3 | 4 | 5;
 
-export type TeklifParaBirimi = "TRY" | "USD" | "EUR" | "GBP";
+/** Para birimi kodu; liste constants/data.ts → PARA_BIRIMI_KODLARI. */
+export type TeklifParaBirimi = ParaBirimi;
 
 /** vCrmTeklif satırı (CrmTeklif_SELECT). */
 export type TeklifRow = {
