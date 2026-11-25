@@ -1,6 +1,6 @@
 "use client";
 
-import { useFieldArray, type Control, type FieldValues, type UseFormReturn } from "react-hook-form";
+import { useFieldArray, useWatch, type Control, type FieldValues, type UseFormReturn } from "react-hook-form";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
 import { FormInput, FormSelect } from "@/components/forms";
@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { bosKalem, paraFormat } from "@/modules/crm/lib/teklif";
 import type { TeklifKalemForm } from "@/modules/crm/schemas/teklif.schema";
 import type { TeklifKalem, TeklifParaBirimi } from "@/modules/crm/types/teklif";
+
+import { IskontoInput } from "./IskontoInput";
 
 /** Kalem tablosunu kullanan formlar (teklif, satış): `Kalemler` dizisi aynı şekilde. */
 type KalemliForm = { Kalemler: TeklifKalemForm[] };
@@ -37,11 +39,20 @@ export function TeklifKalemTablosu<T extends FieldValues & KalemliForm>({ form, 
   const { formState } = form;
   const { fields, append, remove, move } = useFieldArray({ control, name: "Kalemler" });
   const hatalar = (formState.errors as UseFormReturn<KalemliForm>["formState"]["errors"]).Kalemler;
+  const iskontoTipleri = useWatch({ control, name: "Kalemler" }).map((k) => k?.IskontoTipi);
+
+  // Tip değişince eski değer (ör. %7 → 7 ₺) yanlış anlamla kalmasın diye temizlenir.
+  const iskontoTipiDegistir = (i: number) => {
+    const yeni = iskontoTipleri[i] === "2" ? "1" : "2";
+    const setValue = form.setValue as unknown as UseFormReturn<KalemliForm>["setValue"];
+    setValue(`Kalemler.${i}.IskontoTipi`, yeni, { shouldDirty: true });
+    setValue(`Kalemler.${i}.Iskonto`, "", { shouldDirty: true, shouldValidate: formState.isSubmitted });
+  };
 
   return (
     <div className="space-y-2">
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full min-w-215 text-sm">
+        <table className="w-full min-w-225 text-sm">
           <thead className="bg-muted/50 text-xs text-muted-foreground">
             <tr>
               <th className="w-8 px-1.5 py-2 text-center font-medium">#</th>
@@ -49,7 +60,7 @@ export function TeklifKalemTablosu<T extends FieldValues & KalemliForm>({ form, 
               <th className="w-16 px-1.5 py-2 text-right font-medium">Miktar</th>
               <th className="w-24 px-1.5 py-2 text-left font-medium">Birim</th>
               <th className="w-36 px-1.5 py-2 text-right font-medium">Birim Fiyat</th>
-              <th className="w-20 px-1.5 py-2 text-right font-medium">İsk. %</th>
+              <th className="w-32 px-1.5 py-2 text-right font-medium">İskonto</th>
               <th className="w-24 px-1.5 py-2 text-left font-medium">KDV</th>
               <th className="w-32 px-1.5 py-2 text-right font-medium">Toplam</th>
               <th className="w-24 px-1.5 py-2" />
@@ -58,6 +69,7 @@ export function TeklifKalemTablosu<T extends FieldValues & KalemliForm>({ form, 
           <tbody className="divide-y">
             {fields.map((field, i) => {
               const k = kalemler[i];
+              const tutarIskonto = iskontoTipleri[i] === "2";
 
               return (
                 <tr key={field.id}>
@@ -97,12 +109,12 @@ export function TeklifKalemTablosu<T extends FieldValues & KalemliForm>({ form, 
                     />
                   </td>
                   <td className={HUCRE}>
-                    <FormInput
+                    <IskontoInput
                       control={control}
-                      name={`Kalemler.${i}.IskontoOrani`}
-                      format="oran"
-                      placeholder="0"
-                      inputClassName={SAG}
+                      name={`Kalemler.${i}.Iskonto`}
+                      tutar={tutarIskonto}
+                      paraBirimi={paraBirimi}
+                      onTipDegistir={() => iskontoTipiDegistir(i)}
                     />
                   </td>
                   <td className={HUCRE}>

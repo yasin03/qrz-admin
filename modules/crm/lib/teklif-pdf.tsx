@@ -6,7 +6,7 @@ import { Document, Image, Page, StyleSheet, Text, View, pdf } from "@react-pdf/r
 import { registerPdfFont, PDF_FONT_FAMILY } from "@/components/export/exporters/pdf-exporter";
 import { BORDER, MUTED, PRIMARY, PRIMARY_SOFT, ROW_ALT, TEXT } from "@/components/export/exporters/export-theme";
 import { getCompanyContactLine, getCompanyInfo, getLogoDataUri, type CompanyInfo } from "@/lib/company";
-import { gunFormat, paraFormat, teklifHesapla } from "@/modules/crm/lib/teklif";
+import { gunFormat, kalemIskontoMetni, kdvDagilimiHesapla, paraFormat } from "@/modules/crm/lib/teklif";
 import type { TeklifPdfVeri } from "@/modules/crm/types/teklif";
 
 const s = StyleSheet.create({
@@ -131,7 +131,10 @@ function TeklifPdfDocument({
   const para = (n: number) => paraFormat(n, v.ParaBirimi);
   const t = v.Toplamlar;
   const satirIskonto = Math.max(t.IskontoToplam - t.GenelIskontoTutari, 0);
-  const kdvDagilimi = teklifHesapla(v.Kalemler, v.GenelIskontoOrani).kdvDagilimi;
+  const kdvDagilimi = kdvDagilimiHesapla(v.Kalemler, {
+    GenelIskontoOrani: v.GenelIskontoOrani,
+    GenelIskontoTutari: t.GenelIskontoTutari,
+  });
   const iletisim = getCompanyContactLine(company);
   const taslak = v.TeklifNoTam === "Taslak";
 
@@ -212,7 +215,7 @@ function TeklifPdfDocument({
               </Text>
               <Text style={[s.td, { width: K.fiyat, textAlign: "right" }]}>{para(k.BirimFiyat)}</Text>
               <Text style={[s.td, { width: K.isk, textAlign: "right" }]}>
-                {k.IskontoOrani > 0 ? oran(k.IskontoOrani) : "-"}
+                {kalemIskontoMetni(k, v.ParaBirimi) ?? "-"}
               </Text>
               <Text style={[s.td, { width: K.kdv, textAlign: "right" }]}>{oran(k.KdvOrani)}</Text>
               {/* KDV hariç net tutar; KDV toplamlarda gösterilir. */}
@@ -223,21 +226,26 @@ function TeklifPdfDocument({
 
         {/* Toplamlar */}
         <View style={s.totals} wrap={false}>
+          {/* Ekrandaki TeklifToplamPaneli ile aynı sıra: yukarıdan aşağı toplanır. */}
           <View style={s.totalRow}>
-            <Text style={s.totalLabel}>Ara Toplam</Text>
-            <Text>{para(t.AraToplam)}</Text>
+            <Text style={s.totalLabel}>
+              Birim Toplamları{satirIskonto > 0 ? ` (satır iskontosu ${para(satirIskonto)} düşüldü)` : ""}
+            </Text>
+            <Text>{para(t.AraToplam - satirIskonto)}</Text>
           </View>
-          {satirIskonto > 0 ? (
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Satır İskontoları</Text>
-              <Text>− {para(satirIskonto)}</Text>
-            </View>
-          ) : null}
           {t.GenelIskontoTutari > 0 ? (
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Genel İskonto ({oran(v.GenelIskontoOrani)})</Text>
-              <Text>− {para(t.GenelIskontoTutari)}</Text>
-            </View>
+            <>
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>
+                  Genel İskonto{v.GenelIskontoOrani > 0 ? ` (${oran(v.GenelIskontoOrani)})` : ""}
+                </Text>
+                <Text>− {para(t.GenelIskontoTutari)}</Text>
+              </View>
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>Ara Toplam (KDV hariç)</Text>
+                <Text>{para(t.AraToplam - satirIskonto - t.GenelIskontoTutari)}</Text>
+              </View>
+            </>
           ) : null}
           {kdvDagilimi.length ? (
             kdvDagilimi.map((d) => (

@@ -5,22 +5,31 @@ import type { TeklifParaBirimi, TeklifToplamlari } from "@/modules/crm/types/tek
 type Props = TeklifToplamlari & {
   ParaBirimi: TeklifParaBirimi;
   Kur: number;
+  /** 0 → genel iskonto tutar olarak girilmiş, etikette oran gösterilmez. */
   GenelIskontoOrani: number;
   /** KDV oranı → tutar (genel iskonto sonrası). Verilmezse tek satır "KDV". */
   kdvDagilimi?: { oran: number; tutar: number }[];
   className?: string;
 };
 
-function Satir({ label, deger, className }: { label: string; deger: string; className?: string }) {
+type SatirProps = { label: string; deger: string; not?: string; className?: string };
+
+function Satir({ label, deger, not, className }: SatirProps) {
   return (
-    <div className={cn("flex items-center justify-between gap-4", className)}>
-      <span className="text-muted-foreground">{label}</span>
+    <div className={cn("flex items-start justify-between gap-4", className)}>
+      <span className="text-muted-foreground">
+        {label}
+        {not && <span className="block text-xs">{not}</span>}
+      </span>
       <span className="tabular-nums">{deger}</span>
     </div>
   );
 }
 
-/** Teklif toplamları: formda canlı, detayda kayıtlı değerlerle. */
+/**
+ * Teklif toplamları: formda canlı, detayda kayıtlı değerlerle.
+ * Satırlar yukarıdan aşağı toplanacak sırada: satır iskontolu net → genel iskonto → matrah → KDV → genel toplam.
+ */
 export function TeklifToplamPaneli({
   AraToplam,
   GenelIskontoTutari,
@@ -35,13 +44,21 @@ export function TeklifToplamPaneli({
 }: Props) {
   const para = (v: number) => paraFormat(v, ParaBirimi);
   const satirIskonto = Math.max(IskontoToplam - GenelIskontoTutari, 0);
+  const net = AraToplam - satirIskonto;
 
   return (
     <div className={cn("space-y-1.5 rounded-lg border bg-muted/30 p-4 text-sm", className)}>
-      <Satir label="Ara Toplam" deger={para(AraToplam)} />
-      {satirIskonto > 0 && <Satir label="Satır İskontoları" deger={`− ${para(satirIskonto)}`} />}
+      <Satir
+        label="Birim Toplamları"
+        deger={para(net)}
+        not={satirIskonto > 0 ? `Satır iskontosu ${para(satirIskonto)} düşüldü` : undefined}
+      />
+      {/* Genel iskonto yoksa matrah = birim toplamları; aynı rakamı iki kez göstermemek için. */}
       {GenelIskontoTutari > 0 && (
-        <Satir label={`Genel İskonto (%${GenelIskontoOrani})`} deger={`− ${para(GenelIskontoTutari)}`} />
+        <>
+          <Satir label={GenelIskontoOrani > 0 ? `Genel İskonto (%${GenelIskontoOrani})` : "Genel İskonto"} deger={`− ${para(GenelIskontoTutari)}`} />
+          <Satir label="Ara Toplam (KDV hariç)" deger={para(net - GenelIskontoTutari)} />
+        </>
       )}
       {kdvDagilimi?.length
         ? kdvDagilimi.map((k) => <Satir key={k.oran} label={`KDV (%${k.oran})`} deger={para(k.tutar)} />)

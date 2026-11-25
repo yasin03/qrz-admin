@@ -1,4 +1,4 @@
-import { paraFormat } from "@/modules/crm/lib/teklif";
+import { kalemIskontoMetni, paraFormat } from "@/modules/crm/lib/teklif";
 import type { TeklifKalem, TeklifParaBirimi } from "@/modules/crm/types/teklif";
 
 type Props = {
@@ -35,7 +35,9 @@ export function KalemOzetTablosu({ kalemler, paraBirimi }: Props) {
               </td>
               <td className="px-2 py-2 text-right whitespace-nowrap tabular-nums">
                 {paraFormat(k.BirimFiyat, paraBirimi)}
-                {k.IskontoOrani > 0 && <p className="text-xs text-muted-foreground">isk. %{k.IskontoOrani}</p>}
+                {kalemIskontoMetni(k, paraBirimi) && (
+                  <p className="text-xs text-muted-foreground">isk. {kalemIskontoMetni(k, paraBirimi)}</p>
+                )}
               </td>
               <td className="px-2 py-2 text-right tabular-nums">%{k.KdvOrani}</td>
               <td className="px-2 py-2 text-right font-medium whitespace-nowrap tabular-nums">

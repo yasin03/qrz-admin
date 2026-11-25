@@ -3,7 +3,14 @@ import { addDays, addMonths, addYears, format, parseISO } from "date-fns";
 
 import type { Badge } from "@/components/ui/badge";
 import { ODEME_SEKLI_VARSAYILAN } from "@/modules/crm/lib/finans";
-import { bosKalem, formKalemGirdileri, teklifHesapla } from "@/modules/crm/lib/teklif";
+import {
+  bosKalem,
+  formGenelIskonto,
+  formKalemGirdileri,
+  genelIskontoFormu,
+  kalemFormu,
+  teklifHesapla,
+} from "@/modules/crm/lib/teklif";
 import type { SatisForm, SatisIptalForm } from "@/modules/crm/schemas/satis.schema";
 import { sayiOku } from "@/modules/crm/schemas/teklif.schema";
 import type {
@@ -117,17 +124,7 @@ const odemeBos = () => ({
 });
 
 const kalemlerFormu = (kalemler: CrmSatisDetay["Kalemler"] | TeklifDetay["Kalemler"]) =>
-  kalemler.length
-    ? kalemler.map((k) => ({
-        Aciklama: k.Aciklama,
-        Detay: k.Detay ?? "",
-        Miktar: String(k.Miktar),
-        Birim: k.Birim,
-        BirimFiyat: String(k.BirimFiyat),
-        IskontoOrani: k.IskontoOrani ? String(k.IskontoOrani) : "",
-        KdvOrani: String(k.KdvOrani),
-      }))
-    : [bosKalem()];
+  kalemler.length ? kalemler.map(kalemFormu) : [bosKalem()];
 
 /** Yeni satış (bugün, tek seferlik, TRY, tek boş kalem) veya mevcut satışın form değerleri. */
 export function satisFormVarsayilan(s?: CrmSatisDetay | null, IDCrmKisi?: DbId | null): SatisForm {
@@ -141,7 +138,8 @@ export function satisFormVarsayilan(s?: CrmSatisDetay | null, IDCrmKisi?: DbId |
       BitisTarihi: "",
       ParaBirimi: "TRY",
       Kur: "1",
-      GenelIskontoOrani: "",
+      GenelIskontoTipi: "1",
+      GenelIskonto: "",
       Aciklama: "",
       Kalemler: [bosKalem()],
       ...odemeBos(),
@@ -157,7 +155,7 @@ export function satisFormVarsayilan(s?: CrmSatisDetay | null, IDCrmKisi?: DbId |
     BitisTarihi: gun(s.BitisTarihi),
     ParaBirimi: s.ParaBirimi,
     Kur: String(s.Kur ?? 1),
-    GenelIskontoOrani: s.GenelIskontoOrani ? String(s.GenelIskontoOrani) : "",
+    ...genelIskontoFormu(s),
     Aciklama: s.Aciklama ?? "",
     Kalemler: kalemlerFormu(s.Kalemler),
     // Düzenlemede ödeme adımı yok.
@@ -176,15 +174,14 @@ export function satisFormTekliften(t: TeklifDetay): SatisForm {
     Konu: t.Konu,
     ParaBirimi: t.ParaBirimi,
     Kur: String(t.Kur ?? 1),
-    GenelIskontoOrani: t.GenelIskontoOrani ? String(t.GenelIskontoOrani) : "",
+    ...genelIskontoFormu(t),
     Kalemler: kalemlerFormu(t.Kalemler),
   };
 }
 
 /** Form → servis parametreleri (insert ve update ortak); tutarlar burada hesaplanır. */
 export function satisFormdanParams(f: SatisForm, IDCrmTeklif?: DbId | null): CrmSatisKaydetParams {
-  const genelIskontoOrani = sayi(f.GenelIskontoOrani);
-  const h = teklifHesapla(formKalemGirdileri(f.Kalemler), genelIskontoOrani);
+  const h = teklifHesapla(formKalemGirdileri(f.Kalemler), formGenelIskonto(f));
   const abonelik = abonelikMi(f.SatisTipi);
   return {
     IDCrmKisi: f.IDCrmKisi,
@@ -197,7 +194,7 @@ export function satisFormdanParams(f: SatisForm, IDCrmTeklif?: DbId | null): Crm
     Aciklama: f.Aciklama.trim() || null,
     ParaBirimi: f.ParaBirimi,
     Kur: f.ParaBirimi === "TRY" ? 1 : sayi(f.Kur),
-    GenelIskontoOrani: genelIskontoOrani,
+    GenelIskontoOrani: h.GenelIskontoOrani,
     Kalemler: h.kalemler,
     AraToplam: h.AraToplam,
     GenelIskontoTutari: h.GenelIskontoTutari,

@@ -40,6 +40,12 @@ type FormSelectProps<T extends FieldValues> = {
    * gösterim: hidden={!ozurluDurumu}).
    */
   hidden?: boolean;
+  /**
+   * Kullanıcı seçim yapınca (form değeri güncellendikten sonra) çağrılır.
+   * form.reset ile gelen değerlerde çağrılmaz; bağlı alanı sadece kullanıcı
+   * değiştirdiğinde ayarlamak için (ör. para birimi TL'ye dönünce kur = 1).
+   */
+  onValueChange?: (value: string) => void;
 };
 
 export function FormSelect<T extends FieldValues>({
@@ -56,6 +62,7 @@ export function FormSelect<T extends FieldValues>({
   vertical = true,
   className,
   hidden,
+  onValueChange,
 }: FormSelectProps<T>) {
   return (
     <Controller
@@ -81,15 +88,10 @@ export function FormSelect<T extends FieldValues>({
           // onValueChange("") tetikleyip değeri siliyor. Hiçbir option'ın
           // değeri "" olamayacağı için bunu yok sayıyoruz.
           if (value === "") return;
-          if (valueType === "boolean") {
-            field.onChange(value === "true");
-            return;
-          }
-          if (valueType === "number") {
-            field.onChange(Number(value));
-            return;
-          }
-          field.onChange(value);
+          if (valueType === "boolean") field.onChange(value === "true");
+          else if (valueType === "number") field.onChange(Number(value));
+          else field.onChange(value);
+          onValueChange?.(value);
         };
 
         const select = (

@@ -31,6 +31,7 @@ import {
   useUpdateTeklif,
 } from "@/modules/crm/hooks/use-teklif";
 import {
+  formGenelIskonto,
   formKalemGirdileri,
   paraFormat,
   teklifFormVarsayilan,
@@ -50,6 +51,7 @@ import type { DbId } from "@/modules/crm/types/teklif";
 
 import { TeklifKalemTablosu } from "./TeklifKalemTablosu";
 import { TeklifPdfOnizleme } from "./TeklifPdfOnizleme";
+import { IskontoInput } from "./IskontoInput";
 import { TeklifToplamPaneli } from "./TeklifToplamPaneli";
 
 /** Yeni teklif (kişi verilirse seçili gelir ve değiştirilemez) veya taslak düzenleme. */
@@ -159,17 +161,25 @@ export function TeklifFormDialog({
 
   /* ---------------- Canlı hesap ---------------- */
   const kalemler = useWatch({ control, name: "Kalemler" });
-  const genelIskonto = useWatch({ control, name: "GenelIskontoOrani" });
+  const genelIskonto = useWatch({ control, name: "GenelIskonto" });
+  const genelIskontoTipi = useWatch({ control, name: "GenelIskontoTipi" });
   const paraBirimi = useWatch({ control, name: "ParaBirimi" });
   const kur = useWatch({ control, name: "Kur" });
 
-  const genelOran = Number.isFinite(sayiOku(genelIskonto))
-    ? sayiOku(genelIskonto)
-    : 0;
   const hesap = useMemo(
-    () => teklifHesapla(formKalemGirdileri(kalemler), genelOran),
-    [kalemler, genelOran],
+    () =>
+      teklifHesapla(
+        formKalemGirdileri(kalemler),
+        formGenelIskonto({ GenelIskontoTipi: genelIskontoTipi, GenelIskonto: genelIskonto }),
+      ),
+    [kalemler, genelIskontoTipi, genelIskonto],
   );
+
+  // Tip değişince eski değer (ör. %30 → 30 ₺) yanlış anlamla kalmasın diye temizlenir.
+  const genelIskontoTipiDegistir = () => {
+    form.setValue("GenelIskontoTipi", genelIskontoTipi === "2" ? "1" : "2", { shouldDirty: true });
+    form.setValue("GenelIskonto", "", { shouldDirty: true, shouldValidate: form.formState.isSubmitted });
+  };
   const kurSayi = paraBirimi === "TRY" ? 1 : sayiOku(kur);
 
   /* ---------------- PDF önizleme (3. adım) ----------------
@@ -320,6 +330,14 @@ export function TeklifFormDialog({
                     control={control}
                     name="ParaBirimi"
                     options={PARA_BIRIMI_DATA}
+                    // Önceki para biriminin kuru yenisine taşınmasın:
+                    // TL'de kur her zaman 1, dövize geçişte yeniden girilir.
+                    onValueChange={(v) =>
+                      form.setValue("Kur", v === "TRY" ? "1" : "", {
+                        shouldDirty: true,
+                        shouldValidate: form.formState.isSubmitted,
+                      })
+                    }
                   />
                   <FormInput
                     control={control}
@@ -362,23 +380,21 @@ export function TeklifFormDialog({
                 {/* İskonto toplamı doğrudan etkilediği için toplam panelinin
                     üstünde, aynı dar sağ sütunda */}
                 <div className="ml-auto flex w-full flex-col gap-3 lg:w-80">
-                  <FormInput
-                    control={control}
-                    name="GenelIskontoOrani"
-                    label="Genel İskonto"
-                    format="oran"
-                    placeholder="0"
-                    // Dar sütunda label'ın sabit %25'i yetmiyor, içeriği kadar olsun
-                    className="[&_label]:w-30"
-                    endIcon={
-                      <span className="text-xs text-muted-foreground">%</span>
-                    }
-                  />
+                  <div className="flex items-start gap-3">
+                    <span className="w-30 shrink-0 pt-1.5 text-sm font-medium">Genel İskonto</span>
+                    <IskontoInput
+                      control={control}
+                      name="GenelIskonto"
+                      tutar={genelIskontoTipi === "2"}
+                      paraBirimi={paraBirimi}
+                      onTipDegistir={genelIskontoTipiDegistir}
+                      className="flex-1"
+                    />
+                  </div>
                   <TeklifToplamPaneli
                     {...hesap}
                     ParaBirimi={paraBirimi}
                     Kur={Number.isFinite(kurSayi) ? kurSayi : 0}
-                    GenelIskontoOrani={genelOran}
                   />
                 </div>
               </div>

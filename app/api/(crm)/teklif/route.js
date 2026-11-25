@@ -76,7 +76,8 @@ function kalemlerJson(kalemler) {
       IskontoOrani: oran(k.IskontoOrani, etiket("iskonto oranı")),
       KdvOrani: oran(k.KdvOrani, etiket("KDV oranı")),
       Tutar: sayi(k.Tutar, etiket("tutar")),
-      IskontoTutari: sayi(k.IskontoTutari, etiket("iskonto tutarı"), { zorunlu: false }) ?? 0,
+      // Oran 0 + tutar > 0 → tutar olarak girilmiş iskonto (FE kalemIskontoTipi).
+      IskontoTutari: sayi(k.IskontoTutari, etiket("iskonto tutarı"), { zorunlu: false, min: 0 }) ?? 0,
       NetTutar: sayi(k.NetTutar, etiket("net tutar")),
       KdvTutari: sayi(k.KdvTutari, etiket("KDV tutarı"), { zorunlu: false }) ?? 0,
       ToplamTutar: sayi(k.ToplamTutar, etiket("toplam tutar")),

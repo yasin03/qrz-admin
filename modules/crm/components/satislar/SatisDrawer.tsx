@@ -21,7 +21,7 @@ import {
   satisIzin,
   yenilemeMetni,
 } from "@/modules/crm/lib/satis";
-import { gunFormat, paraFormat, teklifHesapla } from "@/modules/crm/lib/teklif";
+import { gunFormat, kdvDagilimiHesapla, paraFormat } from "@/modules/crm/lib/teklif";
 import type { CrmSatisDetay, DbId } from "@/modules/crm/types/satis";
 
 import { TahsilatFormDialog, type TahsilatFormModu } from "../finans/TahsilatFormDialog";
@@ -80,7 +80,7 @@ export function SatisDrawer({ IDCrmSatis, onOpenChange, onDuzenle, onIslem, onSe
   const tahsilatVar = !!odeme && (odeme.TahsilEdilen !== 0 || tahsilatlar.length > 0);
   const durum = s ? SATIS_DURUM[s.Durum] : null;
   const donem = s?.DonemDurumu != null && s.DonemDurumu !== 0 ? DONEM_DURUM[s.DonemDurumu] : null;
-  const kdvDagilimi = s ? teklifHesapla(s.Kalemler, s.GenelIskontoOrani).kdvDagilimi : [];
+  const kdvDagilimi = s ? kdvDagilimiHesapla(s.Kalemler, s) : [];
 
   const footer = s && (
     <div className="flex w-full flex-wrap items-center justify-between gap-2">

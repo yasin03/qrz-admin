@@ -21,19 +21,39 @@ const sayiAlani = (kontrol: (n: number) => boolean, mesaj: string, zorunlu = tru
     .trim()
     .refine((v) => (!v ? !zorunlu : Number.isFinite(sayiOku(v)) && kontrol(sayiOku(v))), mesaj);
 
-const oranAlani = sayiAlani((n) => n >= 0 && n <= 100, "0-100 arası.", false);
+/** İskonto değeri (satır / genel): tipine göre oran ya da tutar, boş = iskonto yok. */
+export const iskontoAlani = sayiAlani((n) => n >= 0, "Geçerli bir değer girin.", false);
+
+/** Yüzde iskonto 100'ü geçemez (tutar iskontosu hesapta net toplamla sınırlanır). */
+export const genelIskontoGecerli = (v: { GenelIskontoTipi: string; GenelIskonto: string }) =>
+  v.GenelIskontoTipi !== "1" || !(sayiOku(v.GenelIskonto) > 100);
 
 /* ---------------- Kalem ---------------- */
 
-export const teklifKalemSchema = z.object({
-  Aciklama: z.string().trim().min(1, "Kalem adı zorunlu.").max(500, "En fazla 500 karakter."),
-  Detay: metin(1000),
-  Miktar: sayiAlani((n) => n > 0, "0'dan büyük olmalı."),
-  Birim: z.string().trim().min(1, "Birim zorunlu.").max(20, "En fazla 20 karakter."),
-  BirimFiyat: sayiAlani((n) => n >= 0, "Geçerli bir fiyat girin."),
-  IskontoOrani: oranAlani,
-  KdvOrani: z.string(),
-});
+export const teklifKalemSchema = z
+  .object({
+    Aciklama: z.string().trim().min(1, "Kalem adı zorunlu.").max(500, "En fazla 500 karakter."),
+    Detay: metin(1000),
+    Miktar: sayiAlani((n) => n > 0, "0'dan büyük olmalı."),
+    Birim: z.string().trim().min(1, "Birim zorunlu.").max(20, "En fazla 20 karakter."),
+    BirimFiyat: sayiAlani((n) => n >= 0, "Geçerli bir fiyat girin."),
+    /** "1" Yüzde, "2" Tutar */
+    IskontoTipi: z.enum(["1", "2"]),
+    Iskonto: iskontoAlani,
+    KdvOrani: z.string(),
+  })
+  .superRefine((k, ctx) => {
+    const isk = sayiOku(k.Iskonto);
+    if (!Number.isFinite(isk) || isk <= 0) return;
+    if (k.IskontoTipi === "1") {
+      if (isk > 100) ctx.addIssue({ code: "custom", path: ["Iskonto"], message: "0-100 arası." });
+      return;
+    }
+    const tutar = sayiOku(k.Miktar) * sayiOku(k.BirimFiyat);
+    if (Number.isFinite(tutar) && isk > tutar) {
+      ctx.addIssue({ code: "custom", path: ["Iskonto"], message: "Satır tutarını aşamaz." });
+    }
+  });
 
 export type TeklifKalemForm = z.infer<typeof teklifKalemSchema>;
 
@@ -48,7 +68,9 @@ export const teklifSchema = z
     GecerlilikTarihi: z.string(),
     ParaBirimi: z.enum(PARA_BIRIMI_KODLARI),
     Kur: z.string().trim(),
-    GenelIskontoOrani: oranAlani,
+    /** "1" Yüzde, "2" Tutar */
+    GenelIskontoTipi: z.enum(["1", "2"]),
+    GenelIskonto: iskontoAlani,
     Aciklama: z.string(),
     Kosullar: z.string(),
     Kalemler: z.array(teklifKalemSchema).min(1, "En az bir kalem ekleyin."),
@@ -67,7 +89,8 @@ export const teklifSchema = z
     path: ["GecerlilikTarihi"],
     message: "Teklif tarihinden önce olamaz.",
     when: () => true,
-  });
+  })
+  .refine(genelIskontoGecerli, { path: ["GenelIskonto"], message: "0-100 arası.", when: () => true });
 
 export type TeklifForm = z.infer<typeof teklifSchema>;
 
@@ -78,7 +101,7 @@ export const TEKLIF_STEPS = [
     label: "Bilgiler",
     fields: ["IDCrmKisi", "Konu", "TeklifTarihi", "GecerlilikTarihi", "ParaBirimi", "Kur", "Aciklama", "Kosullar"],
   },
-  { id: "kalemler", label: "Kalemler", fields: ["Kalemler", "GenelIskontoOrani"] },
+  { id: "kalemler", label: "Kalemler", fields: ["Kalemler", "GenelIskonto"] },
   // Alan yok: formdan üretilen PDF önizleme + indir / yazdır.
   { id: "onizleme", label: "Önizleme", fields: [] },
 ] as const satisfies readonly { id: string; label: string; fields: readonly (keyof TeklifForm)[] }[];

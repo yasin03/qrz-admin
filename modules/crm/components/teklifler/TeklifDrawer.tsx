@@ -30,9 +30,9 @@ import { useTeklifDetay, useTeklifRevizyonlari } from "@/modules/crm/hooks/use-t
 import { KISI_TIP_ETIKET } from "@/modules/crm/lib/kisiler";
 import { downloadBlob } from "@/components/export/types";
 import {
+  kdvDagilimiHesapla,
   paraFormat,
   teklifDurumGorunum,
-  teklifHesapla,
   teklifIzin,
   teklifPdfDosyaAdi,
   teklifPdfVerisiDetaydan,
@@ -83,7 +83,7 @@ export function TeklifDrawer({ IDCrmTeklif, onOpenChange, onDuzenle, onIslem, on
 
   const durum = t ? teklifDurumGorunum(t) : null;
   // KDV dağılımı kayıtlı kalemlerden (toplamlar DB'deki değerler).
-  const kdvDagilimi = t ? teklifHesapla(t.Kalemler, t.GenelIskontoOrani).kdvDagilimi : [];
+  const kdvDagilimi = t ? kdvDagilimiHesapla(t.Kalemler, t) : [];
 
   /** Önizlemeden geçmeden doğrudan indir / yazdır. */
   const pdfAl = async (islem: "indir" | "yazdir") => {

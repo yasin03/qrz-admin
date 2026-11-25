@@ -71,19 +71,37 @@ export type TeklifRow = {
   KullaniciAdi: string | null;
 };
 
-/** Kalem için kullanıcının girdiği alanlar. */
+/**
+ * İskontonun girilme şekli (satır ve genel iskonto): 1 Yüzde, 2 Tutar (teklifin para biriminde).
+ * DB'de ayrı kolon yok: tutar iskontosu `...Orani = 0, ...Tutari > 0` olarak
+ * saklanır, tip bu ikisinden çıkarılır (lib/teklif.ts → iskontoTipi).
+ */
+export type IskontoTipi = 1 | 2;
+
+/** Genel iskonto girdisi (hesaplamaya giden). */
+export type GenelIskontoGirdi = {
+  Tip: IskontoTipi;
+  /** Tip 1'de oran (0-100), tip 2'de tutar. */
+  Deger: number;
+};
+
+/** Kalem için kullanıcının girdiği alanlar (hesaplamanın girdisi). */
 export type TeklifKalemGirdi = {
   Aciklama: string;
   Detay: string | null;
   Miktar: number;
   Birim: string;
   BirimFiyat: number;
-  IskontoOrani: number;
+  IskontoTipi: IskontoTipi;
+  /** Tip 1'de oran (0-100), tip 2'de tutar. */
+  Iskonto: number;
   KdvOrani: number;
 };
 
 /** Kalemin hesaplanan tutarları. */
 export type TeklifKalemTutarlari = {
+  /** Tip 1'de girilen oran, tip 2'de 0. */
+  IskontoOrani: number;
   Tutar: number;
   IskontoTutari: number;
   NetTutar: number;
@@ -91,7 +109,8 @@ export type TeklifKalemTutarlari = {
   ToplamTutar: number;
 };
 
-export type TeklifKalem = TeklifKalemGirdi & TeklifKalemTutarlari;
+/** Kayıtlı kalem şekli (DB kolonları). */
+export type TeklifKalem = Omit<TeklifKalemGirdi, "IskontoTipi" | "Iskonto"> & TeklifKalemTutarlari;
 
 /** CrmTeklifKalem satırı (SELECT_BY_ID → Kalemler). */
 export type TeklifKalemRow = TeklifKalem & {

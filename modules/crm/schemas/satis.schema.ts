@@ -6,19 +6,15 @@ import {
   odemeSekliAlani,
   tutarAlani,
 } from "@/modules/crm/schemas/finans.schema";
-import { sayiOku, teklifKalemSchema } from "@/modules/crm/schemas/teklif.schema";
+import {
+  genelIskontoGecerli,
+  iskontoAlani,
+  sayiOku,
+  teklifKalemSchema,
+} from "@/modules/crm/schemas/teklif.schema";
 
 /** Boş bırakılabilen, en fazla `max` karakterlik metin. */
 const metin = (max: number) => z.string().trim().max(max, `En fazla ${max} karakter.`);
-
-const oranAlani = z
-  .string()
-  .trim()
-  .refine((v) => {
-    if (!v) return true;
-    const n = sayiOku(v);
-    return Number.isFinite(n) && n >= 0 && n <= 100;
-  }, "0-100 arası.");
 
 /* ------------------------------------------------------------------ */
 /* Satış                                                               */
@@ -49,7 +45,9 @@ export const satisSchema = z
     BitisTarihi: z.string(),
     ParaBirimi: z.enum(PARA_BIRIMI_KODLARI),
     Kur: z.string().trim(),
-    GenelIskontoOrani: oranAlani,
+    /** "1" Yüzde, "2" Tutar */
+    GenelIskontoTipi: z.enum(["1", "2"]),
+    GenelIskonto: iskontoAlani,
     Aciklama: metin(2000),
     Kalemler: z.array(satisKalemSchema).min(1, "En az bir kalem ekleyin."),
 
@@ -71,6 +69,7 @@ export const satisSchema = z
     },
     { path: ["Kur"], message: "Kur girin.", when: () => true },
   )
+  .refine(genelIskontoGecerli, { path: ["GenelIskonto"], message: "0-100 arası.", when: () => true })
   .superRefine((v, ctx) => {
     if (v.SatisTipi === "1") return;
     if (!v.BaslangicTarihi) {
@@ -115,7 +114,7 @@ export const SATIS_STEPS = [
       "Aciklama",
     ],
   },
-  { id: "kalemler", label: "Kalemler", fields: ["Kalemler", "GenelIskontoOrani"] },
+  { id: "kalemler", label: "Kalemler", fields: ["Kalemler", "GenelIskonto"] },
   {
     id: "odeme",
     label: "Ödeme",

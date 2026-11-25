@@ -31,13 +31,14 @@ import {
   satisFormVarsayilan,
   satisFormdanParams,
 } from "@/modules/crm/lib/satis";
-import { formKalemGirdileri, paraFormat, teklifHesapla } from "@/modules/crm/lib/teklif";
+import { formGenelIskonto, formKalemGirdileri, paraFormat, teklifHesapla } from "@/modules/crm/lib/teklif";
 import { SATIS_STEPS, satisSchema, type SatisForm } from "@/modules/crm/schemas/satis.schema";
 import { sayiOku } from "@/modules/crm/schemas/teklif.schema";
 import type { DbId } from "@/modules/crm/types/satis";
 import type { TeklifDetay } from "@/modules/crm/types/teklif";
 
 import { TeklifKalemTablosu } from "../teklifler/TeklifKalemTablosu";
+import { IskontoInput } from "../teklifler/IskontoInput";
 import { TeklifToplamPaneli } from "../teklifler/TeklifToplamPaneli";
 
 /**
@@ -113,7 +114,7 @@ export function SatisFormDialog({ open, onOpenChange, mod, onKaydedildi }: Props
             const bas = form.getValues("BaslangicTarihi");
             form.setValue("BitisTarihi", bitisOner(values.SatisTipi, bas), { shouldValidate: !!bas });
           } else if (name === "OdemeAlindi" && values.OdemeAlindi && !values.OdemeTutari) {
-            const h = teklifHesapla(formKalemGirdileri(values.Kalemler), sayiVeyaSifir(values.GenelIskontoOrani));
+            const h = teklifHesapla(formKalemGirdileri(values.Kalemler), formGenelIskonto(values));
             if (h.GenelToplam > 0) form.setValue("OdemeTutari", String(h.GenelToplam));
           }
         },
@@ -169,14 +170,27 @@ export function SatisFormDialog({ open, onOpenChange, mod, onKaydedildi }: Props
 
   /* ---------------- Canlı hesap ---------------- */
   const kalemler = useWatch({ control, name: "Kalemler" });
-  const genelIskonto = useWatch({ control, name: "GenelIskontoOrani" });
+  const genelIskonto = useWatch({ control, name: "GenelIskonto" });
+  const genelIskontoTipi = useWatch({ control, name: "GenelIskontoTipi" });
   const paraBirimi = useWatch({ control, name: "ParaBirimi" });
   const kur = useWatch({ control, name: "Kur" });
   const satisTipi = useWatch({ control, name: "SatisTipi" });
   const odemeAlindi = useWatch({ control, name: "OdemeAlindi" });
 
-  const genelOran = sayiVeyaSifir(genelIskonto);
-  const hesap = useMemo(() => teklifHesapla(formKalemGirdileri(kalemler), genelOran), [kalemler, genelOran]);
+  const hesap = useMemo(
+    () =>
+      teklifHesapla(
+        formKalemGirdileri(kalemler),
+        formGenelIskonto({ GenelIskontoTipi: genelIskontoTipi, GenelIskonto: genelIskonto }),
+      ),
+    [kalemler, genelIskontoTipi, genelIskonto],
+  );
+
+  // Tip değişince eski değer (ör. %30 → 30 ₺) yanlış anlamla kalmasın diye temizlenir.
+  const genelIskontoTipiDegistir = () => {
+    form.setValue("GenelIskontoTipi", genelIskontoTipi === "2" ? "1" : "2", { shouldDirty: true });
+    form.setValue("GenelIskonto", "", { shouldDirty: true, shouldValidate: form.formState.isSubmitted });
+  };
   const kurSayi = paraBirimi === "TRY" ? 1 : sayiOku(kur);
   const abonelik = abonelikMi(satisTipi);
 
@@ -313,7 +327,19 @@ export function SatisFormDialog({ open, onOpenChange, mod, onKaydedildi }: Props
                   </FormLabel>
                 )}
                 <FormLabel label="Para Birimi / Kur">
-                  <FormSelect control={control} name="ParaBirimi" options={PARA_BIRIMI_DATA} />
+                  <FormSelect
+                    control={control}
+                    name="ParaBirimi"
+                    options={PARA_BIRIMI_DATA}
+                    // Önceki para biriminin kuru yenisine taşınmasın:
+                    // TL'de kur her zaman 1, dövize geçişte yeniden girilir.
+                    onValueChange={(v) =>
+                      form.setValue("Kur", v === "TRY" ? "1" : "", {
+                        shouldDirty: true,
+                        shouldValidate: form.formState.isSubmitted,
+                      })
+                    }
+                  />
                   <FormInput
                     control={control}
                     name="Kur"
@@ -339,20 +365,21 @@ export function SatisFormDialog({ open, onOpenChange, mod, onKaydedildi }: Props
               <div className="space-y-4">
                 <TeklifKalemTablosu form={form} kalemler={hesap.kalemler} paraBirimi={paraBirimi} />
                 <div className="ml-auto flex w-full flex-col gap-3 lg:w-80">
-                  <FormInput
-                    control={control}
-                    name="GenelIskontoOrani"
-                    label="Genel İskonto"
-                    format="oran"
-                    placeholder="0"
-                    className="[&_label]:w-30"
-                    endIcon={<span className="text-xs text-muted-foreground">%</span>}
-                  />
+                  <div className="flex items-start gap-3">
+                    <span className="w-30 shrink-0 pt-1.5 text-sm font-medium">Genel İskonto</span>
+                    <IskontoInput
+                      control={control}
+                      name="GenelIskonto"
+                      tutar={genelIskontoTipi === "2"}
+                      paraBirimi={paraBirimi}
+                      onTipDegistir={genelIskontoTipiDegistir}
+                      className="flex-1"
+                    />
+                  </div>
                   <TeklifToplamPaneli
                     {...hesap}
                     ParaBirimi={paraBirimi}
                     Kur={Number.isFinite(kurSayi) ? kurSayi : 0}
-                    GenelIskontoOrani={genelOran}
                   />
                 </div>
               </div>
