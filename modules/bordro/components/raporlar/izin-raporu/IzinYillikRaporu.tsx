@@ -114,6 +114,12 @@ const IzinYillikRaporu = ({
       total: true,
     },
     {
+      header: "Geçmişten Devreden İzin Günü",
+      accessorKey: "GecmistenDevredenIzinGun",
+      format: "number",
+      total: true,
+    },
+    {
       header: "Kullanılan İzin",
       accessorKey: "KullanilanIzin",
       format: "number",
@@ -165,6 +171,7 @@ const IzinYillikRaporu = ({
     sayiKolonu("ToplamIzinHakki", "Toplam İzin Hakkı"),
     sayiKolonu("KullanilanIzin", "Kullanılan İzin"),
     sayiKolonu("oKullanilanIzin", "Geçmişte Kullanılan İzin Günü"),
+    sayiKolonu("GecmistenDevredenIzinGun", "Geçmişten Devreden İzin Günü"),
     sayiKolonu("ToplamKullanilanIzin", "Toplam Kullanılan İzin"),
     sayiKolonu("ToplamKalanIzin", "Toplam Kalan İzin"),
   ];

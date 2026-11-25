@@ -144,6 +144,8 @@ export type IzinRaporYillikResponseType = {
   CikisTarihi: string | null;
   DogumTarihi: string | null;
   ToplamIzinHakki: number | null;
+  /** Personel kartında girilen, sistem öncesinden devreden izin günü */
+  GecmistenDevredenIzinGun: number | null;
   KullanilanIzin: number | null;
   /** Geçmiş yıllarda kullanılan izin */
   oKullanilanIzin: number | null;
