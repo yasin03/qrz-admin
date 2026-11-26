@@ -10,6 +10,7 @@
 import type { ParaBirimi } from "@/constants/data";
 import type { CrmKisiTip, DbId } from "@/modules/crm/types/kisiler";
 import type { SatisDurum, SatisTipi } from "@/modules/crm/types/satis";
+import type { BelgePdfVeri } from "@/modules/crm/types/teklif";
 
 export type { DbId };
 
@@ -224,4 +225,47 @@ export type CrmTahsilatListeFiltre = {
   Bitis?: string | null;
   /** Boş → tahsilat + iade. */
   Tip?: TahsilatTip | null;
+};
+
+/* ------------------------------------------------------------------ */
+/* Hesap ekstresi (FE'de hesaplanır, lib/finans.ts → hesapEkstresi)    */
+/* ------------------------------------------------------------------ */
+
+/** Ekstrede bir hareket: satış borç, tahsilat alacak, iade borç yazar. */
+export type EkstreHareket = {
+  /** "yyyy-MM-dd" */
+  Tarih: string;
+  BelgeNo: string;
+  Aciklama: string;
+  Borc: number;
+  Alacak: number;
+  /** Bu satırdan sonraki bakiye (artı → müşteri borçlu). */
+  Bakiye: number;
+};
+
+/**
+ * Tek para biriminin ekstresi. Farklı para birimleri kurla birleştirilmez;
+ * her biri ayrı tablo ve ayrı bakiyedir.
+ */
+export type EkstreHesap = {
+  ParaBirimi: ParaBirimi;
+  /** Dönem başlangıcından önceki hareketlerin bakiyesi ("tümü"nde 0). */
+  Devreden: number;
+  Hareketler: EkstreHareket[];
+  ToplamBorc: number;
+  ToplamAlacak: number;
+  /** Dönem sonu bakiyesi = Devreden + ToplamBorc − ToplamAlacak. */
+  Bakiye: number;
+};
+
+/** Hesap ekstresi PDF verisi (lib/teklif-pdf.tsx → ekstrePdfBlob). */
+export type EkstrePdfVeri = {
+  Kisi: BelgePdfVeri["Kisi"];
+  /** "Tümü" / "01.01.2026 – 31.12.2026" */
+  Donem: string;
+  /** Devreden satırı gösterilsin mi (dönem başlangıcı varsa). */
+  DevredenVar: boolean;
+  /** Ekstrenin düzenlendiği gün, "yyyy-MM-dd". */
+  Tarih: string;
+  Hesaplar: EkstreHesap[];
 };

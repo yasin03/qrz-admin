@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useTeklifDetay } from "@/modules/crm/hooks/use-teklif";
+import { useTeklifDetay, useBelgePdfKisiEk } from "@/modules/crm/hooks/use-teklif";
 import { teklifPdfDosyaAdi, teklifPdfVerisiDetaydan } from "@/modules/crm/lib/teklif";
 import type { DbId } from "@/modules/crm/types/teklif";
 
@@ -25,7 +25,8 @@ type Props = {
 /** Kayıtlı teklifin PDF önizlemesi (indir / yazdır). */
 export function TeklifPdfDialog({ IDCrmTeklif, onOpenChange }: Props) {
   const { data: t, isLoading, isError } = useTeklifDetay(IDCrmTeklif);
-  const veri = useMemo(() => (t ? teklifPdfVerisiDetaydan(t) : null), [t]);
+  const kisiEk = useBelgePdfKisiEk(t ? String(t.IDCrmKisi) : null, !!t);
+  const veri = useMemo(() => (t ? teklifPdfVerisiDetaydan(t, kisiEk) : null), [t, kisiEk]);
 
   return (
     <Dialog open={IDCrmTeklif != null} onOpenChange={onOpenChange}>

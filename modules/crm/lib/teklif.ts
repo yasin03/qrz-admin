@@ -15,7 +15,9 @@ import type {
   TeklifKalemGirdi,
   TeklifKalemTutarlari,
   TeklifParaBirimi,
-  TeklifPdfVeri,
+  BelgePdfAlan,
+  BelgePdfKisiEk,
+  BelgePdfVeri,
   TeklifRow,
   TeklifToplamlari,
 } from "@/modules/crm/types/teklif";
@@ -327,22 +329,58 @@ export function teklifFormdanParams(f: TeklifForm): TeklifAlanlari {
 /* PDF verisi                                                          */
 /* ------------------------------------------------------------------ */
 
-type PdfKisi = Pick<CrmKisiRow, "Kurum" | "YetkiliKisi" | "CepTelefon" | "YetkiliKisiTel" | "YetkiliKisiEPostaAdresi">;
+export type PdfKisi = Pick<
+  CrmKisiRow,
+  "Kurum" | "YetkiliKisi" | "CepTelefon" | "YetkiliKisiTel" | "YetkiliKisiEPostaAdresi"
+>;
 
-const pdfKisi = (k: PdfKisi | null | undefined, ad?: string | null): TeklifPdfVeri["Kisi"] => ({
+/** Teklif / satış satırındaki kişi alanları + kişi kartından gelen ek → PDF müşteri bilgisi. */
+export const pdfKisi = (
+  k: PdfKisi | null | undefined,
+  ek: BelgePdfKisiEk | null | undefined,
+  ad?: string | null,
+): BelgePdfVeri["Kisi"] => ({
   Ad: k?.Kurum?.trim() || k?.YetkiliKisi?.trim() || ad || "-",
   Yetkili: k?.Kurum?.trim() ? k.YetkiliKisi : null,
   Telefon: k?.CepTelefon || k?.YetkiliKisiTel || null,
   Eposta: k?.YetkiliKisiEPostaAdresi ?? null,
+  Adres: ek?.Adres || null,
+  VergiNo: ek?.VergiNo || null,
+  TcKimlikNo: ek?.TcKimlikNo || null,
 });
 
-/** Kayıtlı teklif → PDF verisi (tutarlar DB'deki değerler). */
-export function teklifPdfVerisiDetaydan(t: TeklifDetay): TeklifPdfVeri {
+/** Belgenin "Bilgiler" satırındaki ortak alanlar: konu, para birimi, (TL dışında) kur. */
+export function belgeTemelBilgileri(v: { Konu: string; ParaBirimi: TeklifParaBirimi; Kur: number }): BelgePdfAlan[] {
+  return [
+    { etiket: "Konu", deger: v.Konu },
+    { etiket: "Para Birimi", deger: v.ParaBirimi },
+    ...(v.ParaBirimi !== "TRY" && v.Kur > 0
+      ? [{ etiket: "Kur", deger: v.Kur.toLocaleString("tr-TR", { maximumFractionDigits: 6 }) }]
+      : []),
+  ];
+}
+
+/** "Teklif-2026-0001-R1.pdf", "Satis-S2026-0001.pdf" */
+export const pdfDosyaAdi = (onEk: string, no: string) => `${onEk}-${no.replace(/[^\w-]+/g, "-")}.pdf`;
+
+type TeklifPdfKaynak = Pick<
+  TeklifAlanlari,
+  "Konu" | "TeklifTarihi" | "GecerlilikTarihi" | "ParaBirimi" | "Kur" | "GenelIskontoOrani" | "Aciklama" | "Kosullar"
+> &
+  TeklifToplamlari & { Kalemler: TeklifKalem[] };
+
+function teklifPdfVerisi(t: TeklifPdfKaynak, no: string, Kisi: BelgePdfVeri["Kisi"]): BelgePdfVeri {
+  const taslak = no === "Taslak";
   return {
-    TeklifNoTam: t.TeklifNoTam,
-    Konu: t.Konu,
-    TeklifTarihi: t.TeklifTarihi,
-    GecerlilikTarihi: t.GecerlilikTarihi,
+    BelgeAdi: "Teklif",
+    BelgeNo: no,
+    Meta: [
+      { etiket: "Teklif No", deger: no },
+      { etiket: "Tarih", deger: gunFormat(t.TeklifTarihi) },
+      ...(t.GecerlilikTarihi ? [{ etiket: "Geçerlilik", deger: gunFormat(t.GecerlilikTarihi) }] : []),
+    ],
+    Etiket: taslak ? { metin: "KAYDEDİLMEDİ · ÖNİZLEME", tur: "uyari" } : null,
+    Bilgiler: belgeTemelBilgileri(t),
     ParaBirimi: t.ParaBirimi,
     Kur: t.Kur,
     GenelIskontoOrani: t.GenelIskontoOrani,
@@ -356,39 +394,25 @@ export function teklifPdfVerisiDetaydan(t: TeklifDetay): TeklifPdfVeri {
       KdvToplam: t.KdvToplam,
       GenelToplam: t.GenelToplam,
     },
-    Kisi: pdfKisi(t, t.KisiAdi),
-    Hazirlayan: t.Ad ?? t.KullaniciAdi,
+    Kisi,
   };
+}
+
+/**
+ * Kayıtlı teklif → PDF verisi (tutarlar DB'deki değerler). Teklif view'i kişi
+ * adres ve vergi bilgisini taşımadığı için bunlar ayrıca verilir (useBelgePdfKisiEk).
+ */
+export function teklifPdfVerisiDetaydan(t: TeklifDetay, kisiEk?: BelgePdfKisiEk | null): BelgePdfVeri {
+  return teklifPdfVerisi(t, t.TeklifNoTam, pdfKisi(t, kisiEk, t.KisiAdi));
 }
 
 /** Form (henüz kaydedilmemiş olabilir) → PDF verisi; tutarlar canlı hesaptan. */
 export function teklifPdfVerisiFormdan(
   f: TeklifForm,
-  ek: { TeklifNoTam?: string | null; kisi?: PdfKisi | null; Hazirlayan?: string | null },
-): TeklifPdfVeri {
-  const p = teklifFormdanParams(f);
-  return {
-    TeklifNoTam: ek.TeklifNoTam || "Taslak",
-    Konu: p.Konu,
-    TeklifTarihi: p.TeklifTarihi,
-    GecerlilikTarihi: p.GecerlilikTarihi,
-    ParaBirimi: p.ParaBirimi,
-    Kur: p.Kur,
-    GenelIskontoOrani: p.GenelIskontoOrani,
-    Aciklama: p.Aciklama,
-    Kosullar: p.Kosullar,
-    Kalemler: p.Kalemler,
-    Toplamlar: {
-      AraToplam: p.AraToplam,
-      GenelIskontoTutari: p.GenelIskontoTutari,
-      IskontoToplam: p.IskontoToplam,
-      KdvToplam: p.KdvToplam,
-      GenelToplam: p.GenelToplam,
-    },
-    Kisi: pdfKisi(ek.kisi),
-    Hazirlayan: ek.Hazirlayan ?? null,
-  };
+  ek: { TeklifNoTam?: string | null; kisi?: PdfKisi | null; kisiEk?: BelgePdfKisiEk | null },
+): BelgePdfVeri {
+  return teklifPdfVerisi(teklifFormdanParams(f), ek.TeklifNoTam || "Taslak", pdfKisi(ek.kisi, ek.kisiEk));
 }
 
 /** "Teklif-2026-0001-R1.pdf" */
-export const teklifPdfDosyaAdi = (no: string) => `Teklif-${no.replace(/[^\w-]+/g, "-")}.pdf`;
+export const teklifPdfDosyaAdi = (no: string) => pdfDosyaAdi("Teklif", no);

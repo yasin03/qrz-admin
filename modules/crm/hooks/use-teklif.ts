@@ -6,6 +6,7 @@ import {
   CRM_KISI_LIST_QUERY_KEY,
   useCrmKisiler,
 } from "@/modules/crm/hooks/use-kisiler";
+import { useIller } from "@/modules/core/hooks/use-il-ilce-vergi-data";
 import { kisiAdi } from "@/modules/crm/lib/kisiler";
 import { teklifService } from "@/modules/crm/services/teklif.service";
 import type {
@@ -14,6 +15,7 @@ import type {
   TeklifGuncelleParams,
   TeklifKabulParams,
   TeklifListeFiltre,
+  BelgePdfKisiEk,
   TeklifRedParams,
 } from "@/modules/crm/types/teklif";
 
@@ -94,6 +96,29 @@ export function useTeklifKisi(IDCrmKisi: string | null | undefined, enabled = tr
     const bul = (liste: typeof kontaklar) => liste?.find((k) => String(k.IDCrmKisi) === IDCrmKisi);
     return bul(musteriler) ?? bul(kontaklar) ?? null;
   }, [IDCrmKisi, kontaklar, musteriler]);
+}
+
+/** "034" ile "34" aynı il kodu sayılsın. */
+const ayniIl = (a: string | null | undefined, b: string | null | undefined) =>
+  !!a?.trim() && !!b?.trim() && Number(a.trim()) === Number(b.trim());
+
+/**
+ * Teklif PDF'indeki müşteri bilgisinin teklif view'inde olmayan kısmı, kişi
+ * listesinden: adres + il adı ("Kasımpaşa Mah. ..., Afyonkarahisar"), vergi no,
+ * TC kimlik no. Kişi bulunamazsa null.
+ */
+export function useBelgePdfKisiEk(IDCrmKisi: string | null | undefined, enabled = true): BelgePdfKisiEk | null {
+  const kisi = useTeklifKisi(IDCrmKisi, enabled);
+  const { data: iller } = useIller();
+  return useMemo(() => {
+    if (!kisi) return null;
+    const il = iller?.find((x) => ayniIl(x.IlKodu, kisi.IlKodu))?.IlAdi?.trim();
+    return {
+      Adres: [kisi.Adres?.trim(), il].filter(Boolean).join(", ") || null,
+      VergiNo: kisi.VergiNo?.trim() || null,
+      TcKimlikNo: kisi.TcKimlikNo?.trim() || null,
+    };
+  }, [kisi, iller]);
 }
 
 /* ------------------------------------------------------------------ */

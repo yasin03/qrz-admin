@@ -2,9 +2,23 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Ban, HandCoins, Loader2, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Ban,
+  Download,
+  Eye,
+  FileText,
+  HandCoins,
+  Loader2,
+  Pencil,
+  Plus,
+  Printer,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 
 import { SideDrawer, useLastDefined } from "@/components/customs/SideDrawer";
+import { downloadBlob } from "@/components/export/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -19,6 +33,7 @@ import {
   SATIS_TIPI_ETIKET,
   abonelikMi,
   satisIzin,
+  satisPdfDosyaAdi,
   yenilemeMetni,
 } from "@/modules/crm/lib/satis";
 import { gunFormat, kdvDagilimiHesapla, paraFormat } from "@/modules/crm/lib/teklif";
@@ -26,8 +41,10 @@ import type { CrmSatisDetay, DbId } from "@/modules/crm/types/satis";
 
 import { TahsilatFormDialog, type TahsilatFormModu } from "../finans/TahsilatFormDialog";
 import { KalemOzetTablosu } from "../teklifler/KalemOzetTablosu";
+import { belgePdfOlustur, pdfYazdir } from "../teklifler/TeklifPdfOnizleme";
 import { TeklifToplamPaneli } from "../teklifler/TeklifToplamPaneli";
 import type { SatisIslemTipi } from "./SatisIslemDialog";
+import { SatisPdfDialog, useSatisPdfVerisi } from "./SatisPdfDialog";
 
 type Props = {
   IDCrmSatis: DbId | null;
@@ -64,6 +81,8 @@ function Tutar({ label, deger, className }: { label: string; deger: string; clas
  */
 export function SatisDrawer({ IDCrmSatis, onOpenChange, onDuzenle, onIslem, onSec }: Props) {
   const [tahsilatMod, setTahsilatMod] = useState<TahsilatFormModu | null>(null);
+  const [pdfIslem, setPdfIslem] = useState<"indir" | "yazdir" | null>(null);
+  const [pdfOnizle, setPdfOnizle] = useState(false);
   // Kapanış animasyonunda son açılan satış gösterilmeye devam eder.
   const seciliID = useLastDefined(IDCrmSatis);
   const { data: canli, isLoading, isError, refetch } = useCrmSatisDetay(seciliID);
@@ -73,6 +92,7 @@ export function SatisDrawer({ IDCrmSatis, onOpenChange, onDuzenle, onIslem, onSe
 
   const { data: tahsilatHaritasi } = useCrmSatisTahsilatlari(seciliID != null);
   const { data: tahsilatlar = [] } = useCrmTahsilatlar({ IDCrmSatis: seciliID }, seciliID != null);
+  const pdfVeri = useSatisPdfVerisi(s);
 
   if (!seciliID) return null;
 
@@ -81,6 +101,21 @@ export function SatisDrawer({ IDCrmSatis, onOpenChange, onDuzenle, onIslem, onSe
   const durum = s ? SATIS_DURUM[s.Durum] : null;
   const donem = s?.DonemDurumu != null && s.DonemDurumu !== 0 ? DONEM_DURUM[s.DonemDurumu] : null;
   const kdvDagilimi = s ? kdvDagilimiHesapla(s.Kalemler, s) : [];
+
+  /** Önizlemeden geçmeden doğrudan indir / yazdır. */
+  const pdfAl = async (islem: "indir" | "yazdir") => {
+    if (!s || !pdfVeri) return;
+    setPdfIslem(islem);
+    try {
+      const blob = await belgePdfOlustur(pdfVeri);
+      if (islem === "indir") downloadBlob(blob, satisPdfDosyaAdi(s.SatisNo));
+      else pdfYazdir(blob);
+    } catch (error) {
+      toast.error((error as Error)?.message || "PDF oluşturulamadı.");
+    } finally {
+      setPdfIslem(null);
+    }
+  };
 
   const footer = s && (
     <div className="flex w-full flex-wrap items-center justify-between gap-2">
@@ -216,6 +251,25 @@ export function SatisDrawer({ IDCrmSatis, onOpenChange, onDuzenle, onIslem, onSe
               )}
             </dl>
 
+            {/* PDF */}
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/30 px-3 py-2.5">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <FileText className="size-4 text-muted-foreground" />
+                Satış Belgesi (PDF)
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" appearance="outline" onClick={() => setPdfOnizle(true)}>
+                  <Eye /> Önizle
+                </Button>
+                <Button size="sm" appearance="outline" disabled={!!pdfIslem} onClick={() => pdfAl("yazdir")}>
+                  {pdfIslem === "yazdir" ? <Loader2 className="animate-spin" /> : <Printer />} Yazdır
+                </Button>
+                <Button size="sm" disabled={!!pdfIslem} onClick={() => pdfAl("indir")}>
+                  {pdfIslem === "indir" ? <Loader2 className="animate-spin" /> : <Download />} İndir
+                </Button>
+              </div>
+            </div>
+
             {/* Ödeme özeti (finans) */}
             {odeme && (
               <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
@@ -306,6 +360,7 @@ export function SatisDrawer({ IDCrmSatis, onOpenChange, onDuzenle, onIslem, onSe
       </SideDrawer>
 
       <TahsilatFormDialog mod={tahsilatMod} onOpenChange={(v) => !v && setTahsilatMod(null)} />
+      <SatisPdfDialog IDCrmSatis={pdfOnizle && s ? s.IDCrmSatis : null} onOpenChange={(v) => !v && setPdfOnizle(false)} />
     </>
   );
 }

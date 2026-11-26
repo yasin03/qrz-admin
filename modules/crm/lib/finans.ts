@@ -5,15 +5,18 @@ import type { Badge } from "@/components/ui/badge";
 import type { TahsilatForm } from "@/modules/crm/schemas/finans.schema";
 import { sayiOku } from "@/modules/crm/schemas/teklif.schema";
 import type {
+  CrmFinansSatisRow,
   CrmSatisTahsilatRow,
   CrmTahsilatKaydetParams,
   CrmTahsilatRow,
+  EkstreHareket,
+  EkstreHesap,
   DbId,
   OdemeDurumu,
   TahsilatOdemeSekli,
   TahsilatTip,
 } from "@/modules/crm/types/finans";
-import { yuvarla } from "@/modules/crm/lib/teklif";
+import { gunFormat, yuvarla } from "@/modules/crm/lib/teklif";
 
 /* ------------------------------------------------------------------ */
 /* Etiketler / seçenekler                                              */
@@ -192,4 +195,104 @@ export function tahsilatFormdanParams(f: TahsilatForm): CrmTahsilatKaydetParams 
     FaturaTarihi: f.FaturaTarihi || null,
     Aciklama: metin(f.Aciklama),
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Hesap ekstresi                                                      */
+/* ------------------------------------------------------------------ */
+
+/** Ekstre dönem etiketi: "Tümü", "01.01.2026 – 31.12.2026", "01.01.2026 sonrası". */
+export function ekstreDonemMetni(a: { Baslangic: string; Bitis: string }) {
+  if (a.Baslangic && a.Bitis) return `${gunFormat(a.Baslangic)} – ${gunFormat(a.Bitis)}`;
+  if (a.Baslangic) return `${gunFormat(a.Baslangic)} sonrası`;
+  if (a.Bitis) return `${gunFormat(a.Bitis)} öncesi`;
+  return "Tümü";
+}
+
+type HamHareket = Omit<EkstreHareket, "Bakiye"> & { ParaBirimi: EkstreHesap["ParaBirimi"]; sira: number };
+
+/**
+ * Müşterinin satış ve tahsilatlarından para birimi bazında ekstre.
+ *  - Satış borç, tahsilat alacak, iade borç yazar (iade ödenen parayı geri verir).
+ *  - İptal edilmiş satışlar ve onların tahsilat / iadeleri yazılmaz (kullanıcı kararı).
+ *  - Başlangıçtan önceki hareketler devredene, bitişten sonrakiler hiç girmez.
+ *  - Aynı gün önce satış, sonra tahsilat / iade sıralanır.
+ */
+export function hesapEkstresi(
+  satislar: CrmFinansSatisRow[],
+  tahsilatlar: CrmTahsilatRow[],
+  aralik: { Baslangic: string; Bitis: string },
+): EkstreHesap[] {
+  const gun = (t: string) => t.slice(0, 10);
+  const ham: HamHareket[] = [
+    ...satislar
+      .filter((s) => s.Durum === 0)
+      .map((s) => ({
+        Tarih: gun(s.SatisTarihi),
+        BelgeNo: s.SatisNo,
+        Aciklama: s.Konu,
+        Borc: s.GenelToplam,
+        Alacak: 0,
+        ParaBirimi: s.ParaBirimi,
+        sira: 0,
+      })),
+    ...tahsilatlar
+      .filter((t) => t.SatisDurum === 0)
+      .map((t) => {
+        const iade = t.Tip === 2;
+        const aciklama = [
+          `${iade ? "İade" : "Tahsilat"} (${ODEME_SEKLI_ETIKET[t.OdemeSekli]})`,
+          t.FaturaNo && `Fatura ${t.FaturaNo}`,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        return {
+          Tarih: gun(t.Tarih),
+          BelgeNo: t.SatisNo,
+          Aciklama: aciklama,
+          Borc: iade ? t.Tutar : 0,
+          Alacak: iade ? 0 : t.Tutar,
+          ParaBirimi: t.ParaBirimi,
+          sira: 1,
+        };
+      }),
+  ].sort((a, b) => a.Tarih.localeCompare(b.Tarih) || a.sira - b.sira || a.BelgeNo.localeCompare(b.BelgeNo));
+
+  const gruplar = new Map<string, HamHareket[]>();
+  for (const h of ham) gruplar.set(h.ParaBirimi, [...(gruplar.get(h.ParaBirimi) ?? []), h]);
+
+  const hesaplar: EkstreHesap[] = [];
+  for (const [paraBirimi, liste] of gruplar) {
+    let Devreden = 0;
+    let bakiye = 0;
+    let ToplamBorc = 0;
+    let ToplamAlacak = 0;
+    const Hareketler: EkstreHareket[] = [];
+    for (const h of liste) {
+      if (aralik.Bitis && h.Tarih > aralik.Bitis) continue;
+      if (aralik.Baslangic && h.Tarih < aralik.Baslangic) {
+        Devreden = yuvarla(Devreden + h.Borc - h.Alacak);
+        bakiye = Devreden;
+        continue;
+      }
+      bakiye = yuvarla(bakiye + h.Borc - h.Alacak);
+      ToplamBorc = yuvarla(ToplamBorc + h.Borc);
+      ToplamAlacak = yuvarla(ToplamAlacak + h.Alacak);
+      Hareketler.push({ Tarih: h.Tarih, BelgeNo: h.BelgeNo, Aciklama: h.Aciklama, Borc: h.Borc, Alacak: h.Alacak, Bakiye: bakiye });
+    }
+    if (Hareketler.length || Devreden !== 0) {
+      hesaplar.push({
+        ParaBirimi: paraBirimi as EkstreHesap["ParaBirimi"],
+        Devreden,
+        Hareketler,
+        ToplamBorc,
+        ToplamAlacak,
+        Bakiye: yuvarla(Devreden + ToplamBorc - ToplamAlacak),
+      });
+    }
+  }
+  // TL önce, diğerleri alfabetik.
+  return hesaplar.sort((a, b) =>
+    a.ParaBirimi === "TRY" ? -1 : b.ParaBirimi === "TRY" ? 1 : a.ParaBirimi.localeCompare(b.ParaBirimi),
+  );
 }

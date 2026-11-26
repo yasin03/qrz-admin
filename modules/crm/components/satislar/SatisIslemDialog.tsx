@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { addDays, format, parseISO } from "date-fns";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Ban, Eye, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { Ban, Eye, FileDown, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/customs/ConfirmDialog";
@@ -226,12 +226,14 @@ export function SatisIslemDialog({ islem, onOpenChange, onTamamlandi }: Props) {
 export function satisSatirAksiyonlari<T extends CrmSatisRow>(h: {
   onGoruntule: (s: T) => void;
   onDuzenle: (s: T) => void;
+  onPdf: (s: T) => void;
   onIslem: (tip: SatisIslemTipi, s: T) => void;
   /** Satışın tahsilatı var mı (rozet sorgusundan); silme buna göre gizlenir. */
   tahsilatVar: (s: T) => boolean;
 }): RowAction<T>[] {
   return [
     { label: "Görüntüle", icon: Eye, onClick: h.onGoruntule },
+    { label: "PDF Önizle / İndir", icon: FileDown, onClick: h.onPdf },
     { divider: true },
     { label: "Düzenle", icon: Pencil, hidden: (s) => !satisIzin.duzenle(s), onClick: h.onDuzenle },
     {

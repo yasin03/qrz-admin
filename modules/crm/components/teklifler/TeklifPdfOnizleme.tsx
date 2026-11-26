@@ -7,16 +7,28 @@ import { toast } from "sonner";
 import { downloadBlob } from "@/components/export/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { TeklifPdfVeri } from "@/modules/crm/types/teklif";
+import type { EkstrePdfVeri } from "@/modules/crm/types/finans";
+import type { BelgePdfVeri } from "@/modules/crm/types/teklif";
 
 // PDF modülü (@react-pdf) ağır; sadece gerektiğinde yüklenir.
 const pdfModulu = () => import("@/modules/crm/lib/teklif-pdf");
 
-/** Teklif PDF'ini üretir. */
-export async function teklifPdfOlustur(veri: TeklifPdfVeri) {
-  const { teklifPdfBlob } = await pdfModulu();
-  return teklifPdfBlob(veri);
+/** Teklif / satış PDF'ini üretir. */
+export async function belgePdfOlustur(veri: BelgePdfVeri) {
+  const { belgePdfBlob } = await pdfModulu();
+  return belgePdfBlob(veri);
 }
+
+/** Hesap ekstresi PDF'ini üretir. */
+export async function ekstrePdfOlustur(veri: EkstrePdfVeri) {
+  const { ekstrePdfBlob } = await pdfModulu();
+  return ekstrePdfBlob(veri);
+}
+
+/** Önizlenecek PDF: teklif / satış belgesi ya da hesap ekstresi. */
+export type PdfKaynak = { tur: "belge"; veri: BelgePdfVeri } | { tur: "ekstre"; veri: EkstrePdfVeri };
+
+const pdfOlustur = (k: PdfKaynak) => (k.tur === "ekstre" ? ekstrePdfOlustur(k.veri) : belgePdfOlustur(k.veri));
 
 /** PDF'i görünmez bir iframe'de açıp tarayıcının yazdırma penceresini gösterir. */
 export function pdfYazdir(blob: Blob) {
@@ -45,7 +57,7 @@ export function pdfYazdir(blob: Blob) {
  * Veri değiştikçe (300 ms bekleyerek) PDF'i yeniden üretir ve blob URL'si
  * döner. Önceki URL serbest bırakılır.
  */
-function useTeklifPdf(veri: TeklifPdfVeri | null) {
+function usePdfOnizleme(kaynak: PdfKaynak | null) {
   const [durum, setDurum] = useState<{ url: string | null; blob: Blob | null; hata: string | null }>({
     url: null,
     blob: null,
@@ -54,7 +66,7 @@ function useTeklifPdf(veri: TeklifPdfVeri | null) {
   const [yukleniyor, setYukleniyor] = useState(false);
   const urlRef = useRef<string | null>(null);
   // Nesne kimliği her render'da değişebilir; içerik değişince üret.
-  const anahtar = veri ? JSON.stringify(veri) : null;
+  const anahtar = kaynak ? JSON.stringify(kaynak) : null;
 
   useEffect(() => {
     if (!anahtar) return;
@@ -62,7 +74,7 @@ function useTeklifPdf(veri: TeklifPdfVeri | null) {
     const zamanlayici = setTimeout(async () => {
       setYukleniyor(true);
       try {
-        const blob = await teklifPdfOlustur(JSON.parse(anahtar) as TeklifPdfVeri);
+        const blob = await pdfOlustur(JSON.parse(anahtar) as PdfKaynak);
         if (iptal) return;
         const url = URL.createObjectURL(blob);
         if (urlRef.current) URL.revokeObjectURL(urlRef.current);
@@ -92,16 +104,24 @@ function useTeklifPdf(veri: TeklifPdfVeri | null) {
 }
 
 type Props = {
-  veri: TeklifPdfVeri | null;
+  /** Teklif / satış belgesi. */
+  veri?: BelgePdfVeri | null;
+  /** Hesap ekstresi (verilirse `veri` yerine). */
+  ekstre?: EkstrePdfVeri | null;
   dosyaAdi: string;
   className?: string;
   /** Önizleme alanının yüksekliği. */
   yukseklik?: string;
 };
 
-/** PDF önizleme + İndir / Yazdır / Yeni sekmede aç. */
-export function TeklifPdfOnizleme({ veri, dosyaAdi, className, yukseklik = "h-[65svh]" }: Props) {
-  const { url, blob, hata, yukleniyor } = useTeklifPdf(veri);
+/** PDF önizleme + İndir / Yazdır / Yeni sekmede aç (teklif, satış ve hesap ekstresi ortak). */
+export function TeklifPdfOnizleme({ veri, ekstre, dosyaAdi, className, yukseklik = "h-[65svh]" }: Props) {
+  const kaynak: PdfKaynak | null = ekstre
+    ? { tur: "ekstre", veri: ekstre }
+    : veri
+      ? { tur: "belge", veri }
+      : null;
+  const { url, blob, hata, yukleniyor } = usePdfOnizleme(kaynak);
 
   const yazdir = () => {
     if (!blob) return;
@@ -142,7 +162,7 @@ export function TeklifPdfOnizleme({ veri, dosyaAdi, className, yukseklik = "h-[6
         {hata ? (
           <div className="flex h-full items-center justify-center p-4 text-center text-sm text-destructive">{hata}</div>
         ) : url ? (
-          <iframe src={url} title="Teklif PDF önizleme" className="size-full" />
+          <iframe src={url} title="PDF önizleme" className="size-full" />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <Loader2 className="size-6 animate-spin" />

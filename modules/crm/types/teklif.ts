@@ -170,16 +170,29 @@ export type TeklifListeFiltre = {
 export type TeklifInsertResponse = { IDCrmTeklif: DbId | null; TeklifNo: string | null };
 export type TeklifRevizyonResponse = { IDCrmTeklif: DbId | null };
 
+/* ------------------------------------------------------------------ */
+/* PDF (teklif ve satış ortak belge, lib/teklif-pdf.tsx)                */
+/* ------------------------------------------------------------------ */
+
+/** Belgede etiket + değer çifti (başlıktaki no/tarih, bilgi satırı). */
+export type BelgePdfAlan = { etiket: string; deger: string };
+
 /**
- * PDF için teklif verisi. Kayıtlı tekliften (detay) veya henüz
- * kaydedilmemiş formdan (stepper önizleme adımı) üretilir.
+ * Kalemli belge PDF verisi: teklif ve satış aynı şablonu kullanır. Teklif
+ * kayıtlı tekliften (detay) veya kaydedilmemiş formdan, satış kayıtlı
+ * satıştan üretilir.
  */
-export type TeklifPdfVeri = {
-  /** Kaydedilmemişse "Taslak". */
-  TeklifNoTam: string;
-  Konu: string;
-  TeklifTarihi: string;
-  GecerlilikTarihi: string | null;
+export type BelgePdfVeri = {
+  /** "Teklif" / "Satış"; başlıkta büyük harfle yazılır. */
+  BelgeAdi: string;
+  /** Dosya / alt bilgi numarası; kaydedilmemiş teklifte "Taslak". */
+  BelgeNo: string;
+  /** Başlığın sağındaki no, tarih, geçerlilik / dönem satırları. */
+  Meta: BelgePdfAlan[];
+  /** Başlık altındaki uyarı etiketi (ör. "KAYDEDİLMEDİ · ÖNİZLEME", "İPTAL EDİLDİ"). */
+  Etiket: { metin: string; tur: "uyari" | "tehlike" } | null;
+  /** Müşteri kartının altındaki "<BELGE> BİLGİLERİ" satırı (konu, para birimi, kur...). */
+  Bilgiler: BelgePdfAlan[];
   ParaBirimi: TeklifParaBirimi;
   Kur: number;
   GenelIskontoOrani: number;
@@ -193,6 +206,13 @@ export type TeklifPdfVeri = {
     Yetkili: string | null;
     Telefon: string | null;
     Eposta: string | null;
+    /** Kişi kartındaki adres + il ("..., İstanbul"). */
+    Adres: string | null;
+    VergiNo: string | null;
+    /** Vergi no yoksa gösterilir (gerçek kişi). */
+    TcKimlikNo: string | null;
   };
-  Hazirlayan: string | null;
 };
+
+/** PDF müşteri bilgisinin teklif / satış view'inde olmayan kısmı (kişi kartından). */
+export type BelgePdfKisiEk = Pick<BelgePdfVeri["Kisi"], "Adres" | "VergiNo" | "TcKimlikNo">;

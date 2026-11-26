@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Search } from "lucide-react";
+import { FileText, ListFilter, Search } from "lucide-react";
 
 import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
+import { RowActions, type RowAction } from "@/components/customs/RowActions";
 import { ExportMenu } from "@/components/export/ExportMenu";
 import type { ExportColumn } from "@/components/export/types";
 import { Badge } from "@/components/ui/badge";
@@ -22,12 +23,14 @@ import type { CrmFinansCariRow } from "@/modules/crm/types/finans";
 type Props = {
   /** Satıra tıklanınca o müşterinin alacakları açılır. */
   onKisiSec: (k: CrmFinansCariRow) => void;
+  /** Müşterinin hesap ekstresi (PDF). */
+  onEkstre: (k: CrmFinansCariRow) => void;
 };
 
 const tl = (v: number) => paraFormat(v, "TRY");
 
 /** Müşteri bazında satış / tahsilat / bakiye (TL, satış kuruyla). */
-export function BakiyeListesi({ onKisiSec }: Props) {
+export function BakiyeListesi({ onKisiSec, onEkstre }: Props) {
   const [arama, setArama] = useState("");
   const [sadeceBakiyeli, setSadeceBakiyeli] = useState(true);
   const [columnVisibility, setColumnVisibility] = useColumnVisibility("crm-finans-bakiye-kolonlar");
@@ -54,8 +57,23 @@ export function BakiyeListesi({ onKisiSec }: Props) {
     [],
   );
 
+  const aksiyonlar = useMemo<RowAction<CrmFinansCariRow>[]>(
+    () => [
+      { label: "Hesap Ekstresi", icon: FileText, onClick: onEkstre },
+      { label: "Alacakları Göster", icon: ListFilter, onClick: onKisiSec },
+    ],
+    [onEkstre, onKisiSec],
+  );
+
   const columns = useMemo<ColumnDef<CrmFinansCariRow>[]>(
     () => [
+      {
+        id: "actions",
+        size: 50,
+        header: "",
+        enableSorting: false,
+        cell: ({ row }) => <RowActions row={row.original} actions={aksiyonlar} />,
+      },
       {
         id: "Kisi",
         accessorFn: (k) => k.KisiAdi ?? "",
@@ -121,7 +139,7 @@ export function BakiyeListesi({ onKisiSec }: Props) {
         ),
       },
     ],
-    [],
+    [aksiyonlar],
   );
 
   return (

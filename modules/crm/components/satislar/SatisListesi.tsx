@@ -33,6 +33,7 @@ import { SatisDrawer } from "./SatisDrawer";
 import { BOS_SATIS_FILTRELERI, SatisFiltre, type SatisFiltreleri } from "./SatisFiltre";
 import { SatisFormDialog, type SatisFormModu } from "./SatisFormDialog";
 import { SatisIslemDialog, satisSatirAksiyonlari, type SatisIslem } from "./SatisIslemDialog";
+import { SatisPdfDialog } from "./SatisPdfDialog";
 
 const ARANAN_ALANLAR = ["SatisNo", "KisiAdi", "Konu", "Ad", "TeklifNoTam"] as const;
 
@@ -76,6 +77,7 @@ export function SatisListesi() {
   const [columnVisibility, setColumnVisibility] = useColumnVisibility("crm-satis-kolonlar");
   const [formMod, setFormMod] = useState<SatisFormModu | null>(null);
   const [islem, setIslem] = useState<SatisIslem | null>(null);
+  const [pdfID, setPdfID] = useState<DbId | null>(null);
   const [seciliID, setSeciliID] = useSeciliSatis();
 
   // Satış başına kalan / ödeme durumu: satış toplamı + rozet sorgusundaki net tahsilat.
@@ -166,6 +168,7 @@ export function SatisListesi() {
             actions={satisSatirAksiyonlari<CrmSatisRow>({
               onGoruntule: (s) => setSeciliID(s.IDCrmSatis),
               onDuzenle: (s) => setFormMod({ tip: "duzenle", IDCrmSatis: s.IDCrmSatis }),
+              onPdf: (s) => setPdfID(s.IDCrmSatis),
               onIslem: islemAc,
               tahsilatVar,
             })}
@@ -362,6 +365,8 @@ export function SatisListesi() {
         mod={formMod}
         onKaydedildi={(id) => setSeciliID(id)}
       />
+
+      <SatisPdfDialog IDCrmSatis={pdfID} onOpenChange={(v) => !v && setPdfID(null)} />
 
       <SatisIslemDialog
         islem={islem}

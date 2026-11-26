@@ -4,11 +4,15 @@ import { addDays, addMonths, addYears, format, parseISO } from "date-fns";
 import type { Badge } from "@/components/ui/badge";
 import { ODEME_SEKLI_VARSAYILAN } from "@/modules/crm/lib/finans";
 import {
+  belgeTemelBilgileri,
   bosKalem,
   formGenelIskonto,
   formKalemGirdileri,
   genelIskontoFormu,
+  gunFormat,
   kalemFormu,
+  pdfDosyaAdi,
+  pdfKisi,
   teklifHesapla,
 } from "@/modules/crm/lib/teklif";
 import type { SatisForm, SatisIptalForm } from "@/modules/crm/schemas/satis.schema";
@@ -26,7 +30,7 @@ import type {
   SatisDurum,
   SatisTipi,
 } from "@/modules/crm/types/satis";
-import type { TeklifDetay } from "@/modules/crm/types/teklif";
+import type { BelgePdfKisiEk, BelgePdfVeri, TeklifDetay } from "@/modules/crm/types/teklif";
 
 /* ------------------------------------------------------------------ */
 /* Etiketler / seçenekler                                              */
@@ -250,3 +254,50 @@ export function iptalFormdanIade(f: SatisIptalForm, IDCrmSatis: DbId): CrmTahsil
     Aciklama: f.IptalNedeni.trim() || null,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* PDF verisi (teklif ile aynı şablon, lib/teklif-pdf.tsx)             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Kayıtlı satış → PDF verisi. Kişinin adres / vergi bilgisi kişi kartından
+ * (useBelgePdfKisiEk) verilir. Belge sadece satış bilgisini taşır; tahsilat /
+ * kalan tutar (finans) bilinçli olarak yazılmaz.
+ */
+export function satisPdfVerisi(s: CrmSatisDetay, kisiEk: BelgePdfKisiEk | null | undefined): BelgePdfVeri {
+  const iptal = s.Durum === 1;
+  return {
+    BelgeAdi: "Satış",
+    BelgeNo: s.SatisNo,
+    Meta: [
+      { etiket: "Satış No", deger: s.SatisNo },
+      { etiket: "Tarih", deger: gunFormat(s.SatisTarihi) },
+      { etiket: "Satış Tipi", deger: SATIS_TIPI_ETIKET[s.SatisTipi] },
+      ...(abonelikMi(s.SatisTipi) && s.BaslangicTarihi && s.BitisTarihi
+        ? [{ etiket: "Dönem", deger: `${gunFormat(s.BaslangicTarihi)} – ${gunFormat(s.BitisTarihi)}` }]
+        : []),
+    ],
+    Etiket: iptal ? { metin: "İPTAL EDİLDİ", tur: "tehlike" } : null,
+    Bilgiler: [
+      ...belgeTemelBilgileri(s),
+      ...(s.TeklifNoTam ? [{ etiket: "Teklif No", deger: s.TeklifNoTam }] : []),
+    ],
+    ParaBirimi: s.ParaBirimi,
+    Kur: s.Kur,
+    GenelIskontoOrani: s.GenelIskontoOrani,
+    Aciklama: s.Aciklama,
+    Kosullar: null,
+    Kalemler: s.Kalemler,
+    Toplamlar: {
+      AraToplam: s.AraToplam,
+      GenelIskontoTutari: s.GenelIskontoTutari,
+      IskontoToplam: s.IskontoToplam,
+      KdvToplam: s.KdvToplam,
+      GenelToplam: s.GenelToplam,
+    },
+    Kisi: pdfKisi(s, kisiEk, s.KisiAdi),
+  };
+}
+
+/** "Satis-S2026-0001.pdf" */
+export const satisPdfDosyaAdi = (no: string) => pdfDosyaAdi("Satis", no);

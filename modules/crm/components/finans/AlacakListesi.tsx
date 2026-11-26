@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, HandCoins, RotateCcw, Search, X } from "lucide-react";
+import { Eye, FileText, HandCoins, RotateCcw, Search, X } from "lucide-react";
 
 import { CustomColumnVisibility } from "@/components/customs/CustomColumnVisibility";
 import { CustomDataTable } from "@/components/customs/CustomDataTable";
@@ -10,6 +10,7 @@ import { RowActions, type RowAction } from "@/components/customs/RowActions";
 import { ExportMenu } from "@/components/export/ExportMenu";
 import type { ExportColumn } from "@/components/export/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { cn, normalize } from "@/lib/utils";
@@ -29,8 +30,11 @@ type Props = {
   /** Müşteri bakiyelerinden gelindiyse o kişinin alacakları. */
   kisi: { IDCrmKisi: DbId; KisiAdi: string | null } | null;
   onKisiTemizle: () => void;
+  /** Satışı Finans sekmesinde (drawer) açar. */
   onSatisAc: (IDCrmSatis: DbId) => void;
   onTahsilat: (mod: TahsilatFormModu) => void;
+  /** Kişi filtresi varken o kişinin hesap ekstresi. */
+  onEkstre: (kisi: { IDCrmKisi: DbId; KisiAdi: string | null }) => void;
 };
 
 const satisBilgisi = (a: CrmFinansSatisRow): TahsilatSatisBilgisi => ({
@@ -43,7 +47,7 @@ const satisBilgisi = (a: CrmFinansSatisRow): TahsilatSatisBilgisi => ({
 });
 
 /** Ana çalışma listesi: kalanı olan satışlar (eskiden yeniye) ve iade bekleyenler. */
-export function AlacakListesi({ kisi, onKisiTemizle, onSatisAc, onTahsilat }: Props) {
+export function AlacakListesi({ kisi, onKisiTemizle, onSatisAc, onTahsilat, onEkstre }: Props) {
   const [arama, setArama] = useState("");
   const [filters, setFilters] = useState<AlacakFiltreleri>(BOS_ALACAK_FILTRELERI);
   const [columnVisibility, setColumnVisibility] = useColumnVisibility("crm-finans-alacak-kolonlar");
@@ -205,14 +209,19 @@ export function AlacakListesi({ kisi, onKisiTemizle, onSatisAc, onTahsilat }: Pr
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="flex items-center gap-2">
           {kisi && (
-            <Badge variant="primary" className="gap-1">
-              {kisi.KisiAdi ?? "Kişi"}
-              <button type="button" onClick={onKisiTemizle} aria-label="Kişi filtresini kaldır">
-                <X className="size-3" />
-              </button>
-            </Badge>
+            <>
+              <Badge variant="primary" className="gap-1">
+                {kisi.KisiAdi ?? "Kişi"}
+                <button type="button" onClick={onKisiTemizle} aria-label="Kişi filtresini kaldır">
+                  <X className="size-3" />
+                </button>
+              </Badge>
+              <Button size="sm" appearance="outline" onClick={() => onEkstre(kisi)}>
+                <FileText /> Hesap Ekstresi
+              </Button>
+            </>
           )}
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

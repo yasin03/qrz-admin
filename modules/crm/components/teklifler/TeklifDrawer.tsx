@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useTeklifDetay, useTeklifRevizyonlari } from "@/modules/crm/hooks/use-teklif";
+import { useTeklifDetay, useBelgePdfKisiEk, useTeklifRevizyonlari } from "@/modules/crm/hooks/use-teklif";
 import { KISI_TIP_ETIKET } from "@/modules/crm/lib/kisiler";
 import { downloadBlob } from "@/components/export/types";
 import {
@@ -42,7 +42,7 @@ import type { DbId, TeklifDetay } from "@/modules/crm/types/teklif";
 import { SatisFormDialog } from "../satislar/SatisFormDialog";
 import { KalemOzetTablosu } from "./KalemOzetTablosu";
 import type { TeklifIslemTipi } from "./TeklifIslemDialog";
-import { pdfYazdir, teklifPdfOlustur } from "./TeklifPdfOnizleme";
+import { belgePdfOlustur, pdfYazdir } from "./TeklifPdfOnizleme";
 import { TeklifToplamPaneli } from "./TeklifToplamPaneli";
 
 type Props = {
@@ -78,6 +78,7 @@ export function TeklifDrawer({ IDCrmTeklif, onOpenChange, onDuzenle, onIslem, on
   // Başka sürüme geçerken yeni veri gelene kadar eski teklifin butonları görünmesin.
   const t = son && String(son.IDCrmTeklif) === String(seciliID) ? son : null;
   const { data: surumler = [] } = useTeklifRevizyonlari(t && t.RevizyonSayisi > 1 ? t.TeklifNo : null);
+  const kisiEk = useBelgePdfKisiEk(t ? String(t.IDCrmKisi) : null, !!t);
 
   if (!seciliID) return null;
 
@@ -90,7 +91,7 @@ export function TeklifDrawer({ IDCrmTeklif, onOpenChange, onDuzenle, onIslem, on
     if (!t) return;
     setPdfIslem(islem);
     try {
-      const blob = await teklifPdfOlustur(teklifPdfVerisiDetaydan(t));
+      const blob = await belgePdfOlustur(teklifPdfVerisiDetaydan(t, kisiEk));
       if (islem === "indir") downloadBlob(blob, teklifPdfDosyaAdi(t.TeklifNoTam));
       else pdfYazdir(blob);
     } catch (error) {

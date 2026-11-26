@@ -27,6 +27,7 @@ import {
   useInsertTeklif,
   useTeklifDetay,
   useTeklifKisi,
+  useBelgePdfKisiEk,
   useTeklifKisiSecenekleri,
   useUpdateTeklif,
 } from "@/modules/crm/hooks/use-teklif";
@@ -40,7 +41,6 @@ import {
   teklifPdfDosyaAdi,
   teklifPdfVerisiFormdan,
 } from "@/modules/crm/lib/teklif";
-import { useUser } from "@/stores/auth-store";
 import {
   TEKLIF_STEPS,
   sayiOku,
@@ -184,10 +184,10 @@ export function TeklifFormDialog({
 
   /* ---------------- PDF önizleme (3. adım) ----------------
      Kaydedilmemiş formdan üretilir; numara yeni kayıtta "Taslak". */
-  const user = useUser();
   const tumDegerler = useWatch({ control }) as TeklifForm;
   // Form kapalıyken kişi listeleri çekilmez.
   const seciliKisi = useTeklifKisi(tumDegerler.IDCrmKisi, open);
+  const kisiEk = useBelgePdfKisiEk(tumDegerler.IDCrmKisi, open);
   const onizlemeAdimi = aktifAdim === SON_ADIM;
   const pdfVeri = useMemo(
     () =>
@@ -195,12 +195,10 @@ export function TeklifFormDialog({
         ? teklifPdfVerisiFormdan(tumDegerler, {
             TeklifNoTam: detay?.TeklifNoTam,
             kisi: seciliKisi ?? detay ?? null,
-            Hazirlayan: detay
-              ? (detay.Ad ?? detay.KullaniciAdi)
-              : (user?.Ad ?? null),
+            kisiEk,
           })
         : null,
-    [onizlemeAdimi, tumDegerler, detay, seciliKisi, user?.Ad],
+    [onizlemeAdimi, tumDegerler, detay, seciliKisi, kisiEk],
   );
 
   /* ---------------- Kayıt ---------------- */
