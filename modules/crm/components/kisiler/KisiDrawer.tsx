@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { AktiviteListesi } from "@/modules/crm/components/aktivite/AktiviteListesi";
 import { KisiTeklifleri } from "@/modules/crm/components/teklifler/KisiTeklifleri";
 import { useIlAdi } from "@/modules/crm/hooks/use-kisiler";
-import { KISI_TIP_ETIKET, kisiAdi } from "@/modules/crm/lib/kisiler";
+import { KISI_TIP_ETIKET, kaynakEtiket, kisiAdi } from "@/modules/crm/lib/kisiler";
 import type { CrmKisiRow } from "@/modules/crm/types/kisiler";
 
 type Props = {
@@ -108,7 +108,7 @@ export function KisiDrawer({ kisi: seciliKisi, onOpenChange, onDuzenle, onDonust
         ) : (
           <Bilgi label="TC Kimlik No">{kisi.TcKimlikNo}</Bilgi>
         )}
-        <Bilgi label="Kaynak">{kisi.Kaynak}</Bilgi>
+        <Bilgi label="Kaynak">{kaynakEtiket(kisi.Kaynak)}</Bilgi>
         <Bilgi label={musteri ? "Müşteri Olma" : "Oluşturma"}>
           {formatDate(musteri && kisi.MusteriOlmaTarihi ? kisi.MusteriOlmaTarihi : kisi.OlusturmaTarihi)}
           {kisi.Ad && <span className="text-muted-foreground"> · {kisi.Ad}</span>}

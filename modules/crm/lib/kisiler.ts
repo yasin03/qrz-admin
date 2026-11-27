@@ -37,6 +37,23 @@ export const AKTIVITE_DURUM_ETIKET: Record<CrmAktiviteDurum, string> = {
   2: "İptal",
 };
 
+/**
+ * Web sitesi formlarından gelen kayıtların Kaynak kodları (sql/crm_web_form.sql).
+ * Diğer değerler kişi formunda serbest yazılır ve olduğu gibi gösterilir.
+ */
+export const WEB_FORM_KAYNAK_ETIKET: Record<string, string> = {
+  Web: "Web - Demo talebi",
+  Iletisim: "Web - İletişim formu",
+  Bayi: "Web - Bayilik başvurusu",
+};
+
+/** Kaynak → ekranda gösterilecek metin (boşsa null). */
+export function kaynakEtiket(kaynak: string | null | undefined) {
+  const k = kaynak?.trim();
+  if (!k) return null;
+  return WEB_FORM_KAYNAK_ETIKET[k] ?? k;
+}
+
 /** DB'de kod olarak saklanır (CrmAktivite.GorusmeAraci). */
 export const GORUSME_ARACI_SECENEKLERI = [
   { value: "TELEFON", label: "Telefon" },

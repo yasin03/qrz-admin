@@ -46,6 +46,7 @@ import {
 import {
   KISI_TIP_ETIKET,
   KISI_TURU_SECENEKLERI,
+  kaynakEtiket,
   kisiAdi,
 } from "@/modules/crm/lib/kisiler";
 import type { CrmKisiRow, CrmKisiTip } from "@/modules/crm/types/kisiler";
@@ -53,6 +54,7 @@ import type { CrmKisiRow, CrmKisiTip } from "@/modules/crm/types/kisiler";
 import { KisiDrawer } from "./KisiDrawer";
 import {
   BOS_KISI_FILTRELERI,
+  KAYNAK_BOS,
   KisiFiltre,
   type KisiFiltreleri,
 } from "./KisiFiltre";
@@ -121,6 +123,11 @@ export function KisiListesi({ tip }: Props) {
       if (filters.KisiTuru !== null && k.KisiTuru !== filters.KisiTuru)
         return false;
       if (filters.IlKodu && k.IlKodu !== filters.IlKodu) return false;
+      if (filters.Kaynak) {
+        const kaynak = k.Kaynak?.trim() ?? "";
+        if (filters.Kaynak === KAYNAK_BOS ? kaynak !== "" : kaynak !== filters.Kaynak)
+          return false;
+      }
       if (filters.Randevu === "bekleyen" && !(k.BekleyenRandevuSayisi > 0))
         return false;
       if (filters.Randevu === "yok" && k.BekleyenRandevuSayisi > 0)
@@ -134,6 +141,21 @@ export function KisiListesi({ tip }: Props) {
       );
     });
   }, [kisiler, arama, filters, ilAdi]);
+
+  // Filtre seçenekleri listede geçen kaynaklardan (web formu kodları + elle yazılanlar)
+  const kaynakSecenekleri = useMemo(() => {
+    const degerler = new Set<string>();
+    let bosVar = false;
+    for (const k of kisiler) {
+      const kaynak = k.Kaynak?.trim();
+      if (kaynak) degerler.add(kaynak);
+      else bosVar = true;
+    }
+    const secenekler = [...degerler]
+      .map((value) => ({ value, label: kaynakEtiket(value) ?? value }))
+      .sort((a, b) => a.label.localeCompare(b.label, "tr"));
+    return bosVar ? [...secenekler, { value: KAYNAK_BOS, label: "Belirtilmemiş" }] : secenekler;
+  }, [kisiler]);
 
   const handleFilterChange = useCallback(
     (next: KisiFiltreleri) => setFilters(next),
@@ -165,7 +187,7 @@ export function KisiListesi({ tip }: Props) {
         header: "Vergi / TC No",
         accessorKey: (k) => (k.KisiTuru === 2 ? k.VergiNo : k.TcKimlikNo),
       },
-      { header: "Kaynak", accessorKey: "Kaynak" },
+      { header: "Kaynak", accessorKey: (k) => kaynakEtiket(k.Kaynak) },
       { header: "Görüşme", accessorKey: "GorusmeSayisi", format: "number" },
       { header: "Son Görüşme", accessorKey: "SonGorusmeTarihi" },
       { header: "Sıradaki Randevu", accessorKey: "SiradakiRandevuTarihi" },
@@ -292,10 +314,27 @@ export function KisiListesi({ tip }: Props) {
         },
       },
       {
-        id: "Telefon",
-        accessorFn: (k) => k.CepTelefon || k.YetkiliKisiTel || "",
-        header: "Telefon",
-        cell: ({ getValue }) => <span>{(getValue() as string) || "-"}</span>,
+        // Telefon ve e-posta tek kolonda alt alta (grid çok genişlemesin)
+        id: "Iletisim",
+        accessorFn: (k) =>
+          [k.CepTelefon || k.YetkiliKisiTel, k.YetkiliKisiEPostaAdresi]
+            .filter(Boolean)
+            .join(" "),
+        header: "İletişim",
+        cell: ({ row }) => {
+          const k = row.original;
+          const telefon = k.CepTelefon || k.YetkiliKisiTel;
+          const eposta = k.YetkiliKisiEPostaAdresi;
+          if (!telefon && !eposta) return <span>-</span>;
+          return (
+            <div className="min-w-0">
+              {telefon && <p className="truncate">{telefon}</p>}
+              {eposta && (
+                <p className="truncate text-xs text-muted-foreground">{eposta}</p>
+              )}
+            </div>
+          );
+        },
       },
       {
         id: "Sehir",
@@ -304,13 +343,10 @@ export function KisiListesi({ tip }: Props) {
         cell: ({ getValue }) => <span>{(getValue() as string) || "-"}</span>,
       },
       {
-        accessorKey: "YetkiliKisiEPostaAdresi",
-        header: "E-posta",
-        cell: ({ row }) => (
-          <span className="truncate">
-            {row.original.YetkiliKisiEPostaAdresi || "-"}
-          </span>
-        ),
+        id: "Kaynak",
+        accessorFn: (k) => kaynakEtiket(k.Kaynak) ?? "",
+        header: "Kaynak",
+        cell: ({ getValue }) => <span>{(getValue() as string) || "-"}</span>,
       },
       {
         accessorKey: "GorusmeSayisi",
@@ -385,6 +421,7 @@ export function KisiListesi({ tip }: Props) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <KisiFiltre
             filters={filters}
+            kaynakSecenekleri={kaynakSecenekleri}
             baslik={musteri ? "Müşteri" : "Kontak"}
             onChange={handleFilterChange}
             onReset={handleFilterReset}

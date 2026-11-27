@@ -13,12 +13,17 @@ import type { CrmKisiTuru } from "@/modules/crm/types/kisiler";
 
 export type KisiRandevuFiltre = "bekleyen" | "gecikmis" | "yok";
 
+/** Kaynak filtresinde "kaynağı boş olanlar" seçeneği. */
+export const KAYNAK_BOS = "__BOS__";
+
 /** Boş değer ("" / null) → o alana göre filtrelenmez. */
 export type KisiFiltreleri = {
   Durum: boolean | null;
   KisiTuru: CrmKisiTuru | null;
   IlKodu: string;
   Randevu: KisiRandevuFiltre | "";
+  /** Kaynak değeri (trim'li) veya KAYNAK_BOS. */
+  Kaynak: string;
 };
 
 export const BOS_KISI_FILTRELERI: KisiFiltreleri = {
@@ -26,6 +31,7 @@ export const BOS_KISI_FILTRELERI: KisiFiltreleri = {
   KisiTuru: null,
   IlKodu: "",
   Randevu: "",
+  Kaynak: "",
 };
 
 type FormValues = {
@@ -33,6 +39,7 @@ type FormValues = {
   KisiTuru: "ALL" | `${CrmKisiTuru}`;
   IlKodu: string;
   Randevu: "ALL" | KisiRandevuFiltre;
+  Kaynak: string;
 };
 
 const TUMU = { value: "ALL", label: "Tümü" };
@@ -51,6 +58,7 @@ const formaCevir = (f: KisiFiltreleri): FormValues => ({
   KisiTuru: f.KisiTuru === null ? "ALL" : (String(f.KisiTuru) as `${CrmKisiTuru}`),
   IlKodu: f.IlKodu || "ALL",
   Randevu: f.Randevu || "ALL",
+  Kaynak: f.Kaynak || "ALL",
 });
 
 const formdanCevir = (v: Partial<FormValues>): KisiFiltreleri => ({
@@ -58,21 +66,25 @@ const formdanCevir = (v: Partial<FormValues>): KisiFiltreleri => ({
   KisiTuru: !v.KisiTuru || v.KisiTuru === "ALL" ? null : (Number(v.KisiTuru) as CrmKisiTuru),
   IlKodu: !v.IlKodu || v.IlKodu === "ALL" ? "" : v.IlKodu,
   Randevu: !v.Randevu || v.Randevu === "ALL" ? "" : v.Randevu,
+  Kaynak: !v.Kaynak || v.Kaynak === "ALL" ? "" : v.Kaynak,
 });
 
 type Props = {
   filters: KisiFiltreleri;
+  /** Listede geçen kaynaklar (value = Kaynak / KAYNAK_BOS, label = gösterim). */
+  kaynakSecenekleri: { value: string; label: string }[];
   baslik: string;
   onChange: (next: KisiFiltreleri) => void;
   onReset: () => void;
 };
 
-export function KisiFiltre({ filters, baslik, onChange, onReset }: Props) {
+export function KisiFiltre({ filters, kaynakSecenekleri, baslik, onChange, onReset }: Props) {
   const { data: iller = [], isLoading: illerYukleniyor } = useIller();
   const ilOptions = useMemo(
     () => [{ value: "ALL", label: "Tümü" }, ...iller.map((il) => ({ value: il.IlKodu, label: il.IlAdi }))],
     [iller],
   );
+  const kaynakOptions = useMemo(() => [TUMU, ...kaynakSecenekleri], [kaynakSecenekleri]);
 
   const initialFormValues = useMemo(() => formaCevir(filters), [filters]);
   const form = useForm<FormValues>({ defaultValues: initialFormValues });
@@ -94,9 +106,13 @@ export function KisiFiltre({ filters, baslik, onChange, onReset }: Props) {
     onReset();
   };
 
-  const activeCount = [filters.Durum !== null, filters.KisiTuru !== null, filters.IlKodu, filters.Randevu].filter(
-    Boolean,
-  ).length;
+  const activeCount = [
+    filters.Durum !== null,
+    filters.KisiTuru !== null,
+    filters.IlKodu,
+    filters.Randevu,
+    filters.Kaynak,
+  ].filter(Boolean).length;
 
   return (
     <Popover>
@@ -138,6 +154,14 @@ export function KisiFiltre({ filters, baslik, onChange, onReset }: Props) {
             label="Şehir"
             disabled={illerYukleniyor}
             options={ilOptions}
+            valueKey="value"
+            labelKey="label"
+          />
+          <FormSelect
+            control={form.control}
+            name="Kaynak"
+            label="Kaynak"
+            options={kaynakOptions}
             valueKey="value"
             labelKey="label"
           />
